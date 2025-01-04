@@ -8,6 +8,12 @@ module.exports = {
         .setName('torneo-mc')
         .setDescription('Envía el embed de inscripción al torneo para todos los miembros.'),
     async execute(interaction) {
+        // Confirmar ejecución del comando
+        await interaction.reply({
+            content: '✅ El comando para el torneo fue enviado con éxito.',
+            ephemeral: true
+        });
+
         // Embed principal del torneo
         const torneoEmbed = new EmbedBuilder()
             .setColor("NotQuiteBlack")
@@ -30,8 +36,6 @@ module.exports = {
         );
 
         // Enviar el embed del torneo
-        await interaction.deferReply();
-        await interaction.deleteReply();
         await interaction.channel.send({ embeds: [torneoEmbed], components: [row] });
 
         // Recolector de botones
@@ -88,7 +92,10 @@ module.exports = {
 
                 fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
-                await i.update({ content: '¡Tu inscripción al torneo ha sido confirmada! ¡Buena suerte!', embeds: [], components: [], ephemeral: true });
+                await i.reply({
+                    content: '✅ ¡Tu inscripción al torneo ha sido confirmada! ¡Buena suerte!',
+                    ephemeral: true
+                });
             }
 
             if (i.customId === 'salir_torneo') {
@@ -97,7 +104,10 @@ module.exports = {
 
                 fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
-                await i.update({ content: 'Has salido del torneo con éxito.', embeds: [], components: [], ephemeral: true });
+                await i.reply({
+                    content: '✅ Has salido del torneo con éxito.',
+                    ephemeral: true
+                });
             }
         });
     },
