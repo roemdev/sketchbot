@@ -25,7 +25,6 @@ module.exports = {
         message.channel.send('Hubo un error al actualizar estados de miembros ausentes.');
         return;
       }
-      console.log('Estados de miembros ausentes actualizados:', result);
 
       // Eliminar bots que ya no están presentes
       const deleteAbsentBotsQuery = `
@@ -38,7 +37,6 @@ module.exports = {
           message.channel.send('Hubo un error al eliminar bots ausentes.');
           return;
         }
-        console.log('Bots ausentes eliminados:', result);
 
         // Actualizar estados de los miembros presentes a true (1) y sus otros datos
         guild.members.fetch().then(members => {

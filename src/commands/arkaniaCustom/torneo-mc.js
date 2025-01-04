@@ -39,7 +39,6 @@ module.exports = {
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 0 });
 
         collector.on('collect', async (i) => {
-            const requiredRoleId = '1311799987474010113';
             const filePath = path.join(__dirname, 'inscritos_torneo.json');
             let inscritos = [];
 
@@ -48,12 +47,6 @@ module.exports = {
             }
 
             if (i.customId === 'inscribirme') {
-                // Verificar si el usuario tiene el rol necesario
-                if (!i.member.roles.cache.has(requiredRoleId)) {
-                    await i.reply({ content: 'No tienes el rol necesario para inscribirte en el torneo.', ephemeral: true });
-                    return;
-                }
-
                 // Verificar si ya está inscrito
                 const yaInscrito = inscritos.some(inscrito => inscrito.discordId === i.user.id);
 

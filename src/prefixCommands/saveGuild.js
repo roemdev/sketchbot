@@ -142,7 +142,6 @@ module.exports = {
               console.error('Error al guardar miembro:', err);
               return;
             }
-            console.log(`Miembro ${memberData.member_id} guardado.`);
           });
         }
 
