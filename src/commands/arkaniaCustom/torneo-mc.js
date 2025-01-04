@@ -30,7 +30,7 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('inscribirme')
-                .setLabel('Inscribirme')
+                .setLabel('Inscribirme / Salir')
                 .setStyle(ButtonStyle.Primary)
                 .setEmoji('⚔️')
         );
@@ -39,7 +39,7 @@ module.exports = {
         await interaction.channel.send({ embeds: [torneoEmbed], components: [row] });
 
         // Recolector de botones
-        const filter = (i) => ['inscribirme', 'confirmar_inscripcion', 'salir_torneo'].includes(i.customId);
+        const filter = (i) => i.customId === 'inscribirme';
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 0 });
 
         collector.on('collect', async (i) => {
@@ -50,41 +50,20 @@ module.exports = {
                 inscritos = JSON.parse(fs.readFileSync(filePath));
             }
 
-            if (i.customId === 'inscribirme') {
-                // Verificar si ya está inscrito
-                const yaInscrito = inscritos.some(inscrito => inscrito.discordId === i.user.id);
+            const yaInscrito = inscritos.some(inscrito => inscrito.discordId === i.user.id);
 
-                const embed = new EmbedBuilder();
-                const rowButtons = new ActionRowBuilder();
+            if (yaInscrito) {
+                // Eliminar al usuario del JSON
+                inscritos = inscritos.filter(inscrito => inscrito.discordId !== i.user.id);
+                fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
-                if (yaInscrito) {
-                    embed.setColor("#FFC868")
-                        .setDescription(`<@${i.user.id}>: Ya estás inscrito en el torneo. Si deseas salir, presiona el botón a continuación.`);
+                const embed = new EmbedBuilder()
+                    .setColor("#FFC868")
+                    .setDescription(`❌ <@${i.user.id}>: Has salido del torneo con éxito.`);
 
-                    rowButtons.addComponents(
-                        new ButtonBuilder()
-                            .setCustomId('salir_torneo')
-                            .setLabel('Salir del torneo')
-                            .setStyle(ButtonStyle.Danger)
-                    );
-                } else {
-                    embed.setColor("NotQuiteBlack")
-                        .setDescription(`<@${i.user.id}>: Por favor, confirma tu inscripción al torneo.`);
-
-                    rowButtons.addComponents(
-                        new ButtonBuilder()
-                            .setCustomId('confirmar_inscripcion')
-                            .setLabel('Confirmar inscripción')
-                            .setStyle(ButtonStyle.Success)
-                    );
-                }
-
-                // Enviar el mensaje con el embed y los botones juntos
-                await i.reply({ embeds: [embed], components: [rowButtons], ephemeral: true });
-            }
-
-            if (i.customId === 'confirmar_inscripcion') {
-                // Confirmar la inscripción y guardar en el JSON
+                await i.reply({ embeds: [embed], ephemeral: true });
+            } else {
+                // Inscribir al usuario en el torneo
                 inscritos.push({
                     invocador: i.user.username,
                     discordId: i.user.id
@@ -92,22 +71,11 @@ module.exports = {
 
                 fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
-                await i.reply({
-                    content: '✅ ¡Tu inscripción al torneo ha sido confirmada! ¡Buena suerte!',
-                    ephemeral: true
-                });
-            }
+                const embed = new EmbedBuilder()
+                    .setColor("NotQuiteBlack")
+                    .setDescription(`✅ <@${i.user.id}>: ¡Te has inscrito al torneo con éxito! ¡Buena suerte!`);
 
-            if (i.customId === 'salir_torneo') {
-                // Eliminar al usuario del JSON
-                inscritos = inscritos.filter(inscrito => inscrito.discordId !== i.user.id);
-
-                fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
-
-                await i.reply({
-                    content: '✅ Has salido del torneo con éxito.',
-                    ephemeral: true
-                });
+                await i.reply({ embeds: [embed], ephemeral: true });
             }
         });
     },
