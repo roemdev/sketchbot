@@ -4,7 +4,7 @@ const assets = require('../../assets.json');
 const BOOSTER_ROLE_ID = "1241182617504579594";
 const VIP_ROLE_ID = "1324814399973757079";
 const MONITORED_ROLES = [BOOSTER_ROLE_ID, VIP_ROLE_ID];
-const NOTIFICATION_CHANNEL_ID = "1173781298721063014";
+const NOTIFICATION_CHANNEL_ID = "1273453941056602152";
 
 module.exports = {
   name: Events.GuildMemberUpdate,
@@ -16,7 +16,7 @@ module.exports = {
     if (!addedRoleId) return;
 
     const notificationChannel = newMember.guild.channels.cache.get(NOTIFICATION_CHANNEL_ID);
-    if (!notificationChannel || !notificationChannel.isText()) return;
+    if (!notificationChannel) return;
 
     if (addedRoleId === BOOSTER_ROLE_ID) {
       try {
@@ -29,13 +29,13 @@ module.exports = {
 
       const notificationEmbed = new EmbedBuilder()
         .setAuthor({ name: newMember.user.tag, iconURL: newMember.user.displayAvatarURL() })
-        .setTitle(`¡Nuevo miembro VIP!`)
         .setColor(assets.color.base)
         .setDescription(
-          `* ¡Felicidades! Ahora eres <@&1303816942326648884>\n` +
+          `* ¡Nuevo miembro VIP! ✨\n` +
           `* Utiliza \`/help\` para ver tus beneficios.`
         )
-        .setThumbnail(newMember.user.displayAvatarURL());
+        .setThumbnail(newMember.user.displayAvatarURL())
+        .setImage('https://cdn.discordapp.com/attachments/860528686403158046/1108384769147932682/ezgif-2-f41b6758ff.gif?ex=677a8841&is=677936c1&hm=131c750f96d8c1c518862c13dd61850c4c3566e9585e33a75fbbe41c3cddd420&')
 
       try {
         await notificationChannel.send({
