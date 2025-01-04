@@ -148,7 +148,7 @@ module.exports = {
           });
         }
 
-        // Crear el embed para la respuesta
+        // Crear el embed para la respuesta.
         const embed = new EmbedBuilder()
           .setColor(assets.color.green)
           .setTitle("Información del Servidor Guardada")
