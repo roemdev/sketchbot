@@ -72,7 +72,6 @@ module.exports = {
                 console.error('Error al actualizar miembro:', err);
                 return;
               }
-              console.log(`Miembro ${memberData.member_id} actualizado.`);
             });
           }
 
@@ -118,7 +117,6 @@ module.exports = {
         if (err) {
           console.error('Error al actualizar rol:', err);
         } else {
-          console.log(`Rol ${roleData.role_id} actualizado.`);
         }
       });
     }
@@ -161,7 +159,6 @@ module.exports = {
         if (err) {
           console.error('Error al actualizar canal:', err);
         } else {
-          console.log(`Canal ${channelData.channel_id} actualizado.`);
         }
       });
     }
