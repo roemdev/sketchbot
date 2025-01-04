@@ -30,8 +30,8 @@ module.exports = {
         );
 
         // Enviar el embed del torneo
-        interaction.deferReply();
-        interaction.deleteReply();
+        await interaction.deferReply();
+        await interaction.deleteReply();
         await interaction.channel.send({ embeds: [torneoEmbed], components: [row] });
 
         // Recolector de botones
@@ -88,7 +88,7 @@ module.exports = {
 
                 fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
-                await i.followUp({ content: '¡Tu inscripción al torneo ha sido confirmada! ¡Buena suerte!', ephemeral: true });
+                await i.update({ content: '¡Tu inscripción al torneo ha sido confirmada! ¡Buena suerte!', embeds: [], components: [], ephemeral: true });
             }
 
             if (i.customId === 'salir_torneo') {
@@ -97,7 +97,7 @@ module.exports = {
 
                 fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
-                await i.followUp({ content: 'Has salido del torneo con éxito.', ephemeral: true });
+                await i.update({ content: 'Has salido del torneo con éxito.', embeds: [], components: [], ephemeral: true });
             }
         });
     },
