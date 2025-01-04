@@ -4,7 +4,7 @@ const { Client, Collection, GatewayIntentBits, REST, Routes } = require("discord
 const config = require('./config.json');
 const connection = require('./db');
 
-// Configuración del cliente
+// Configuración del cliente - cliente
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
