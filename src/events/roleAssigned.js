@@ -2,7 +2,7 @@ const { Events, EmbedBuilder } = require("discord.js");
 const assets = require('../../assets.json');
 
 const BOOSTER_ROLE_ID = "1241182617504579594";
-const VIP_ROLE_ID = "1303816942326648884";
+const VIP_ROLE_ID = "1324814399973757079";
 const MONITORED_ROLES = [BOOSTER_ROLE_ID, VIP_ROLE_ID];
 const NOTIFICATION_CHANNEL_ID = "1173781298721063014";
 
@@ -16,7 +16,7 @@ module.exports = {
     if (!addedRoleId) return;
 
     const notificationChannel = newMember.guild.channels.cache.get(NOTIFICATION_CHANNEL_ID);
-    if (!notificationChannel || !notificationChannel.isTextBased()) return;
+    if (!notificationChannel || !notificationChannel.isText()) return;
 
     if (addedRoleId === BOOSTER_ROLE_ID) {
       try {
@@ -27,18 +27,13 @@ module.exports = {
       }
     }
 
-    if (addedRoleId === VIP_ROLE_ID) {
-      const totalVipMembers = newMember.guild.members.cache.filter(member => 
-        member.roles.cache.has(VIP_ROLE_ID)
-      ).size;
-
       const notificationEmbed = new EmbedBuilder()
         .setAuthor({ name: newMember.user.tag, iconURL: newMember.user.displayAvatarURL() })
-        .setTitle(`⭐ __${totalVipMembers} VIP__`)
+        .setTitle(`¡Nuevo miembro VIP!`)
         .setColor(assets.color.base)
         .setDescription(
-          `* ¡Un nuevo VIP se alza!\n` +
-          `* Haz clic [aquí](https://discord.com/channels/815280751586050098/1247632279027843152) para ver tus beneficios.`
+          `* ¡Felicidades! Ahora eres <@&1303816942326648884>\n` +
+          `* Utiliza \`/help\` para ver tus beneficios.`
         )
         .setThumbnail(newMember.user.displayAvatarURL());
 
@@ -51,5 +46,4 @@ module.exports = {
         console.error(`Error al enviar la notificación para ${newMember.user.tag}:`, error);
       }
     }
-  },
-};
+}
