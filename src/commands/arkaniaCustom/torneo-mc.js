@@ -8,29 +8,30 @@ module.exports = {
         .setName('torneo-mc')
         .setDescription('Envía el embed de inscripción al torneo para todos los miembros.'),
     async execute(interaction) {
-        // Confirmar ejecución del comando
-        await interaction.reply({ content: 'El comando para el torneo fue enviado con éxito.', ephemeral: true });
-
         // Embed principal del torneo
         const torneoEmbed = new EmbedBuilder()
             .setColor("NotQuiteBlack")
-            .setTitle('🏆 ARKANIA RIFT')
-            .setDescription('¿Estás listo para enfrentarte a los mejores y demostrar tu supremacía en el Puente del Progreso? Inscríbete ahora y únete a esta épica contienda donde cada jugada cuenta y solo el más fuerte llegará a la cima. ¡No dejes que te lo cuenten, haz historia en ARKANIA RIFT! **¡Este es tu momento!**')
+            .setTitle('Información del Torneo Arena PVP de Minecraft')
+            .setDescription('¡Prepárate para luchar en un duelo épico y ganar el gran premio! Aquí tienes todo lo que necesitas saber:')
             .addFields(
-                { name: 'Fechas', value: 'Demuestra tu valía del 23 al 14 de diciembre en dos grandes fases de máxima competitividad.' },
-                { name: 'Criterios', value: '¿Zaun o Piltóver? Aplasta a tu rival en el Puente del Progreso ARAM en un `1 VS 1` con un campeón significativo de tu lado.' },
-                { name: 'Premios', value: 'Compite en este gran torneo y vive al máximo la experiencia Arcane ganando el **Pase de Batalla de Arcane**.' }
+                { name: 'Formato', value: 'Eliminación directa 1 vs 1 en una arena personalizada. Se realizarán rondas consecutivas hasta determinar al ganador', inline: false },
+                { name: 'Información relevante', value: '* Hora de inicio: <t:1736035200:t>\n* Premio: $15 USD.', inline: false },
+                { name: 'Cómo participar', value: '1. Ve al canal <#1282215373688799284>.\n2. Haz clic en el botón “Inscribirme”.\n3. ¡Ya estás participando!', inline: false },
+                { name: 'Reglas', value: '* Versión de Minecraft: 1.20.1.\n* No se permiten mods.\n* Cualquier comportamiento antideportivo resultará en descalificación.', inline: false },
             )
-            .setImage('https://i.imgur.com/cUq8oRq.png');
+            .setImage('https://i.imgur.com/52ILUwS.jpeg');
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('inscribirme')
                 .setLabel('Inscribirme')
                 .setStyle(ButtonStyle.Primary)
+                .setEmoji('⚔️')
         );
 
         // Enviar el embed del torneo
+        interaction.deferReply();
+        interaction.deleteReply();
         await interaction.channel.send({ embeds: [torneoEmbed], components: [row] });
 
         // Recolector de botones

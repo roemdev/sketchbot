@@ -74,7 +74,6 @@ module.exports = {
             console.error('Error al guardar rol:', err);
             return;
           }
-          console.log(`Rol ${roleData.role_id} guardado.`);
         });
       }
 
@@ -107,7 +106,6 @@ module.exports = {
             console.error('Error al guardar canal:', err);
             return;
           }
-          console.log(`Canal ${channelData.channel_id} guardado.`);
         });
       }
 
