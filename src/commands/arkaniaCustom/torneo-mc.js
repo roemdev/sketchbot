@@ -8,11 +8,6 @@ module.exports = {
         .setName('torneo-mc')
         .setDescription('Envía el embed de inscripción al torneo para todos los miembros.'),
     async execute(interaction) {
-        // Confirmar ejecución del comando
-        await interaction.reply({
-            content: '✅ El comando para el torneo fue enviado con éxito.',
-            ephemeral: true
-        });
 
         // Embed principal del torneo
         const torneoEmbed = new EmbedBuilder()
@@ -30,12 +25,14 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('inscribirme')
-                .setLabel('Inscribirme / Salir')
+                .setLabel('Inscribirme')
                 .setStyle(ButtonStyle.Primary)
                 .setEmoji('⚔️')
         );
 
         // Enviar el embed del torneo
+        interaction.deferReply();
+        interaction.deleteReply();
         await interaction.channel.send({ embeds: [torneoEmbed], components: [row] });
 
         // Recolector de botones
@@ -59,7 +56,7 @@ module.exports = {
 
                 const embed = new EmbedBuilder()
                     .setColor("#FFC868")
-                    .setDescription(`❌ <@${i.user.id}>: Has salido del torneo con éxito.`);
+                    .setDescription(`<:warn:1313237521634689107> <@${i.user.id}>: Has salido del torneo con éxito.`);
 
                 await i.reply({ embeds: [embed], ephemeral: true });
             } else {
@@ -72,8 +69,8 @@ module.exports = {
                 fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
 
                 const embed = new EmbedBuilder()
-                    .setColor("NotQuiteBlack")
-                    .setDescription(`✅ <@${i.user.id}>: ¡Te has inscrito al torneo con éxito! ¡Buena suerte!`);
+                    .setColor("#79E096")
+                    .setDescription(`<:check:1313237490395648021> <@${i.user.id}>: ¡Te has inscrito al torneo con éxito! ¡Buena suerte!`);
 
                 await i.reply({ embeds: [embed], ephemeral: true });
             }
