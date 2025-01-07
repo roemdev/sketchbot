@@ -19,8 +19,8 @@ module.exports = {
         .setDescription("Acción a realizar: agregar o quitar el rol.")
         .setRequired(true)
         .addChoices(
-          { name: "Agregar", value: "add" },
-          { name: "Quitar", value: "remove" }
+          { name: "agregar", value: "add" },
+          { name: "quitar", value: "remove" }
         )
     )
     .addRoleOption((option) =>
@@ -106,6 +106,18 @@ module.exports = {
         });
       }
 
+      if (targetMember.user.bot) {
+        const botEmbed = new EmbedBuilder()
+          .setColor(assets.color.yellow)
+          .setDescription(
+            `${assets.emoji.warn} <@${interaction.user.id}>: No puedes gestionar roles de los bots.`
+          );
+        return interaction.reply({
+          embeds: [botEmbed],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
       const hasRole = targetMember.roles.cache.has(role.id);
       const embed = new EmbedBuilder();
 
@@ -140,6 +152,8 @@ module.exports = {
       let affectedMembers = 0;
 
       for (const guildMember of members.values()) {
+        if (guildMember.user.bot) continue;
+
         const hasRole = guildMember.roles.cache.has(role.id);
         const roleAction =
           action === "add" && !hasRole
