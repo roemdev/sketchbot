@@ -1,5 +1,5 @@
-const { EmbedBuilder } = require("discord.js")
-const assets = require('../../assets.json');
+const { EmbedBuilder } = require("discord.js");
+const assets = require("../../assets.json");
 const ms = require("ms");
 
 module.exports = {
@@ -7,22 +7,21 @@ module.exports = {
   description: "Muestra la latencia del bot y de la API de Discord.",
 
   async execute(message, args) {
-    const botLatency = Date.now() - message.createdTimestamp; 
-    const apiLatency = message.client.ws.ping; 
-    const botUptime = process.uptime() * 1000; 
+    const botLatency = Date.now() - message.createdTimestamp;
+    const apiLatency = message.client.ws.ping;
+    const botUptime = process.uptime() * 1000;
     const uptimeFormatted = ms(botUptime, { long: true });
     const currentDateTime = new Date().toLocaleString();
-    const embed = new EmbedBuilder()
-    
+    const embed = new EmbedBuilder();
+
     embed
-    .setColor(assets.color.base)
-    .addFields(
-      { name: " ", value: `**Bot:** \`${botLatency}ms\``, inline: true },
-      { name: " ", value: `**API:** \`${apiLatency}ms\``, inline: true },
-      { name: " ", value: `**Uptime:** \`${uptimeFormatted}\``, inline: true }
-    )
+      .setColor(assets.color.base)
+      .addFields(
+        { name: " ", value: `**Bot:** \`${botLatency}ms\``, inline: true },
+        { name: " ", value: `**API:** \`${apiLatency}ms\``, inline: true },
+        { name: " ", value: `**Uptime:** \`${uptimeFormatted}\``, inline: true }
+      );
 
-    message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } })
-
+    message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
   },
 };

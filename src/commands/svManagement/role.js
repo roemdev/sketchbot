@@ -1,12 +1,19 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ThreadOnlyChannel } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
 const assets = require("../../../assets.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("role")
-    .setDescription("Agrega o quita un rol a un usuario o a todos los miembros.")
+    .setDescription(
+      "Agrega o quita un rol a un usuario o a todos los miembros."
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
-    .addStringOption(option =>
+    .addStringOption((option) =>
       option
         .setName("acción")
         .setDescription("Acción a realizar: agregar o quitar el rol.")
@@ -16,13 +23,13 @@ module.exports = {
           { name: "Quitar", value: "remove" }
         )
     )
-    .addRoleOption(option =>
+    .addRoleOption((option) =>
       option
         .setName("rol")
         .setDescription("El rol que deseas agregar o quitar.")
         .setRequired(true)
     )
-    .addStringOption(option =>
+    .addStringOption((option) =>
       option
         .setName("opción")
         .setDescription("Aplica el cambio a un usuario o a todos los miembros.")
@@ -32,10 +39,12 @@ module.exports = {
           { name: "Todos", value: "all" }
         )
     )
-    .addUserOption(option =>
+    .addUserOption((option) =>
       option
         .setName("usuario")
-        .setDescription("Usuario al que deseas aplicar el cambio (solo si elegiste 'usuario').")
+        .setDescription(
+          "Usuario al que deseas aplicar el cambio (solo si elegiste 'usuario')."
+        )
     ),
 
   async execute(interaction) {
@@ -53,7 +62,10 @@ module.exports = {
         .setDescription(
           `${assets.emoji.deny} <@${interaction.user.id}>: No tienes permisos para gestionar roles.`
         );
-      return interaction.reply({ embeds: [warnEmbed], ephemeral: true });
+      return interaction.reply({
+        embeds: [warnEmbed],
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
     if (role.position >= guild.members.me.roles.highest.position) {
@@ -62,7 +74,10 @@ module.exports = {
         .setDescription(
           `${assets.emoji.deny} <@${interaction.user.id}>: No puedo gestionar este rol debido a su jerarquía.`
         );
-      return interaction.reply({ embeds: [hierarchyEmbed], ephemeral: true });
+      return interaction.reply({
+        embeds: [hierarchyEmbed],
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
     if (option === "usuario") {
@@ -72,7 +87,10 @@ module.exports = {
           .setDescription(
             `${assets.emoji.warn} <@${interaction.user.id}>: Debes seleccionar un usuario para esta opción.`
           );
-        return interaction.reply({ embeds: [userEmbed], ephemeral: true });
+        return interaction.reply({
+          embeds: [userEmbed],
+          flags: MessageFlags.Ephemeral,
+        });
       }
 
       const targetMember = guild.members.cache.get(user.id);
@@ -82,7 +100,10 @@ module.exports = {
           .setDescription(
             `${assets.emoji.warn} <@${interaction.user.id}>: No se encontró al usuario en este servidor.`
           );
-        return interaction.reply({ embeds: [notFoundEmbed], ephemeral: true });
+        return interaction.reply({
+          embeds: [notFoundEmbed],
+          flags: MessageFlags.Ephemeral,
+        });
       }
 
       const hasRole = targetMember.roles.cache.has(role.id);
@@ -92,12 +113,14 @@ module.exports = {
         embed
           .setColor(assets.color.yellow)
           .setDescription(
-            `${assets.emoji.warn} <@${interaction.user.id}>: El usuario <@${user.id}> ${
-              hasRole ? "ya tiene" : "no tiene"
-            } el rol <@&${role.id}>.`
+            `${assets.emoji.warn} <@${interaction.user.id}>: El usuario <@${
+              user.id
+            }> ${hasRole ? "ya tiene" : "no tiene"} el rol <@&${role.id}>.`
           );
       } else {
-        await (action === "add" ? targetMember.roles.add(role) : targetMember.roles.remove(role));
+        await (action === "add"
+          ? targetMember.roles.add(role)
+          : targetMember.roles.remove(role));
         embed
           .setColor(assets.color.green)
           .setDescription(
@@ -107,8 +130,10 @@ module.exports = {
           );
       }
 
-      return interaction.reply({ embeds: [embed], ephemeral: true });
-
+      return interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
     } else if (option === "all") {
       const members = await guild.members.fetch();
       const embed = new EmbedBuilder().setColor(assets.color.green);
@@ -139,7 +164,10 @@ module.exports = {
         }`
       );
 
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.reply({
+        embeds: [embed],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };

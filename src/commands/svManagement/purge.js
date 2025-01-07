@@ -1,18 +1,23 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require("discord.js");
-const assets = require('../../../assets.json');
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionsBitField,
+  MessageFlags,
+} = require("discord.js");
+const assets = require("../../../assets.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages)
     .setName("purge")
     .setDescription("Elimina mensajes en un canal.")
-    .addIntegerOption(option =>
+    .addIntegerOption((option) =>
       option
         .setName("cantidad")
         .setDescription("Cantidad de mensajes a eliminar (máximo: 1000).")
         .setRequired(true)
     )
-    .addUserOption(option =>
+    .addUserOption((option) =>
       option
         .setName("usuario")
         .setDescription("Elimina mensajes únicamente de este usuario.")
@@ -28,7 +33,10 @@ module.exports = {
         .setDescription(
           `${assets.emoji.warn} <@${interaction.user.id}>: La cantidad debe estar entre **\`1\`** y **\`1000\`** mensajes.`
         );
-      return interaction.reply({ embeds: [warnEmbed], ephemeral: true });
+      return interaction.reply({
+        embeds: [warnEmbed],
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
     let messagesToDelete = [];
@@ -45,7 +53,7 @@ module.exports = {
       if (fetchedMessages.size === 0) break;
 
       const filteredMessages = usuario
-        ? fetchedMessages.filter(msg => msg.author.id === usuario.id)
+        ? fetchedMessages.filter((msg) => msg.author.id === usuario.id)
         : fetchedMessages;
 
       messagesToDelete = [...messagesToDelete, ...filteredMessages.values()];
@@ -63,23 +71,33 @@ module.exports = {
             ? `${assets.emoji.warn} <@${interaction.user.id}>: No se encontraron mensajes de **${usuario.tag}** para eliminar.`
             : `${assets.emoji.warn} <@${interaction.user.id}>: No se encontraron mensajes para eliminar.`
         );
-      return interaction.reply({ embeds: [noMessagesEmbed], ephemeral: true });
+      return interaction.reply({
+        embeds: [noMessagesEmbed],
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
     const infoEmbed = new EmbedBuilder()
       .setColor(assets.color.green)
       .setDescription(
-        `${assets.emoji.check} <@${interaction.user.id}>: Se eliminarán **\`${actualAmountToDelete}\`** mensajes${
+        `${assets.emoji.check} <@${
+          interaction.user.id
+        }>: Se eliminarán **\`${actualAmountToDelete}\`** mensajes${
           usuario ? ` de **${usuario.tag}**` : ""
         }.`
       );
 
-    const sentMessage = await interaction.reply({ embeds: [infoEmbed], ephemeral: true });
+    const sentMessage = await interaction.reply({
+      embeds: [infoEmbed],
+      flags: MessageFlags.Ephemeral,
+    });
 
     let totalDeleted = 0;
 
     while (messagesToDelete.length > 0) {
-      const batch = messagesToDelete.splice(0, 100).filter(msg => msg.id !== sentMessage.id);
+      const batch = messagesToDelete
+        .splice(0, 100)
+        .filter((msg) => msg.id !== sentMessage.id);
 
       if (batch.length > 0) {
         try {
@@ -98,7 +116,10 @@ module.exports = {
         .setDescription(
           `${assets.emoji.warn} <@${interaction.user.id}>: Se eliminaron **${totalDeleted} mensajes**, pero algunos no pudieron ser eliminados debido a restricciones de Discord.`
         );
-      await interaction.followUp({ embeds: [partialDeleteEmbed], ephemeral: true });
+      await interaction.followUp({
+        embeds: [partialDeleteEmbed],
+        flags: MessageFlags.Ephemeral,
+      });
     }
   },
 };
