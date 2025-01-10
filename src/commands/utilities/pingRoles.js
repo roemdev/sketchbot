@@ -61,10 +61,17 @@ module.exports = {
       });
 
     const row = new ActionRowBuilder().addComponents(select);
+<<<<<<< HEAD
 
     interaction.deferReply();
     interaction.deleteReply();
     await interaction.channel.send({ embeds: [embed], components: [row] });
+=======
+    
+    interaction.reply({ content: '<:check:1313237490395648021>', ephemeral: true })
+    interaction.deleteReply()
+    await interaction.channel.send({embeds: [embed], components: [row]});
+>>>>>>> main
 
     // Crear el collector para permitir que cualquier miembro del servidor pueda interactuar
     const filter = (i) => i.customId === "roles";
