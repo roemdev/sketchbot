@@ -45,7 +45,6 @@ module.exports = {
 
         // Enviar el mensaje con los controles
         interaction.reply({ content: '<:check:1313237490395648021>', ephemeral: true })
-        interaction.deleteReply()
         const message = await interaction.channel.send({ embeds: [embed], components: [buttonRow] });
 
         // Crear colector de interacciones
