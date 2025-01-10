@@ -47,7 +47,8 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(select);
     
-    interaction.reply({ content: '<:check:1313237490395648021>', ephemeral: true })
+    interaction.deferReply();
+    interaction.deleteReply();
     await interaction.channel.send({embeds: [embed], components: [row]});
 
     // Crear el collector para permitir que cualquier miembro del servidor pueda interactuar

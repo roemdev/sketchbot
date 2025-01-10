@@ -44,7 +44,8 @@ module.exports = {
             .addFields({ name: "Uso de los botones", value: "🔒 — **Bloquear** el canal de voz.\n👁️ — **Ocultar** el canal de voz.\n🔫 — **Expulsar** a alguien del canal de voz.\n📑 — **Mostrar** la información del canal de voz." });
 
         // Enviar el mensaje con los controles
-        interaction.reply({ content: '<:check:1313237490395648021>', ephemeral: true })
+        interaction.deferReply();
+        interaction.deleteReply();
         const message = await interaction.channel.send({ embeds: [embed], components: [buttonRow] });
 
         // Crear colector de interacciones
