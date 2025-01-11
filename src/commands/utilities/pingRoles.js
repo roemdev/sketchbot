@@ -68,8 +68,8 @@ module.exports = {
     await interaction.channel.send({ embeds: [embed], components: [row] });
 =======
     
-    interaction.reply({ content: '<:check:1313237490395648021>', ephemeral: true })
-    interaction.deleteReply()
+    interaction.deferReply();
+    interaction.deleteReply();
     await interaction.channel.send({embeds: [embed], components: [row]});
 >>>>>>> main
 
