@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const assets = require('../../assets.json')
@@ -7,8 +7,13 @@ module.exports = {
     name: 'torneolol',
     description: 'Envía el embed de inscripción al torneo para todos los miembros.',
     async execute(message, args) {
-        // Eliminar el mensaje del autor
-        await message.delete();
+
+      if (!message.member.permissions.has(PermissionFlagsBits.ManageEvents)) {
+        const deny = new EmbedBuilder()
+          .setColor(assets.color.base)
+          .setDescription(`${assets.emoji.deny} No puedes ejecutar este comando.`)
+        return message.reply({ embeds: [deny], allowedMentions: { repliedUser: false } });
+      }
 
         // Embed principal del torneo
         const torneoEmbed = new EmbedBuilder()
@@ -32,6 +37,7 @@ module.exports = {
 
         // Enviar el embed del torneo
         await message.channel.send({ embeds: [torneoEmbed], components: [row] });
+        await message.delete();
 
         // Recolector de botones
         const filter = (i) => ['inscribirme'].includes(i.customId);

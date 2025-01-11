@@ -4,6 +4,7 @@ const {
   EmbedBuilder,
   MessageFlags,
   ActionRowBuilder,
+  PermissionFlagsBits
 } = require("discord.js");
 const assets = require("../../assets.json");
 
@@ -11,6 +12,13 @@ module.exports = {
   name: "pr",
   description: "Envía el menú para elegir los ping roles",
   async execute(message, args) {
+    if (!message.member.permissions.has(PermissionFlagsBits.ManageRoles)) {
+      const deny = new EmbedBuilder()
+        .setColor(assets.color.base)
+        .setDescription(`${assets.emoji.deny} No puedes ejecutar este comando.`)
+      return message.reply({ embeds: [deny], allowedMentions: { repliedUser: false } });
+    }
+
     const select = new StringSelectMenuBuilder()
       .setCustomId("roles")
       .setPlaceholder("Elije las notificaciones aquí")

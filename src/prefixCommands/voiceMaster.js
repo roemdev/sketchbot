@@ -18,6 +18,13 @@ module.exports = {
   description: "Controla los permisos de un canal de voz con botones interactivos.",
 
   async execute(message, args) {
+    if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
+      const deny = new EmbedBuilder()
+        .setColor(assets.color.base)
+        .setDescription(`${assets.emoji.deny} No puedes ejecutar este comando.`)
+      return message.reply({ embeds: [deny], allowedMentions: { repliedUser: false } });
+    }
+
     // Botones de control
     const buttons = [
       new ButtonBuilder()
