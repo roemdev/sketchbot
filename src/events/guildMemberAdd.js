@@ -4,6 +4,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
+const updateVoiceChannel = require("./updateVoiceChannel");
+
 
 module.exports = {
   name: Events.GuildMemberAdd,
@@ -11,6 +13,7 @@ module.exports = {
     const isBot = member.user.bot;
     const userRole = member.guild.roles.cache.get("1215767915329228890");
     const botRole = member.guild.roles.cache.get("1211736684190769274");
+    const voiceChannelId = "1327513515438772335";
 
     // Assign role based on member type
     if (isBot && botRole) {
@@ -37,5 +40,7 @@ module.exports = {
         `No se pudo enviar el mensaje al usuario ${member.user.tag}: ${error.message}`
       );
     }
+
+    await updateVoiceChannel(member.guild, voiceChannelId);
   },
 };
