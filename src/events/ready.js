@@ -7,7 +7,7 @@ module.exports = {
   name: Events.ClientReady,
   once: true,
   async execute(client) {
-    console.log(`Bot listo! Conectado como ${client.user.tag}`);
+    console.log(`Ready! Logged in as ${client.user.tag}`);
     
     client.user.setPresence({
       activities: [
