@@ -21,9 +21,9 @@ const client = new Client({
 try {
   const fileToRun = path.join(__dirname, 'deploy-commands.js');
   execSync(`node ${fileToRun}`);
-  console.log('Comandos desplegados correctamente.');
+  console.log('commands deploy: ✔');
 } catch (error) {
-  console.error('Error al ejecutar deploy-commands.js:', error);
+  console.error('commands deploy: ✘', error);
 }
 
 // Load slash commands

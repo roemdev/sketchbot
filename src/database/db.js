@@ -1,11 +1,7 @@
-const fs = require('fs');
+const mysql = require('mysql2');
+const config = require('../../config.json')
 
-const rawData = fs.readFileSync('./config.json');
-const config = JSON.parse(rawData);
-
-const mysql = require('mysql2')
-
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
   host: config.database.host,
   user: config.database.user,
   password: config.database.password,
@@ -13,8 +9,15 @@ const connection = mysql.createConnection({
   port: config.database.port
 });
 
-connection.connect((err) => {
-  if (err) throw err;
+const promisePool = pool.promise();
+
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.log('db connection: ✘', err.message);
+  } else {
+    console.log('db connection: ✔');
+    connection.release();
+  }
 });
 
-module.exports = connection;
+module.exports = promisePool;
