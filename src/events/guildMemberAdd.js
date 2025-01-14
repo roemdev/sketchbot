@@ -12,7 +12,7 @@ module.exports = {
   async execute(member) {
     const isBot = member.user.bot;
     const userRole = member.guild.roles.cache.get("1215767915329228890");
-    const botRole = member.guild.roles.cache.get("1211736684190769274");
+    const botRole = member.guild.roles.cache.get("1291149296921743372");
     const voiceChannelId = "1327513515438772335";
 
     // Assign role based on member type
