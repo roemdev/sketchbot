@@ -1,17 +1,17 @@
-const connection = require('../db')
+const connection = require('../db');
 
 const createCurrencyShopTable = `
-  create table if not exists currency_shop(
-    item_id int auto_increment primary key not null,
-    name varchar(32) not null,
-    cost int not null
+  CREATE TABLE IF NOT EXISTS currency_shop (
+    item_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    cost INT NOT NULL
   )
 `;
 
-connection.query(createCurrencyShopTable, (err, results) => {
-  if (err) {
+connection.query(createCurrencyShopTable)
+  .then(results => {
+    console.log('Tabla "currency_shop" creada con éxito. (si no existía)');
+  })
+  .catch(err => {
     console.error('Error al crear la tabla:', err.message);
-    return;
-  }
-  console.log('Tabla "currency_shop" creada con éxito. (si no existía)')
-})
+  });

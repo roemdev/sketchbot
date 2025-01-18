@@ -30,12 +30,12 @@ module.exports = {
       const notificationEmbed = new EmbedBuilder()
         .setAuthor({ name: newMember.user.tag, iconURL: newMember.user.displayAvatarURL() })
         .setColor(assets.color.base)
+        .setTitle('__⭐ Nuevo miembro VIP__')
         .setDescription(
-          `* ¡Nuevo miembro VIP! ✨\n` +
+          `* ¡Felicidades! Disfruta de tu exclusividad\n` +
           `* Utiliza \`/ayuda\` para ver tus beneficios.`
         )
         .setThumbnail(newMember.user.displayAvatarURL())
-        .setImage('https://cdn.discordapp.com/attachments/860528686403158046/1108384769147932682/ezgif-2-f41b6758ff.gif?ex=677a8841&is=677936c1&hm=131c750f96d8c1c518862c13dd61850c4c3566e9585e33a75fbbe41c3cddd420&')
 
       try {
         await notificationChannel.send({

@@ -17,6 +17,8 @@ const client = new Client({
   ],
 });
 
+client.dbConnection = connection;
+
 // Deploy slash commands
 try {
   const fileToRun = path.join(__dirname, 'deploy-commands.js');

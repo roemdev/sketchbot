@@ -11,5 +11,11 @@
     "warn": "<:warn:1313237521634689107>",
     "whitecheck": "<:whitecheck:1327651295036833884>",
     "whitedeny": "<:whitedeny:1327651422761652264>"
+  },
+  "userRewards": {
+    "271683421065969664": {
+      "lastRewardDay": "2025-1-17",
+      "balance": 5000
+    }
   }
 }

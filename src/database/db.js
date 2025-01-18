@@ -1,5 +1,5 @@
 const mysql = require('mysql2');
-const config = require('../../config.json')
+const config = require('../../config.json');
 
 const pool = mysql.createPool({
   host: config.database.host,
@@ -11,13 +11,13 @@ const pool = mysql.createPool({
 
 const promisePool = pool.promise();
 
-pool.getConnection((err, connection) => {
-  if (err) {
-    console.log('db connection: ✘', err.message);
-  } else {
+promisePool.getConnection()
+  .then(connection => {
     console.log('db connection: ✔');
     connection.release();
-  }
-});
+  })
+  .catch(err => {
+    console.log('db connection: ✘', err.message);
+  });
 
 module.exports = promisePool;
