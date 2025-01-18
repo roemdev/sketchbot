@@ -4,7 +4,7 @@ const assets = require('../../assets.json');
 const BOOSTER_ROLE_ID = "1241182617504579594";
 const VIP_ROLE_ID = "1303816942326648884";
 const MONITORED_ROLES = [BOOSTER_ROLE_ID, VIP_ROLE_ID];
-const NOTIFICATION_CHANNEL_ID = "1173781298721063014";
+const NOTIFICATION_CHANNEL_ID = "1330155455028400218";
 
 module.exports = {
   name: Events.GuildMemberUpdate,
