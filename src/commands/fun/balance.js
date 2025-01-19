@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json')
 
 module.exports = {
@@ -19,12 +19,12 @@ module.exports = {
 
     try {
       // Consultar el balance en la base de datos
-      const [rows] = await connection.query('SELECT balance FROM currency WHERE user_id = ?', [userId]);
+      const [rows] = await connection.query('SELECT balance FROM currency_users WHERE user_id = ?', [userId]);
 
       if (rows.length === 0) {
         // Si el usuario no tiene un registro en la base de datos
         const embedNoData = new EmbedBuilder()
-          .setColor(0xff0000) // Rojo
+          .setColor(assets.color.red) // Rojo
           .setDescription(`💸 ${targetUser} aún no tiene un balance registrado. Usa comandos como \`/trabajar\` o \`/pescar\` para ganar créditos.`);
 
         return interaction.reply({ embeds: [embedNoData] });
@@ -34,20 +34,16 @@ module.exports = {
       const balance = rows[0].balance;
 
       const embed = new EmbedBuilder()
-        .setColor(assets.color.green)
-        .setDescription(`${targetUser} tiene un total de\n\n🔸**${balance.toLocaleString()}** créditos.`)
-        .addFields(
-          { name: 'Efectivo', value: '000', inline: true },
-          { name: 'Banco', value: '000', inline: true },
-        )
-        .setThumbnail(targetUser.displayAvatarURL({ dynamic: true }))
+        .setAuthor({ name: `${targetUser.username}`, iconURL: targetUser.displayAvatarURL({ dynamic: true }) })
+        .setColor(assets.color.base)
+        .setDescription(`${targetUser} tiene un total de 🔸**${balance.toLocaleString()}** créditos.`)
 
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error('Error al consultar el balance:', error);
       return interaction.reply({
         content: 'Hubo un error al consultar el balance. Por favor, intenta más tarde.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

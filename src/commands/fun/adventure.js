@@ -5,8 +5,8 @@ const userCooldown = new Map();
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('pescar')
-    .setDescription('Este comando te permite pescar y obtener un ítem.'),
+    .setName('aventura')
+    .setDescription('Este comando te permite embarcarte en una aventura y obtener un ítem.'),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -15,27 +15,27 @@ module.exports = {
     const currentTime = Date.now();
 
     // Verificar cooldown
-    const lastFishTime = userCooldown.get(userId);
-    if (lastFishTime && currentTime - lastFishTime < cooldownDuration) {
-      const nextPrayTime = Math.floor((lastFishTime + cooldownDuration) / 1000);
+    const lastAdventureTime = userCooldown.get(userId);
+    if (lastAdventureTime && currentTime - lastAdventureTime < cooldownDuration) {
+      const nextPrayTime = Math.floor((lastAdventureTime + cooldownDuration) / 1000);
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes pescar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+            .setDescription(`${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
         ],
         flags: MessageFlags.Ephemeral
       });
     }
 
     try {
-      // Obtener ítems de la categoría "fish" con peso
+      // Obtener ítems de la categoría "adventure" con peso
       const [itemRows] = await connection.query(
-        'SELECT * FROM currency_items WHERE category = "fish" AND weight IS NOT NULL'
+        'SELECT * FROM currency_items WHERE category = "adventure" AND weight IS NOT NULL'
       );
 
       if (itemRows.length === 0) {
-        throw new Error('No se encontraron ítems en la categoría "fish".');
+        throw new Error('No se encontraron ítems en la categoría "adventure".');
       }
 
       // Calcular el peso total para la selección aleatoria
@@ -97,11 +97,11 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🎣 ¡Lanzaste tu caña al mar y pescaste un **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
+            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste un **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
         ]
       });
     } catch (error) {
-      console.error('Error al procesar el comando pescar:', error);
+      console.error('Error al procesar el comando aventura:', error);
       return interaction.reply({
         content: 'Hubo un problema. Por favor, intenta de nuevo más tarde.',
         flags: MessageFlags.Ephemeral

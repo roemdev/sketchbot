@@ -5,8 +5,8 @@ const userCooldown = new Map();
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('trabajar')
-    .setDescription('Este comando te permite trabajar y ganar créditos.'),
+    .setName('rezar')
+    .setDescription('Este comando te permite rezar y ganar créditos.'),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -15,14 +15,14 @@ module.exports = {
     const currentTime = Date.now();
 
     // Verificar cooldown
-    const lastWorkTime = userCooldown.get(userId);
-    if (lastWorkTime && currentTime - lastWorkTime < cooldownDuration) {
-      const nextPrayTime = Math.floor((lastWorkTime + cooldownDuration) / 1000);
+    const lastPrayTime = userCooldown.get(userId);
+    if (lastPrayTime && currentTime - lastPrayTime < cooldownDuration) {
+      const nextPrayTime = Math.floor((lastPrayTime + cooldownDuration) / 1000);
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes trabajar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+            .setDescription(`${assets.emoji.deny} Todavía no puedes rezar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
         ],
         flags: MessageFlags.Ephemeral
       });
@@ -30,7 +30,7 @@ module.exports = {
 
     try {
       // Realizar la consulta para obtener la tarea de tipo "pray"
-      const [taskRows] = await connection.query(`SELECT * FROM currency_tasks WHERE type = "work"`);
+      const [taskRows] = await connection.query(`SELECT * FROM currency_tasks WHERE type = "pray" LIMIT 1`);
 
       // Verificar si se encontró la tarea
       if (taskRows.length === 0) {
@@ -68,11 +68,11 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`💼 ¡Qué buena jornada! Te han pagado **🔸${earnings.toLocaleString()}** créditos.`)
+            .setDescription(`🙏 ¡Rezaste tan fuerte que alguien te escuchó! has ganado **🔸${earnings.toLocaleString()}** créditos!`)
         ]
       });
     } catch (error) {
-      console.error('Error al procesar el comando trabajar:', error);
+      console.error('Error al procesar el comando rezar:', error);
       return interaction.reply({
         content: 'Hubo un problema. Por favor, intenta de nuevo más tarde.',
         flags: MessageFlags.Ephemeral

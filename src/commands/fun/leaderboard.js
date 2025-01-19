@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
       );
 
       if (rows.length === 0) {
-        return interaction.reply({ content: 'No hay datos disponibles para mostrar la clasificación.', ephemeral: true });
+        return interaction.reply({ content: 'No hay datos disponibles para mostrar la clasificación.', flags: MessageFlags.Ephemeral });
       }
 
       // Construir la descripción del embed
@@ -45,7 +45,7 @@ module.exports = {
       console.error('Error al obtener la clasificación:', error);
       return interaction.reply({
         content: 'Hubo un error al obtener la clasificación. Por favor, intenta más tarde.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
   },
