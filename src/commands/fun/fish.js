@@ -11,7 +11,7 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 1 minuto
+    const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
     // Verificar cooldown
@@ -29,6 +29,20 @@ module.exports = {
     }
 
     try {
+      // Verificar si el usuario existe en currency_users
+      const [userRows] = await connection.query(
+        'SELECT * FROM currency_users WHERE user_id = ?',
+        [userId]
+      );
+
+      if (userRows.length === 0) {
+        // Si no existe, crearlo
+        await connection.query(
+          'INSERT INTO currency_users (user_id) VALUES (?)',
+          [userId]
+        );
+      }
+
       // Obtener ítems de la categoría "fish" con peso
       const [itemRows] = await connection.query(
         'SELECT * FROM currency_items WHERE category = "fish" AND weight IS NOT NULL'

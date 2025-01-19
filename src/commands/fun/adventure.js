@@ -11,24 +11,38 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 1 minuto
+    const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
     // Verificar cooldown
     const lastAdventureTime = userCooldown.get(userId);
     if (lastAdventureTime && currentTime - lastAdventureTime < cooldownDuration) {
-      const nextPrayTime = Math.floor((lastAdventureTime + cooldownDuration) / 1000);
+      const nextAdventureTime = Math.floor((lastAdventureTime + cooldownDuration) / 1000);
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+            .setDescription(`${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextAdventureTime}:R>.`)
         ],
         flags: MessageFlags.Ephemeral
       });
     }
 
     try {
+      // Verificar si el usuario existe en currency_users
+      const [userRows] = await connection.query(
+        'SELECT * FROM currency_users WHERE user_id = ?',
+        [userId]
+      );
+
+      if (userRows.length === 0) {
+        // Si no existe, crearlo
+        await connection.query(
+          'INSERT INTO currency_users (user_id) VALUES (?)',
+          [userId]
+        );
+      }
+
       // Obtener ítems de la categoría "adventure" con peso
       const [itemRows] = await connection.query(
         'SELECT * FROM currency_items WHERE category = "adventure" AND weight IS NOT NULL'
@@ -97,7 +111,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste un **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
+            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste un **${selectedItem.name}**!\n🔸 Valor: **${selectedItem.value}**`)
         ]
       });
     } catch (error) {

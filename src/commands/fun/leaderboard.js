@@ -12,7 +12,7 @@ module.exports = {
     try {
       // Obtener los 10 usuarios con más balance
       const [rows] = await connection.query(
-        'SELECT user_id, membership, balance FROM currency ORDER BY balance DESC LIMIT 10'
+        'SELECT user_id, membership, balance FROM currency_users ORDER BY balance DESC LIMIT 10'
       );
 
       if (rows.length === 0) {

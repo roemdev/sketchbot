@@ -11,27 +11,41 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 1 minuto
+    const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
     // Verificar cooldown
     const lastMineTime = userCooldown.get(userId);
     if (lastMineTime && currentTime - lastMineTime < cooldownDuration) {
-      const nextPrayTime = Math.floor((lastMineTime + cooldownDuration) / 1000);
+      const nextMineTime = Math.floor((lastMineTime + cooldownDuration) / 1000);
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes minar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+            .setDescription(`${assets.emoji.deny} Todavía no puedes minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`)
         ],
-        flags: MessageFlags.Ephemeral
+        ephemeral: true,
       });
     }
 
     try {
+      // Verificar si el usuario existe en currency_users
+      const [userRows] = await connection.query(
+        'SELECT * FROM currency_users WHERE user_id = ?',
+        [userId]
+      );
+
+      if (userRows.length === 0) {
+        // Si no existe, crearlo
+        await connection.query(
+          'INSERT INTO currency_users (user_id) VALUES (?)',
+          [userId]
+        );
+      }
+
       // Obtener ítems de la categoría "mine" con peso
       const [itemRows] = await connection.query(
-        'SELECT * FROM currency_items WHERE category = "mine" AND weight IS NOT NULL'
+        'SELECT * FROM currency_items WHERE category = "mine" AND weight > 0'
       );
 
       if (itemRows.length === 0) {
@@ -62,7 +76,7 @@ module.exports = {
 
       // Actualizar el inventario del usuario
       const [userItemRows] = await connection.query(
-        'SELECT * FROM currency_user_inventory WHERE user_id = ? AND item_id = ?',
+        'SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND item_id = ?',
         [userId, selectedItem.item_id]
       );
 
@@ -97,14 +111,14 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`⛏️ ¡Comenzaste a minar y obtuviste un **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
+            .setDescription(`⛏️ ¡Comenzaste a minar y obtuviste un **${selectedItem.name}**!\nValor: **🔸${selectedItem.value}**`)
         ]
       });
     } catch (error) {
       console.error('Error al procesar el comando minar:', error);
       return interaction.reply({
-        content: 'Hubo un problema. Por favor, intenta de nuevo más tarde.',
-        flags: MessageFlags.Ephemeral
+        content: `${assets.emoji.deny} Hubo un problema. Por favor, intenta de nuevo más tarde.`,
+        ephemeral: true,
       });
     }
   }
