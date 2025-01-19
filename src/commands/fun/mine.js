@@ -24,7 +24,7 @@ module.exports = {
             .setColor(assets.color.red)
             .setDescription(`${assets.emoji.deny} Todavía no puedes minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`)
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -118,7 +118,7 @@ module.exports = {
       console.error('Error al procesar el comando minar:', error);
       return interaction.reply({
         content: `${assets.emoji.deny} Hubo un problema. Por favor, intenta de nuevo más tarde.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   }
