@@ -121,7 +121,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste un **${selectedItem.name}**!\n🔸 Valor: **${selectedItem.value}**`)
+            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste: **${selectedItem.name}**!\n-# Valor: 🔸**${selectedItem.value}**`)
         ]
       });
     } catch (error) {

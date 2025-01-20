@@ -126,7 +126,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🎣 ¡Lanzaste tu caña al mar y pescaste un **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
+            .setDescription(`🎣 ¡Lanzaste tu caña al mar y pescaste: **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
         ]
       });
     } catch (error) {

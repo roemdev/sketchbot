@@ -79,7 +79,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`💼 ¡Has trabajado y ganado **${reward}** créditos!`)
+            .setDescription(`💼 ¡Has trabajado y ganado **🔸${reward}** créditos!`)
         ]
       });
     } catch (error) {

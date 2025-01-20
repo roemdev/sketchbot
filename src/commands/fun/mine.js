@@ -125,7 +125,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`⛏️ ¡Comenzaste a minar y obtuviste un **${selectedItem.name}**!\nValor: **🔸${selectedItem.value}**`)
+            .setDescription(`⛏️ ¡Comenzaste a minar y obtuviste: **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
         ]
       });
     } catch (error) {
