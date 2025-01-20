@@ -4,7 +4,7 @@ const assets = require('../../../assets.json')
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('balance')
-    .setDescription('Muestra tu balance actual de créditos. 💰')
+    .setDescription('Muestra tu balance actual de créditos')
     .addUserOption(option =>
       option
         .setName('usuario')
@@ -19,12 +19,12 @@ module.exports = {
 
     try {
       // Consultar el balance en la base de datos
-      const [rows] = await connection.query('SELECT balance FROM currency WHERE user_id = ?', [userId]);
+      const [rows] = await connection.query('SELECT balance FROM currency_users WHERE user_id = ?', [userId]);
 
       if (rows.length === 0) {
         // Si el usuario no tiene un registro en la base de datos
         const embedNoData = new EmbedBuilder()
-          .setColor(0xff0000) // Rojo
+          .setColor(assets.color.red) // Rojo
           .setDescription(`💸 ${targetUser} aún no tiene un balance registrado. Usa comandos como \`/trabajar\` o \`/pescar\` para ganar créditos.`);
 
         return interaction.reply({ embeds: [embedNoData] });
@@ -34,13 +34,9 @@ module.exports = {
       const balance = rows[0].balance;
 
       const embed = new EmbedBuilder()
+      .setAuthor({name: targetUser.displayName, iconURL: targetUser.displayAvatarURL({ dynamic: true })})
         .setColor(assets.color.green)
-        .setDescription(`${targetUser} tiene un total de\n\n🔸**${balance.toLocaleString()}** créditos.`)
-        .addFields(
-          { name: 'Efectivo', value: '000', inline: true },
-          { name: 'Banco', value: '000', inline: true },
-        )
-        .setThumbnail(targetUser.displayAvatarURL({ dynamic: true }))
+        .setDescription(`Balance de ${targetUser}\n> 🔸**${balance.toLocaleString()}** créditos`)
 
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
