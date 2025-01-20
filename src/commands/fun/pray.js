@@ -78,9 +78,14 @@ module.exports = {
       }
 
       // Responder al usuario con el balance obtenido
+      const author = {
+        name: interaction.user.displayName,
+        iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+      };
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
+            .setAuthor(author)
             .setColor(assets.color.green)
             .setDescription(`🙏 ¡Rezaste tan fuerte que alguien te escuchó! Has ganado **🔸${earnings.toLocaleString()}** créditos!`)
         ]

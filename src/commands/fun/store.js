@@ -28,14 +28,13 @@ module.exports = {
       // Crear el embed con los ítems
       const embed = new EmbedBuilder()
         .setColor(assets.color.base)
-        .setTitle('Tienda de Ítems')
-        .setDescription('Aquí están todos los ítems disponibles:')
-        .setFooter({ text: 'Usa tus créditos sabiamente.' });
+        .setTitle('🏪 Tienda de Arkania')
+        .setFooter({ text: 'Para comprar utiliza /comprar' })
 
       items.forEach(item => {
         embed.addFields({
-          name: `${item.name} - 💰 ${item.price}`,
-          value: `${item.description || 'Sin descripción'}\nStock: ${item.stock ?? 'Ilimitado'}`
+          name: `${item.name} - 🔸${item.price}`,
+          value: `>>> ${item.description || 'Sin descripción'}\n**Stock**: ${item.stock ?? 'Ilimitado'}`
         });
       });
 

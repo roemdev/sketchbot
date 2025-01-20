@@ -75,9 +75,14 @@ module.exports = {
       }
 
       // Responder al usuario con el resultado del trabajo
+      const author = {
+        name: interaction.user.displayName,
+        iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+      };
       return interaction.reply({
-        embeds: [
+                embeds: [
           new EmbedBuilder()
+            .setAuthor(author)
             .setColor(assets.color.green)
             .setDescription(`💼 ¡Has trabajado y ganado **🔸${reward}** créditos!`)
         ]

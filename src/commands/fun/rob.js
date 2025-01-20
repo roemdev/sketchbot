@@ -122,9 +122,14 @@ module.exports = {
           [userId, 'robar', cooldownEndTime, cooldownEndTime]
         );
 
+        const author = {
+          name: interaction.user.displayName,
+          iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+        };
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
+              .setTitle(author)
               .setColor(assets.color.green)
               .setDescription(`${assets.emoji.check} Has robado con éxito **🔸${stolenAmount}** (${robPercentage}% del balance) a ${targetUser.tag}.`)
           ]
@@ -140,6 +145,7 @@ module.exports = {
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
+                .setAuthor(author)
                 .setColor(assets.color.red)
                 .setDescription(`${assets.emoji.deny} Fallaste al intentar robar, pero no tienes suficiente balance para recibir una penalidad.`)
             ],
@@ -163,6 +169,7 @@ module.exports = {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
+              .setAuthor(author)
               .setColor(assets.color.red)
               .setDescription(`${assets.emoji.deny} Fallaste al intentar robar a ${targetUser.tag} y perdiste **🔸${penaltyAmount}** (${robPercentage}% de tu balance).`)
           ]

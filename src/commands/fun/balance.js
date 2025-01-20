@@ -32,9 +32,13 @@ module.exports = {
 
       // Si el usuario tiene balance
       const balance = rows[0].balance;
-
+      
+      const author = {
+        name: targetUser.displayName,
+        iconURL: targetUser.displayAvatarURL({ dynamic: true })
+      };
       const embed = new EmbedBuilder()
-      .setAuthor({name: targetUser.displayName, iconURL: targetUser.displayAvatarURL({ dynamic: true })})
+      .setAuthor(author)
         .setColor(assets.color.green)
         .setDescription(`Balance de ${targetUser}\n> 🔸**${balance.toLocaleString()}** créditos`)
 

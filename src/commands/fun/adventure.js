@@ -117,11 +117,17 @@ module.exports = {
       );
 
       // Responder al usuario con el ítem obtenido y su valor
+      const author = {
+        name: interaction.user.displayName,
+        iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+      };
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
+            .setAuthor(author)
             .setColor(assets.color.green)
-            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste: **${selectedItem.name}**!\n-# Valor: 🔸**${selectedItem.value}**`)
+            .setTitle('¡Nos vamos de aventura! 🗺️ ')
+            .setDescription(`Obtuviste: ${selectedItem.name}!\n-# Valor: 🔸**${selectedItem.value}**`)
         ]
       });
     } catch (error) {

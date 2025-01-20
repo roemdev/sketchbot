@@ -35,7 +35,7 @@ module.exports = {
       // Construir el embed con la clasificación
       const embed = new EmbedBuilder()
         .setColor(assets.color.base)
-        .setTitle('🏆 Clasificación de Arkania')
+        .setTitle('🏦 Clasificación de Arkania')
         .setDescription(description);
 
       // Enviar el embed con la clasificación

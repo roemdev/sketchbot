@@ -71,9 +71,12 @@ module.exports = {
         await connection.query('UPDATE currency_users SET balance = balance - ? WHERE user_id = ?', [price, userId]);
 
         await connection.query(
-          'INSERT INTO currency_user_inventory (user_id, store_item_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE quantity = quantity + 1',
-          [userId, item.store_item_id] 
+          'INSERT INTO currency_user_inventory (user_id, store_item_id, quantity) ' +
+          'VALUES (?, ?, 1) ' +
+          'ON DUPLICATE KEY UPDATE quantity = quantity + 1',
+          [userId, item.store_item_id]
         );
+        
       } 
       // Comprar rol
       else if (item.type === 'role') {
