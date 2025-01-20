@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 
-const userCooldown = new Map();
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('trabajar')
@@ -11,64 +9,77 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000;
+    const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
-    // Verificar cooldown
-    const lastWorkTime = userCooldown.get(userId);
-    if (lastWorkTime && currentTime - lastWorkTime < cooldownDuration) {
-      const nextPrayTime = Math.floor((lastWorkTime + cooldownDuration) / 1000);
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes trabajar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
-        ],
-        flags: MessageFlags.Ephemeral
-      });
-    }
-
     try {
-      // Realizar la consulta para obtener la tarea de tipo "pray"
-      const [taskRows] = await connection.query(`SELECT * FROM currency_tasks WHERE type = "work"`);
+      // Verificar si el usuario tiene un cooldown activo para el comando "trabajar"
+      const [cooldownRows] = await connection.query(
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
+        [userId, 'trabajar']
+      );
 
-      // Verificar si se encontró la tarea
-      if (taskRows.length === 0) {
-        throw new Error('No se encontró una tarea válida.');
-      }
+      if (cooldownRows.length > 0) {
+        const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
 
-      const task = taskRows[0];
-      const earnings = Math.floor(Math.random() * (task.value_max - task.value_min + 1)) + task.value_min; // Calcular la ganancia entre min y max
-      const description = task.description;
-
-      // Actualizar el balance en la base de datos
-      const [rows] = await connection.query('SELECT balance FROM currency_users WHERE user_id = ?', [userId]);
-
-      if (rows.length > 0) {
-        // Si el usuario ya existe, actualizar su balance
-        const newBalance = rows[0].balance + earnings;
-        const [updateResult] = await connection.query('UPDATE currency_users SET balance = ? WHERE user_id = ?', [newBalance, userId]);
-
-        if (updateResult.affectedRows === 0) {
-          throw new Error('No se pudo actualizar el balance del usuario.');
-        }
-      } else {
-        // Si el usuario no existe, insertarlo con el balance inicial
-        const [insertResult] = await connection.query('INSERT INTO currency_users (user_id, balance) VALUES (?, ?)', [userId, earnings]);
-        if (insertResult.affectedRows === 0) {
-          throw new Error('No se pudo insertar el usuario en la base de datos.');
+        // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
+        if (currentTime < cooldownEndTime) {
+          const nextWorkTime = Math.floor(cooldownEndTime / 1000);
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(assets.color.red)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes trabajar. Podrás intentarlo de nuevo: <t:${nextWorkTime}:R>.`)
+            ],
+            flags: MessageFlags.Ephemeral
+          });
         }
       }
 
-      // Actualizar cooldown
-      userCooldown.set(userId, currentTime);
+      // Verificar si el usuario existe en currency_users
+      const [userRows] = await connection.query(
+        'SELECT * FROM currency_users WHERE user_id = ?',
+        [userId]
+      );
 
-      // Responder al usuario con el balance obtenido
+      if (userRows.length === 0) {
+        // Si no existe, crearlo
+        await connection.query(
+          'INSERT INTO currency_users (user_id) VALUES (?)',
+          [userId]
+        );
+      }
+
+      // Aquí agregamos la lógica para realizar la "tarea de trabajo" y calcular la recompensa (por ejemplo, créditos)
+      const reward = Math.floor(Math.random() * (100 - 50 + 1)) + 50; // Recompensa aleatoria entre 50 y 100 créditos
+
+      // Actualizar el balance del usuario con la recompensa
+      const [updateBalanceResult] = await connection.query(
+        'UPDATE currency_users SET balance = balance + ? WHERE user_id = ?',
+        [reward, userId]
+      );
+
+      if (updateBalanceResult.affectedRows === 0) {
+        throw new Error('No se pudo actualizar el balance del usuario.');
+      }
+
+      // Actualizar o insertar el cooldown para el comando "trabajar"
+      const cooldownEndTime = new Date(currentTime + cooldownDuration);
+      const [cooldownUpdateResult] = await connection.query(
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+        [userId, 'trabajar', cooldownEndTime, cooldownEndTime]
+      );
+
+      if (cooldownUpdateResult.affectedRows === 0) {
+        throw new Error('No se pudo actualizar el cooldown del usuario.');
+      }
+
+      // Responder al usuario con el resultado del trabajo
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`💼 ¡Qué buena jornada! Te han pagado **🔸${earnings.toLocaleString()}** créditos.`)
+            .setDescription(`💼 ¡Has trabajado y ganado **${reward}** créditos!`)
         ]
       });
     } catch (error) {

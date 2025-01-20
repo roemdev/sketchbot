@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 
-const userCooldown = new Map();
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('aventura')
@@ -14,21 +12,28 @@ module.exports = {
     const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
-    // Verificar cooldown
-    const lastAdventureTime = userCooldown.get(userId);
-    if (lastAdventureTime && currentTime - lastAdventureTime < cooldownDuration) {
-      const nextAdventureTime = Math.floor((lastAdventureTime + cooldownDuration) / 1000);
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextAdventureTime}:R>.`)
-        ],
-        flags: MessageFlags.Ephemeral
-      });
-    }
-
     try {
+      // Verificar si el usuario tiene un cooldown activo en la base de datos
+      const [cooldownRows] = await connection.query(
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "aventura"',
+        [userId]
+      );
+
+      if (cooldownRows.length > 0) {
+        const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
+        if (currentTime < cooldownEndTime) {
+          const nextAdventureTime = Math.floor(cooldownEndTime / 1000);
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(assets.color.red)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextAdventureTime}:R>.`)
+            ],
+            flags: MessageFlags.Ephemeral
+          });
+        }
+      }
+
       // Verificar si el usuario existe en currency_users
       const [userRows] = await connection.query(
         'SELECT * FROM currency_users WHERE user_id = ?',
@@ -103,8 +108,13 @@ module.exports = {
         }
       }
 
-      // Actualizar cooldown
-      userCooldown.set(userId, currentTime);
+      // Actualizar el cooldown en la base de datos
+      const cooldownEndTime = new Date(currentTime + cooldownDuration);
+      await connection.query(
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "aventura", ?) ' +
+        'ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+        [userId, cooldownEndTime, cooldownEndTime]
+      );
 
       // Responder al usuario con el ítem obtenido y su valor
       return interaction.reply({

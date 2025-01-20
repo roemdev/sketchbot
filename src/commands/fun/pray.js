@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 
-const userCooldown = new Map();
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('rezar')
@@ -11,24 +9,32 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 1 minuto
+    const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
-    // Verificar cooldown
-    const lastPrayTime = userCooldown.get(userId);
-    if (lastPrayTime && currentTime - lastPrayTime < cooldownDuration) {
-      const nextPrayTime = Math.floor((lastPrayTime + cooldownDuration) / 1000);
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes rezar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
-        ],
-        flags: MessageFlags.Ephemeral
-      });
-    }
-
     try {
+      // Verificar cooldown en la base de datos
+      const [cooldownRows] = await connection.query(
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
+        [userId, 'rezar']
+      );
+
+      if (cooldownRows.length > 0) {
+        const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
+
+        if (currentTime < cooldownEndTime) {
+          const nextPrayTime = Math.floor(cooldownEndTime / 1000);
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(assets.color.red)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes rezar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+            ],
+            flags: MessageFlags.Ephemeral
+          });
+        }
+      }
+
       // Realizar la consulta para obtener la tarea de tipo "pray"
       const [taskRows] = await connection.query(`SELECT * FROM currency_tasks WHERE type = "pray"`);
 
@@ -60,15 +66,23 @@ module.exports = {
         }
       }
 
-      // Actualizar cooldown
-      userCooldown.set(userId, currentTime);
+      // Actualizar cooldown en la base de datos
+      const cooldownEndTime = new Date(currentTime + cooldownDuration);
+      const [cooldownUpdateResult] = await connection.query(
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+        [userId, 'rezar', cooldownEndTime, cooldownEndTime]
+      );
+
+      if (cooldownUpdateResult.affectedRows === 0) {
+        throw new Error('No se pudo actualizar el cooldown del usuario.');
+      }
 
       // Responder al usuario con el balance obtenido
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🙏 ¡Rezaste tan fuerte que alguien te escuchó! has ganado **🔸${earnings.toLocaleString()}** créditos!`)
+            .setDescription(`🙏 ¡Rezaste tan fuerte que alguien te escuchó! Has ganado **🔸${earnings.toLocaleString()}** créditos!`)
         ]
       });
     } catch (error) {

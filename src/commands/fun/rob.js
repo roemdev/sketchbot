@@ -1,11 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 
-const userCooldown = new Map();
-
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('rob')
+    .setName('robar')
     .setDescription('Intenta robar a otro usuario.')
     .addUserOption(option =>
       option
@@ -21,34 +19,43 @@ module.exports = {
     const cooldownDuration = 14400000; // 4 horas
     const currentTime = Date.now();
 
-    // Verificar cooldown
-    const lastRobTime = userCooldown.get(userId);
-    if (lastRobTime && currentTime - lastRobTime < cooldownDuration) {
-      const nextRobTime = Math.floor((lastRobTime + cooldownDuration) / 1000);
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} Todavía no puedes robar. Podrás intentarlo de nuevo: <t:${nextRobTime}:R>.`)
-        ],
-        flags: MessageFlags.Ephemeral
-      });
-    }
-
-    if (!targetUser || targetUser.bot) {
-      return interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} No puedes robar a un bot.`)
-        ],
-        flags: MessageFlags.Ephemeral
-      });
-    }
-
-    const targetId = targetUser.id;
-
     try {
+      // Verificar si el usuario tiene un cooldown activo para el comando "robar"
+      const [cooldownRows] = await connection.query(
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
+        [userId, 'robar']
+      );
+
+      if (cooldownRows.length > 0) {
+        const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
+
+        // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
+        if (currentTime < cooldownEndTime) {
+          const nextRobTime = Math.floor(cooldownEndTime / 1000);
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(assets.color.red)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes robar. Podrás intentarlo de nuevo: <t:${nextRobTime}:R>.`)
+            ],
+            flags: MessageFlags.Ephemeral
+          });
+        }
+      }
+
+      if (!targetUser || targetUser.bot) {
+        return interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.red)
+              .setDescription(`${assets.emoji.deny} No puedes robar a un bot.`)
+          ],
+          flags: MessageFlags.Ephemeral
+        });
+      }
+
+      const targetId = targetUser.id;
+
       // Obtener las tasas de fallo y monto
       const [taskRows] = await connection.query(
         'SELECT value_min, value_max FROM currency_tasks WHERE type = "rob" LIMIT 1'
@@ -109,7 +116,11 @@ module.exports = {
         await connection.query('UPDATE currency_users SET balance = balance - ? WHERE user_id = ?', [stolenAmount, targetId]);
 
         // Actualizar cooldown
-        userCooldown.set(userId, currentTime);
+        const cooldownEndTime = new Date(currentTime + cooldownDuration);
+        await connection.query(
+          'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+          [userId, 'robar', cooldownEndTime, cooldownEndTime]
+        );
 
         return interaction.reply({
           embeds: [
@@ -143,7 +154,11 @@ module.exports = {
         await connection.query('UPDATE currency_users SET balance = balance - ? WHERE user_id = ?', [penaltyAmount, userId]);
 
         // Actualizar cooldown
-        userCooldown.set(userId, currentTime);
+        const cooldownEndTime = new Date(currentTime + cooldownDuration);
+        await connection.query(
+          'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+          [userId, 'robar', cooldownEndTime, cooldownEndTime]
+        );
 
         return interaction.reply({
           embeds: [
