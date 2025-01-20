@@ -30,7 +30,7 @@ module.exports = {
 
     try {
       // Realizar la consulta para obtener la tarea de tipo "pray"
-      const [taskRows] = await connection.query(`SELECT * FROM currency_tasks WHERE type = "pray" LIMIT 1`);
+      const [taskRows] = await connection.query(`SELECT * FROM currency_tasks WHERE type = "pray"`);
 
       // Verificar si se encontró la tarea
       if (taskRows.length === 0) {

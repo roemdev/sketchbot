@@ -11,7 +11,7 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 1 minuto
+    const cooldownDuration = 14400000;
     const currentTime = Date.now();
 
     // Verificar cooldown

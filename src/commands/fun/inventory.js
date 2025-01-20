@@ -4,7 +4,7 @@ const assets = require('../../../assets.json');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('inventario')
-    .setDescription('Muestra los ítems en tu inventario.'),
+    .setDescription('Muestra los ítems en tu inventario y los disponibles en la tienda.'),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -20,31 +20,38 @@ module.exports = {
         [userId]
       );
 
+      // Consultar los ítems disponibles en la tienda
+      const [storeItems] = await connection.query(
+        'SELECT store_item_id, name, price, stock FROM currency_store WHERE stock > 0 OR stock IS NULL'
+      );
+
+      // Crear la descripción del inventario del usuario
+      let inventoryDescription = 'Aquí están los ítems que tienes en tu inventario:\n\n';
       if (userItems.length === 0) {
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} No tienes ítems en tu inventario.`)
-          ],
-          flags: MessageFlags.Ephemeral
+        inventoryDescription += `${assets.emoji.deny} No tienes ítems en tu inventario.\n\n`;
+      } else {
+        userItems.forEach(item => {
+          inventoryDescription += `${item.name} - **${item.quantity}** - 🔸${item.value}\n`;
         });
       }
 
-      // Crear la descripción del inventario
-      let inventoryDescription = 'Aquí están los ítems que tienes en tu inventario:\n\n';
+      // Crear la descripción de los ítems en la tienda
+      let storeDescription = '\nAquí están los ítems disponibles en la tienda:\n\n';
+      if (storeItems.length === 0) {
+        storeDescription += `${assets.emoji.deny} No hay ítems disponibles en la tienda.\n`;
+      } else {
+        storeItems.forEach(item => {
+          storeDescription += `${item.name} - 🔸${item.price} créditos - Stock: ${item.stock || 'Infinito'}\n`;
+        });
+      }
 
-      userItems.forEach(item => {
-        inventoryDescription += `${item.name} - **${item.quantity}** -🔸${item.value}\n`;
-      });
-
-      // Crear el embed con la descripción
+      // Crear el embed con el inventario y la tienda
       const inventoryEmbed = new EmbedBuilder()
         .setColor(assets.color.base)
-        .setTitle('Tu Inventario')
-        .setDescription(inventoryDescription);
+        .setTitle('Tu Inventario y la Tienda')
+        .setDescription(inventoryDescription + storeDescription);
 
-      // Responder al usuario con su inventario (efímero)
+      // Responder al usuario con su inventario y los ítems de la tienda (efímero)
       return interaction.reply({
         embeds: [inventoryEmbed],
         flags: MessageFlags.Ephemeral
@@ -52,7 +59,7 @@ module.exports = {
     } catch (error) {
       console.error('Error al procesar el comando inventario:', error);
       return interaction.reply({
-        content: 'Hubo un problema al obtener tu inventario. Por favor, intenta de nuevo más tarde.',
+        content: 'Hubo un problema al obtener tu inventario y la tienda. Por favor, intenta de nuevo más tarde.',
         flags: MessageFlags.Ephemeral
       });
     }
