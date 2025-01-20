@@ -21,7 +21,7 @@ module.exports = {
     try {
       // Verificar si el usuario ya existe en la base de datos
       const [rows] = await connection.query(
-        'SELECT DATE_FORMAT(last_reward_day, "%Y-%m-%d") AS last_reward_day, balance FROM currency WHERE user_id = ?',
+        'SELECT DATE_FORMAT(last_reward_day, "%Y-%m-%d") AS last_reward_day, balance FROM currency_users WHERE user_id = ?',
         [userId]
       );
 
@@ -38,14 +38,14 @@ module.exports = {
         // Si es un nuevo día, actualizar el balance y la fecha
         balance = rows[0].balance + rewardAmount;
         await connection.query(
-          'UPDATE currency SET last_reward_day = ?, balance = ? WHERE user_id = ?',
+          'UPDATE currency_users SET last_reward_day = ?, balance = ? WHERE user_id = ?',
           [currentDay, balance, userId]
         );
       } else {
         // Si el usuario no existe, insertarlo con la recompensa inicial
         balance = rewardAmount;
         await connection.query(
-          'INSERT INTO currency (user_id, last_reward_day, balance) VALUES (?, ?, ?)',
+          'INSERT INTO currency_users (user_id, last_reward_day, balance) VALUES (?, ?, ?)',
           [userId, currentDay, balance]
         );
       }

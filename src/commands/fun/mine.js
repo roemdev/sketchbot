@@ -3,8 +3,8 @@ const assets = require('../../../assets.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('pescar')
-    .setDescription('Este comando te permite pescar y obtener un ítem.'),
+    .setName('minar')
+    .setDescription('Este comando te permite minar y obtener un ítem.'),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -13,25 +13,24 @@ module.exports = {
     const currentTime = Date.now();
 
     try {
-      // Verificar si el usuario tiene un cooldown activo para el comando "pescar"
+      // Verificar cooldown en la base de datos
       const [cooldownRows] = await connection.query(
         'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
-        [userId, 'pescar']
+        [userId, 'minar']
       );
 
       if (cooldownRows.length > 0) {
         const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
 
-        // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
         if (currentTime < cooldownEndTime) {
-          const nextPrayTime = Math.floor(cooldownEndTime / 1000);
+          const nextMineTime = Math.floor(cooldownEndTime / 1000);
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
-                .setDescription(`${assets.emoji.deny} Todavía no puedes pescar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`)
             ],
-            flags: MessageFlags.Ephemeral
+            flags: MessageFlags.Ephemeral,
           });
         }
       }
@@ -50,13 +49,13 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "fish" con peso
+      // Obtener ítems de la categoría "mine" con peso
       const [itemRows] = await connection.query(
-        'SELECT * FROM currency_items WHERE category = "fish" AND weight IS NOT NULL'
+        'SELECT * FROM currency_items WHERE category = "mine" AND weight > 0'
       );
 
       if (itemRows.length === 0) {
-        throw new Error('No se encontraron ítems en la categoría "fish".');
+        throw new Error('No se encontraron ítems en la categoría "mine".');
       }
 
       // Calcular el peso total para la selección aleatoria
@@ -83,7 +82,7 @@ module.exports = {
 
       // Actualizar el inventario del usuario
       const [userItemRows] = await connection.query(
-        'SELECT * FROM currency_user_inventory WHERE user_id = ? AND item_id = ?',
+        'SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND item_id = ?',
         [userId, selectedItem.item_id]
       );
 
@@ -110,11 +109,11 @@ module.exports = {
         }
       }
 
-      // Actualizar o insertar el cooldown para el comando "pescar"
+      // Actualizar el cooldown en la base de datos
       const cooldownEndTime = new Date(currentTime + cooldownDuration);
       const [cooldownUpdateResult] = await connection.query(
         'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
-        [userId, 'pescar', cooldownEndTime, cooldownEndTime]
+        [userId, 'minar', cooldownEndTime, cooldownEndTime]
       );
 
       if (cooldownUpdateResult.affectedRows === 0) {
@@ -126,14 +125,14 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🎣 ¡Lanzaste tu caña al mar y pescaste: **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
+            .setDescription(`⛏️ ¡Comenzaste a minar y obtuviste: **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
         ]
       });
     } catch (error) {
-      console.error('Error al procesar el comando pescar:', error);
+      console.error('Error al procesar el comando minar:', error);
       return interaction.reply({
-        content: 'Hubo un problema. Por favor, intenta de nuevo más tarde.',
-        flags: MessageFlags.Ephemeral
+        content: `${assets.emoji.deny} Hubo un problema. Por favor, intenta de nuevo más tarde.`,
+        flags: MessageFlags.Ephemeral,
       });
     }
   }

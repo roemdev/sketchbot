@@ -3,8 +3,8 @@ const assets = require('../../../assets.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('pescar')
-    .setDescription('Este comando te permite pescar y obtener un ítem.'),
+    .setName('aventura')
+    .setDescription('Este comando te permite embarcarte en una aventura y obtener un ítem.'),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -13,23 +13,21 @@ module.exports = {
     const currentTime = Date.now();
 
     try {
-      // Verificar si el usuario tiene un cooldown activo para el comando "pescar"
+      // Verificar si el usuario tiene un cooldown activo en la base de datos
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
-        [userId, 'pescar']
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "aventura"',
+        [userId]
       );
 
       if (cooldownRows.length > 0) {
         const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
-
-        // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
         if (currentTime < cooldownEndTime) {
-          const nextPrayTime = Math.floor(cooldownEndTime / 1000);
+          const nextAdventureTime = Math.floor(cooldownEndTime / 1000);
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
-                .setDescription(`${assets.emoji.deny} Todavía no puedes pescar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextAdventureTime}:R>.`)
             ],
             flags: MessageFlags.Ephemeral
           });
@@ -50,13 +48,13 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "fish" con peso
+      // Obtener ítems de la categoría "adventure" con peso
       const [itemRows] = await connection.query(
-        'SELECT * FROM currency_items WHERE category = "fish" AND weight IS NOT NULL'
+        'SELECT * FROM currency_items WHERE category = "adventure" AND weight IS NOT NULL'
       );
 
       if (itemRows.length === 0) {
-        throw new Error('No se encontraron ítems en la categoría "fish".');
+        throw new Error('No se encontraron ítems en la categoría "adventure".');
       }
 
       // Calcular el peso total para la selección aleatoria
@@ -110,27 +108,24 @@ module.exports = {
         }
       }
 
-      // Actualizar o insertar el cooldown para el comando "pescar"
+      // Actualizar el cooldown en la base de datos
       const cooldownEndTime = new Date(currentTime + cooldownDuration);
-      const [cooldownUpdateResult] = await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
-        [userId, 'pescar', cooldownEndTime, cooldownEndTime]
+      await connection.query(
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "aventura", ?) ' +
+        'ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+        [userId, cooldownEndTime, cooldownEndTime]
       );
-
-      if (cooldownUpdateResult.affectedRows === 0) {
-        throw new Error('No se pudo actualizar el cooldown del usuario.');
-      }
 
       // Responder al usuario con el ítem obtenido y su valor
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`🎣 ¡Lanzaste tu caña al mar y pescaste: **${selectedItem.name}**!\n-# Valor: **🔸${selectedItem.value}**`)
+            .setDescription(`🗺️ ¡Te embarcaste en una aventura y obtuviste: **${selectedItem.name}**!\n-# Valor: 🔸**${selectedItem.value}**`)
         ]
       });
     } catch (error) {
-      console.error('Error al procesar el comando pescar:', error);
+      console.error('Error al procesar el comando aventura:', error);
       return interaction.reply({
         content: 'Hubo un problema. Por favor, intenta de nuevo más tarde.',
         flags: MessageFlags.Ephemeral
