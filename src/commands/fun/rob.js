@@ -1,33 +1,39 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
-const assets = require('../../../assets.json');
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  MessageFlags,
+} = require("discord.js");
+const assets = require("../../../assets.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('robar')
-    .setDescription('Intenta robar a otro usuario.')
-    .addUserOption(option =>
+    .setName("robar")
+    .setDescription("Intenta robar a otro usuario.")
+    .addUserOption((option) =>
       option
-        .setName('objetivo')
-        .setDescription('El usuario al que deseas robar.')
+        .setName("objetivo")
+        .setDescription("El usuario al que deseas robar.")
         .setRequired(true)
     ),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const targetUser = interaction.options.getUser('objetivo');
+    const targetUser = interaction.options.getUser("objetivo");
     const cooldownDuration = 600000; // 10 min
     const currentTime = Date.now();
 
     try {
       // Verificar si el usuario tiene un cooldown activo para el comando "robar"
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
-        [userId, 'robar']
+        "SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?",
+        [userId, "robar"]
       );
 
       if (cooldownRows.length > 0) {
-        const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
+        const cooldownEndTime = new Date(
+          cooldownRows[0].cooldown_end_time
+        ).getTime();
 
         // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
         if (currentTime < cooldownEndTime) {
@@ -36,9 +42,11 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
-                .setDescription(`${assets.emoji.deny} Todavía no puedes robar. Podrás intentarlo de nuevo: <t:${nextRobTime}:R>.`)
+                .setDescription(
+                  `${assets.emoji.deny} Todavía no puedes robar. Podrás intentarlo de nuevo: <t:${nextRobTime}:R>.`
+                ),
             ],
-            flags: MessageFlags.Ephemeral
+            flags: MessageFlags.Ephemeral,
           });
         }
       }
@@ -48,9 +56,9 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} No puedes robar a un bot.`)
+              .setDescription(`${assets.emoji.deny} No puedes robar a un bot.`),
           ],
-          flags: MessageFlags.Ephemeral
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -66,9 +74,11 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} Este comando no está configurado correctamente. Contacta a un administrador.`)
+              .setDescription(
+                `${assets.emoji.deny} Este comando no está configurado correctamente. Contacta a un administrador.`
+              ),
           ],
-          flags: MessageFlags.Ephemeral
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -78,7 +88,7 @@ module.exports = {
 
       // Verificar el balance del objetivo
       const [targetRows] = await connection.query(
-        'SELECT balance FROM currency_users WHERE user_id = ?',
+        "SELECT balance FROM currency_users WHERE user_id = ?",
         [targetId]
       );
 
@@ -87,9 +97,11 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} El objetivo no tiene créditos para ser robado.`)
+              .setDescription(
+                `${assets.emoji.deny} El objetivo no tiene créditos para ser robado.`
+              ),
           ],
-          flags: MessageFlags.Ephemeral
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -105,39 +117,49 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
-                .setDescription(`${assets.emoji.deny} El objetivo no tiene suficiente balance para que valga la pena robar.`)
+                .setDescription(
+                  `${assets.emoji.deny} El objetivo no tiene suficiente balance para que valga la pena robar.`
+                ),
             ],
-            flags: MessageFlags.Ephemeral
+            flags: MessageFlags.Ephemeral,
           });
         }
 
         // Actualizar balances
-        await connection.query('UPDATE currency_users SET balance = balance + ? WHERE user_id = ?', [stolenAmount, userId]);
-        await connection.query('UPDATE currency_users SET balance = balance - ? WHERE user_id = ?', [stolenAmount, targetId]);
+        await connection.query(
+          "UPDATE currency_users SET balance = balance + ? WHERE user_id = ?",
+          [stolenAmount, userId]
+        );
+        await connection.query(
+          "UPDATE currency_users SET balance = balance - ? WHERE user_id = ?",
+          [stolenAmount, targetId]
+        );
 
         // Actualizar cooldown
         const cooldownEndTime = new Date(currentTime + cooldownDuration);
         await connection.query(
-          'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
-          [userId, 'robar', cooldownEndTime, cooldownEndTime]
+          "INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
+          [userId, "robar", cooldownEndTime, cooldownEndTime]
         );
 
         const author = {
           name: interaction.user.displayName,
-          iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+          iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
         };
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
               .setTitle(author)
               .setColor(assets.color.green)
-              .setDescription(`${assets.emoji.check} Has robado con éxito **🔸${stolenAmount}** (${robPercentage}% del balance) a ${targetUser.tag}.`)
-          ]
+              .setDescription(
+                `${assets.emoji.check} Has robado con éxito **🔸${stolenAmount}** (${robPercentage}% del balance) a ${targetUser.tag}.`
+              ),
+          ],
         });
       } else {
         // Penalidad basada en porcentaje del balance del ladrón
         const [userRows] = await connection.query(
-          'SELECT balance FROM currency_users WHERE user_id = ?',
+          "SELECT balance FROM currency_users WHERE user_id = ?",
           [userId]
         );
 
@@ -147,9 +169,11 @@ module.exports = {
               new EmbedBuilder()
                 .setAuthor(author)
                 .setColor(assets.color.red)
-                .setDescription(`${assets.emoji.deny} Fallaste al intentar robar, pero no tienes suficiente balance para recibir una penalidad.`)
+                .setDescription(
+                  `${assets.emoji.deny} Fallaste al intentar robar, pero no tienes suficiente balance para recibir una penalidad.`
+                ),
             ],
-            flags: MessageFlags.Ephemeral
+            flags: MessageFlags.Ephemeral,
           });
         }
 
@@ -157,13 +181,16 @@ module.exports = {
         const penaltyAmount = Math.floor(userBalance * robPercent);
 
         // Actualizar balance del ladrón con penalidad
-        await connection.query('UPDATE currency_users SET balance = balance - ? WHERE user_id = ?', [penaltyAmount, userId]);
+        await connection.query(
+          "UPDATE currency_users SET balance = balance - ? WHERE user_id = ?",
+          [penaltyAmount, userId]
+        );
 
         // Actualizar cooldown
         const cooldownEndTime = new Date(currentTime + cooldownDuration);
         await connection.query(
-          'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
-          [userId, 'robar', cooldownEndTime, cooldownEndTime]
+          "INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
+          [userId, "robar", cooldownEndTime, cooldownEndTime]
         );
 
         return interaction.reply({
@@ -171,16 +198,19 @@ module.exports = {
             new EmbedBuilder()
               .setAuthor(author)
               .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} Fallaste al intentar robar a ${targetUser.tag} y perdiste **🔸${penaltyAmount}** (${robPercentage}% de tu balance).`)
-          ]
+              .setDescription(
+                `${assets.emoji.deny} Fallaste al intentar robar a ${targetUser.tag} y perdiste **🔸${penaltyAmount}** (${robPercentage}% de tu balance).`
+              ),
+          ],
         });
       }
     } catch (error) {
-      console.error('Error al procesar el comando rob:', error);
+      console.error("Error al procesar el comando rob:", error);
       return interaction.reply({
-        content: 'Hubo un problema al intentar robar. Por favor, intenta de nuevo más tarde.',
-        flags: MessageFlags.Ephemeral
+        content:
+          "Hubo un problema al intentar robar. Por favor, intenta de nuevo más tarde.",
+        flags: MessageFlags.Ephemeral,
       });
     }
-  }
+  },
 };

@@ -7,7 +7,9 @@ module.exports = {
     const oldRoleId = "1215767915329228890";
 
     // Verificar si se asignó el rol nextlvl
-    const roleAdded = !oldMember.roles.cache.has(newRoleId) && newMember.roles.cache.has(newRoleId);
+    const roleAdded =
+      !oldMember.roles.cache.has(newRoleId) &&
+      newMember.roles.cache.has(newRoleId);
     if (!roleAdded) return;
 
     // Intentar eliminar el rol new member si está presente

@@ -11,7 +11,7 @@ module.exports = {
     const reactionEmojis = reactions[message.channel.id];
     if (reactionEmojis) {
       try {
-        await Promise.all(reactionEmojis.map(emoji => message.react(emoji)));
+        await Promise.all(reactionEmojis.map((emoji) => message.react(emoji)));
       } catch (error) {
         console.error(`No se pudo reaccionar al mensaje: ${error}`);
       }

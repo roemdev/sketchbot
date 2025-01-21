@@ -6,7 +6,6 @@ const {
 } = require("discord.js");
 const updateVoiceChannel = require("./updateVoiceChannel");
 
-
 module.exports = {
   name: Events.GuildMemberAdd,
   async execute(member) {

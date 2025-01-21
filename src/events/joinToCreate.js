@@ -1,4 +1,4 @@
-const { Events, ChannelType, PermissionsBitField } = require('discord.js');
+const { Events, ChannelType, PermissionsBitField } = require("discord.js");
 
 // Map to track dynamically created voice channels
 const voiceChannelsMap = new Map();
@@ -7,10 +7,13 @@ module.exports = {
   name: Events.VoiceStateUpdate,
   async execute(oldState, newState) {
     const guild = newState.guild;
-    const baseChannelId = '1312872660715175956';
+    const baseChannelId = "1312872660715175956";
 
     // User joins the base voice channel
-    if (newState.channelId === baseChannelId && oldState.channelId !== baseChannelId) {
+    if (
+      newState.channelId === baseChannelId &&
+      oldState.channelId !== baseChannelId
+    ) {
       const member = newState.member;
 
       // Create a new voice channel with the user's username
@@ -21,11 +24,18 @@ module.exports = {
         permissionOverwrites: [
           {
             id: member.id,
-            allow: [PermissionsBitField.Flags.Connect, PermissionsBitField.Flags.Speak],
+            allow: [
+              PermissionsBitField.Flags.Connect,
+              PermissionsBitField.Flags.Speak,
+            ],
           },
           {
             id: guild.members.me.id,
-            allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.Connect],
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.ManageChannels,
+              PermissionsBitField.Flags.Connect,
+            ],
           },
         ],
       });
