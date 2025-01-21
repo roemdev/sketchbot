@@ -9,7 +9,7 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 4 horas
+    const cooldownDuration = 600000; // 10 minutos
     const currentTime = Date.now();
 
     try {
@@ -126,8 +126,11 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle('¡Nos vamos de aventura! 🗺️ ')
-            .setDescription(`Obtuviste: ${selectedItem.name}!\n-# Valor: 🔸**${selectedItem.value}**`)
+            .setTitle('¡Saliste de aventura! 🗺️ ')
+            .setDescription(
+              `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
+              `> *${selectedItem.description}*\n`
+            )
         ]
       });
     } catch (error) {

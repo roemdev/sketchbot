@@ -9,27 +9,25 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 4 horas
+    const cooldownDuration = 600000; // 10 minutos
     const currentTime = Date.now();
 
     try {
-      // Verificar si el usuario tiene un cooldown activo para el comando "pescar"
+      // Verificar si el usuario tiene un cooldown activo en la base de datos
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
-        [userId, 'pescar']
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "pescar"',
+        [userId]
       );
 
       if (cooldownRows.length > 0) {
         const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
-
-        // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
         if (currentTime < cooldownEndTime) {
-          const nextPrayTime = Math.floor(cooldownEndTime / 1000);
+          const nextFishTime = Math.floor(cooldownEndTime / 1000);
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
-                .setDescription(`${assets.emoji.deny} Todavía no puedes pescar. Podrás intentarlo de nuevo: <t:${nextPrayTime}:R>.`)
+                .setDescription(`${assets.emoji.deny} Todavía no puedes pescar. Podrás intentarlo de nuevo: <t:${nextFishTime}:R>.`)
             ],
             flags: MessageFlags.Ephemeral
           });
@@ -50,7 +48,7 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "fish" con peso
+      // Obtener ítems de la categoría "Fish" con peso
       const [itemRows] = await connection.query(
         'SELECT * FROM currency_items WHERE category = "fish" AND weight IS NOT NULL'
       );
@@ -110,16 +108,13 @@ module.exports = {
         }
       }
 
-      // Actualizar o insertar el cooldown para el comando "pescar"
+      // Actualizar el cooldown en la base de datos
       const cooldownEndTime = new Date(currentTime + cooldownDuration);
-      const [cooldownUpdateResult] = await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
-        [userId, 'pescar', cooldownEndTime, cooldownEndTime]
+      await connection.query(
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "aventura", ?) ' +
+        'ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+        [userId, cooldownEndTime, cooldownEndTime]
       );
-
-      if (cooldownUpdateResult.affectedRows === 0) {
-        throw new Error('No se pudo actualizar el cooldown del usuario.');
-      }
 
       // Responder al usuario con el ítem obtenido y su valor
       const author = {
@@ -132,7 +127,10 @@ module.exports = {
             .setAuthor(author)
             .setColor(assets.color.green)
             .setTitle('Pescando... 🎣 ')
-            .setDescription(`Conseguiste ${selectedItem.name}!\n-# Valor:🔸**${selectedItem.value}**`)
+            .setDescription(
+              `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
+              `> *${selectedItem.description}*\n`
+            )
         ]
       });
     } catch (error) {

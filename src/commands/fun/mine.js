@@ -9,19 +9,18 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 14400000; // 4 horas
+    const cooldownDuration = 600000; // 10 minutos
     const currentTime = Date.now();
 
     try {
-      // Verificar cooldown en la base de datos
+      // Verificar si el usuario tiene un cooldown activo en la base de datos
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?',
-        [userId, 'minar']
+        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "minar"',
+        [userId]
       );
 
       if (cooldownRows.length > 0) {
         const cooldownEndTime = new Date(cooldownRows[0].cooldown_end_time).getTime();
-
         if (currentTime < cooldownEndTime) {
           const nextMineTime = Math.floor(cooldownEndTime / 1000);
           return interaction.reply({
@@ -30,7 +29,7 @@ module.exports = {
                 .setColor(assets.color.red)
                 .setDescription(`${assets.emoji.deny} Todavía no puedes minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`)
             ],
-            flags: MessageFlags.Ephemeral,
+            flags: MessageFlags.Ephemeral
           });
         }
       }
@@ -49,9 +48,9 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "mine" con peso
+      // Obtener ítems de la categoría "Mine" con peso
       const [itemRows] = await connection.query(
-        'SELECT * FROM currency_items WHERE category = "mine" AND weight > 0'
+        'SELECT * FROM currency_items WHERE category = "mine" AND weight IS NOT NULL'
       );
 
       if (itemRows.length === 0) {
@@ -82,7 +81,7 @@ module.exports = {
 
       // Actualizar el inventario del usuario
       const [userItemRows] = await connection.query(
-        'SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND item_id = ?',
+        'SELECT * FROM currency_user_inventory WHERE user_id = ? AND item_id = ?',
         [userId, selectedItem.item_id]
       );
 
@@ -111,14 +110,11 @@ module.exports = {
 
       // Actualizar el cooldown en la base de datos
       const cooldownEndTime = new Date(currentTime + cooldownDuration);
-      const [cooldownUpdateResult] = await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
-        [userId, 'minar', cooldownEndTime, cooldownEndTime]
+      await connection.query(
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "aventura", ?) ' +
+        'ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
+        [userId, cooldownEndTime, cooldownEndTime]
       );
-
-      if (cooldownUpdateResult.affectedRows === 0) {
-        throw new Error('No se pudo actualizar el cooldown del usuario.');
-      }
 
       // Responder al usuario con el ítem obtenido y su valor
       const author = {
@@ -130,15 +126,18 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle('Pica y pica y sale... ⛏️')
-            .setDescription(`Obtuviste: ${selectedItem.name}!\n-# Valor: 🔸**${selectedItem.value}**`)
+            .setTitle('Pica y pica y sale... ⛏️ ')
+            .setDescription(
+              `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
+              `> *${selectedItem.description}*\n`
+            )
         ]
       });
     } catch (error) {
       console.error('Error al procesar el comando minar:', error);
       return interaction.reply({
-        content: `${assets.emoji.deny} Hubo un problema. Por favor, intenta de nuevo más tarde.`,
-        flags: MessageFlags.Ephemeral,
+        content: 'Hubo un problema. Por favor, intenta de nuevo más tarde.',
+        flags: MessageFlags.Ephemeral
       });
     }
   }
