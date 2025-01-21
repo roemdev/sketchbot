@@ -16,7 +16,7 @@ module.exports = {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
     const targetUser = interaction.options.getUser('objetivo');
-    const cooldownDuration = 14400000; // 4 horas
+    const cooldownDuration = 600000; // 10 min
     const currentTime = Date.now();
 
     try {
