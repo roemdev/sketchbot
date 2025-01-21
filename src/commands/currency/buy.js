@@ -21,6 +21,10 @@ module.exports = {
     if (!interaction.isAutocomplete()) return;
 
     const connection = interaction.client.dbConnection;
+    const author = {
+      name: interaction.user.displayName,
+      iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+    };
 
     try {
       // Consulta los ítems disponibles en la tienda
@@ -183,10 +187,6 @@ module.exports = {
           }
         }, duration);
 
-        const author = {
-          name: interaction.user.displayName,
-          iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-        };
         return interaction.reply({
           embeds: [
             new EmbedBuilder()

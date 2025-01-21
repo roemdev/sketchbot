@@ -14,6 +14,10 @@ module.exports = {
     const userId = interaction.user.id;
     const roles = interaction.member.roles.cache;
     const cooldownDuration = 86400000; // 24 horas en milisegundos
+    const author = {
+      name: interaction.user.displayName,
+      iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+    };
 
     try {
       // Verificar cooldown
@@ -67,10 +71,6 @@ module.exports = {
       );
 
       // Responder al usuario
-      const author = {
-        name: interaction.user.displayName,
-        iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-      };
       return interaction.reply({
         embeds: [
           new EmbedBuilder()

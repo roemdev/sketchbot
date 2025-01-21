@@ -22,11 +22,15 @@ module.exports = {
     const targetUser = interaction.options.getUser("objetivo");
     const cooldownDuration = 600000; // 10 min
     const currentTime = Date.now();
+    const author = {
+      name: interaction.user.displayName,
+      iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+    };
 
     try {
       // Verificar si el usuario tiene un cooldown activo para el comando "robar"
       const [cooldownRows] = await connection.query(
-        "SELECT robar FROM currency_users_cooldowns WHERE user_id = ?",
+        "SELECT steal FROM currency_users_cooldowns WHERE user_id = ?",
         [userId]
       );
 
@@ -136,18 +140,14 @@ module.exports = {
         // Actualizar cooldown
         const cooldownEndTime = new Date(currentTime + cooldownDuration);
         await connection.query(
-          "UPDATE currency_users_cooldowns SET robar = ? WHERE user_id = ?",
+          "UPDATE currency_users_cooldowns SET steal = ? WHERE user_id = ?",
           [cooldownEndTime, userId]
         );
 
-        const author = {
-          name: interaction.user.displayName,
-          iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-        };
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
-              .setTitle(author)
+              .setAuthor(author)
               .setColor(assets.color.green)
               .setDescription(
                 `${assets.emoji.check} Has robado con éxito **🔸${stolenAmount}** (${robPercentage}% del balance) a ${targetUser.tag}.`
@@ -171,7 +171,6 @@ module.exports = {
                   `${assets.emoji.deny} Fallaste al intentar robar, pero no tienes suficiente balance para recibir una penalidad.`
                 ),
             ],
-            flags: MessageFlags.Ephemeral,
           });
         }
 

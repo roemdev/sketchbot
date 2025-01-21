@@ -15,6 +15,10 @@ module.exports = {
     const userId = interaction.user.id;
     const cooldownDuration = 600000; // 10 minutos
     const currentTime = Date.now();
+    const author = {
+      name: interaction.user.displayName,
+      iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+    };
 
     try {
       // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /rezar
@@ -108,10 +112,6 @@ module.exports = {
       );
 
       // Responder al usuario con el balance obtenido
-      const author = {
-        name: interaction.user.displayName,
-        iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-      };
       return interaction.reply({
         embeds: [
           new EmbedBuilder()

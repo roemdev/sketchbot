@@ -75,6 +75,10 @@ module.exports = {
     const userId = interaction.user.id;
     const itemName = interaction.options.getString("item");
     const quantityToSell = interaction.options.getInteger("cantidad");
+    const author = {
+      name: interaction.user.displayName,
+      iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+    };
 
     try {
       // Obtener el ítem de la tabla currency_items para obtener el ID
@@ -161,6 +165,7 @@ module.exports = {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
+            .setAuthor(author)
             .setColor(assets.color.green)
             .setDescription(
               `${assets.emoji.check} Has vendido **${quantityToSell} x ${itemName}** por **🔸${salePrice}** créditos.`
