@@ -8,7 +8,9 @@ const assets = require("../../../assets.json");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("minar")
-    .setDescription("Este comando te permite minar y obtener un ítem."),
+    .setDescription(
+      "Este comando te permite embarcarte en una minar y obtener un ítem."
+    ),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -17,24 +19,24 @@ module.exports = {
     const currentTime = Date.now();
 
     try {
-      // Verificar si el usuario tiene un cooldown activo en la base de datos
+      // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /minar
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "minar"',
+        "SELECT mine FROM currency_users_cooldowns WHERE user_id = ?",
         [userId]
       );
 
       if (cooldownRows.length > 0) {
-        const cooldownEndTime = new Date(
-          cooldownRows[0].cooldown_end_time
-        ).getTime();
-        if (currentTime < cooldownEndTime) {
-          const nextMineTime = Math.floor(cooldownEndTime / 1000);
+        const lastMineTime = new Date(cooldownRows[0].mine).getTime();
+        if (currentTime < lastMineTime + cooldownDuration) {
+          const nextMineTime = Math.floor(
+            (lastMineTime + cooldownDuration) / 1000
+          );
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
                 .setDescription(
-                  `${assets.emoji.deny} Todavía no puedes minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`
+                  `${assets.emoji.deny} Todavía no puedes embarcarte en una minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`
                 ),
             ],
             flags: MessageFlags.Ephemeral,
@@ -56,7 +58,7 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "Mine" con peso
+      // Obtener ítems de la categoría "mine" con peso
       const [itemRows] = await connection.query(
         'SELECT * FROM currency_items WHERE category = "mine" AND weight IS NOT NULL'
       );
@@ -119,11 +121,9 @@ module.exports = {
       }
 
       // Actualizar el cooldown en la base de datos
-      const cooldownEndTime = new Date(currentTime + cooldownDuration);
       await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "minar", ?) ' +
-          "ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
-        [userId, cooldownEndTime, cooldownEndTime]
+        "INSERT INTO currency_users_cooldowns (user_id, mine) VALUES (?, ?) ON DUPLICATE KEY UPDATE mine = VALUES(mine)",
+        [userId, new Date(currentTime + cooldownDuration)]
       );
 
       // Responder al usuario con el ítem obtenido y su valor
@@ -136,7 +136,7 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle("Pica y pica y sale... ⛏️ ")
+            .setTitle("Mineeroo ¡olé! ⛏️ ")
             .setDescription(
               `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
                 `> *${selectedItem.description}*\n`

@@ -26,14 +26,12 @@ module.exports = {
     try {
       // Verificar si el usuario tiene un cooldown activo para el comando "robar"
       const [cooldownRows] = await connection.query(
-        "SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?",
-        [userId, "robar"]
+        "SELECT robar FROM currency_users_cooldowns WHERE user_id = ?",
+        [userId]
       );
 
       if (cooldownRows.length > 0) {
-        const cooldownEndTime = new Date(
-          cooldownRows[0].cooldown_end_time
-        ).getTime();
+        const cooldownEndTime = new Date(cooldownRows[0].robar).getTime();
 
         // Si el cooldown no ha terminado, mostrar mensaje con el tiempo restante
         if (currentTime < cooldownEndTime) {
@@ -138,8 +136,8 @@ module.exports = {
         // Actualizar cooldown
         const cooldownEndTime = new Date(currentTime + cooldownDuration);
         await connection.query(
-          "INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
-          [userId, "robar", cooldownEndTime, cooldownEndTime]
+          "UPDATE currency_users_cooldowns SET robar = ? WHERE user_id = ?",
+          [cooldownEndTime, userId]
         );
 
         const author = {
@@ -189,8 +187,8 @@ module.exports = {
         // Actualizar cooldown
         const cooldownEndTime = new Date(currentTime + cooldownDuration);
         await connection.query(
-          "INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
-          [userId, "robar", cooldownEndTime, cooldownEndTime]
+          "INSERT INTO currency_users_cooldowns (user_id, steal) VALUES (?, ?) ON DUPLICATE KEY UPDATE steal = VALUES(steal)",
+          [userId, new Date(currentTime + cooldownDuration)]
         );
 
         return interaction.reply({
@@ -205,7 +203,7 @@ module.exports = {
         });
       }
     } catch (error) {
-      console.error("Error al procesar el comando rob:", error);
+      console.error("Error al procesar el comando robar:", error);
       return interaction.reply({
         content:
           "Hubo un problema al intentar robar. Por favor, intenta de nuevo más tarde.",

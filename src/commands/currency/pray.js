@@ -13,23 +13,22 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const cooldownDuration = 600000; // 10 min
+    const cooldownDuration = 600000; // 10 minutos
     const currentTime = Date.now();
 
     try {
-      // Verificar cooldown en la base de datos
+      // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /rezar
       const [cooldownRows] = await connection.query(
-        "SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = ?",
-        [userId, "rezar"]
+        "SELECT pray FROM currency_users_cooldowns WHERE user_id = ?",
+        [userId]
       );
 
       if (cooldownRows.length > 0) {
-        const cooldownEndTime = new Date(
-          cooldownRows[0].cooldown_end_time
-        ).getTime();
-
-        if (currentTime < cooldownEndTime) {
-          const nextPrayTime = Math.floor(cooldownEndTime / 1000);
+        const lastPrayTime = new Date(cooldownRows[0].pray).getTime();
+        if (currentTime < lastPrayTime + cooldownDuration) {
+          const nextPrayTime = Math.floor(
+            (lastPrayTime + cooldownDuration) / 1000
+          );
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
@@ -43,14 +42,27 @@ module.exports = {
         }
       }
 
-      // Realizar la consulta para obtener la tarea de tipo "pray"
+      // Verificar si el usuario existe en currency_users
+      const [userRows] = await connection.query(
+        "SELECT * FROM currency_users WHERE user_id = ?",
+        [userId]
+      );
+
+      if (userRows.length === 0) {
+        // Si no existe, crearlo
+        await connection.query(
+          "INSERT INTO currency_users (user_id) VALUES (?)",
+          [userId]
+        );
+      }
+
+      // Obtener tareas de la categoría "pray"
       const [taskRows] = await connection.query(
         `SELECT * FROM currency_tasks WHERE type = "pray"`
       );
 
-      // Verificar si se encontró la tarea
       if (taskRows.length === 0) {
-        throw new Error("No se encontró una tarea válida.");
+        throw new Error("No se encontró una tarea válida para rezar.");
       }
 
       const task = taskRows[0];
@@ -90,15 +102,10 @@ module.exports = {
       }
 
       // Actualizar cooldown en la base de datos
-      const cooldownEndTime = new Date(currentTime + cooldownDuration);
-      const [cooldownUpdateResult] = await connection.query(
-        "INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
-        [userId, "rezar", cooldownEndTime, cooldownEndTime]
+      await connection.query(
+        "INSERT INTO currency_users_cooldowns (user_id, pray) VALUES (?, ?) ON DUPLICATE KEY UPDATE pray = VALUES(pray)",
+        [userId, new Date(currentTime + cooldownDuration)]
       );
-
-      if (cooldownUpdateResult.affectedRows === 0) {
-        throw new Error("No se pudo actualizar el cooldown del usuario.");
-      }
 
       // Responder al usuario con el balance obtenido
       const author = {
@@ -111,7 +118,7 @@ module.exports = {
             .setAuthor(author)
             .setColor(assets.color.green)
             .setDescription(
-              `🙏 ¡Rezaste tan fuerte que alguien te escuchó! Has ganado **🔸${earnings.toLocaleString()}** créditos!`
+              `¡Rezaste tan fuerte que alguien te escuchó! 🙏 Has ganado **🔸${earnings.toLocaleString()}** créditos!`
             ),
         ],
       });

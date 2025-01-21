@@ -19,18 +19,18 @@ module.exports = {
     const currentTime = Date.now();
 
     try {
-      // Verificar si el usuario tiene un cooldown activo en la base de datos
+      // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /aventura
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "aventura"',
+        "SELECT adventure FROM currency_users_cooldowns WHERE user_id = ?",
         [userId]
       );
 
       if (cooldownRows.length > 0) {
-        const cooldownEndTime = new Date(
-          cooldownRows[0].cooldown_end_time
-        ).getTime();
-        if (currentTime < cooldownEndTime) {
-          const nextAdventureTime = Math.floor(cooldownEndTime / 1000);
+        const lastAdventureTime = new Date(cooldownRows[0].adventure).getTime();
+        if (currentTime < lastAdventureTime + cooldownDuration) {
+          const nextAdventureTime = Math.floor(
+            (lastAdventureTime + cooldownDuration) / 1000
+          );
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
@@ -121,11 +121,9 @@ module.exports = {
       }
 
       // Actualizar el cooldown en la base de datos
-      const cooldownEndTime = new Date(currentTime + cooldownDuration);
       await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "aventura", ?) ' +
-          "ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
-        [userId, cooldownEndTime, cooldownEndTime]
+        "INSERT INTO currency_users_cooldowns (user_id, adventure) VALUES (?, ?) ON DUPLICATE KEY UPDATE adventure = VALUES(adventure)",
+        [userId, new Date(currentTime + cooldownDuration)]
       );
 
       // Responder al usuario con el ítem obtenido y su valor
@@ -138,7 +136,7 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle("¡Saliste de aventura! 🗺️ ")
+            .setTitle("¿Una nueva aventura? ¡Qué bien! 🗺️ ")
             .setDescription(
               `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
                 `> *${selectedItem.description}*\n`

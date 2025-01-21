@@ -8,7 +8,9 @@ const assets = require("../../../assets.json");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("pescar")
-    .setDescription("Este comando te permite pescar y obtener un ítem."),
+    .setDescription(
+      "Este comando te permite embarcarte en una pescar y obtener un ítem."
+    ),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
@@ -17,24 +19,24 @@ module.exports = {
     const currentTime = Date.now();
 
     try {
-      // Verificar si el usuario tiene un cooldown activo en la base de datos
+      // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /pescar
       const [cooldownRows] = await connection.query(
-        'SELECT cooldown_end_time FROM currency_users_cooldowns WHERE user_id = ? AND command_name = "pescar"',
+        "SELECT fish FROM currency_users_cooldowns WHERE user_id = ?",
         [userId]
       );
 
       if (cooldownRows.length > 0) {
-        const cooldownEndTime = new Date(
-          cooldownRows[0].cooldown_end_time
-        ).getTime();
-        if (currentTime < cooldownEndTime) {
-          const nextFishTime = Math.floor(cooldownEndTime / 1000);
+        const lastFishTime = new Date(cooldownRows[0].fish).getTime();
+        if (currentTime < lastFishTime + cooldownDuration) {
+          const nextFishTime = Math.floor(
+            (lastFishTime + cooldownDuration) / 1000
+          );
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
                 .setDescription(
-                  `${assets.emoji.deny} Todavía no puedes pescar. Podrás intentarlo de nuevo: <t:${nextFishTime}:R>.`
+                  `${assets.emoji.deny} Todavía no puedes embarcarte en una pescar. Podrás intentarlo de nuevo: <t:${nextFishTime}:R>.`
                 ),
             ],
             flags: MessageFlags.Ephemeral,
@@ -56,7 +58,7 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "Fish" con peso
+      // Obtener ítems de la categoría "fish" con peso
       const [itemRows] = await connection.query(
         'SELECT * FROM currency_items WHERE category = "fish" AND weight IS NOT NULL'
       );
@@ -119,11 +121,9 @@ module.exports = {
       }
 
       // Actualizar el cooldown en la base de datos
-      const cooldownEndTime = new Date(currentTime + cooldownDuration);
       await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "pescar", ?) ' +
-          "ON DUPLICATE KEY UPDATE cooldown_end_time = ?",
-        [userId, cooldownEndTime, cooldownEndTime]
+        "INSERT INTO currency_users_cooldowns (user_id, fish) VALUES (?, ?) ON DUPLICATE KEY UPDATE fish = VALUES(fish)",
+        [userId, new Date(currentTime + cooldownDuration)]
       );
 
       // Responder al usuario con el ítem obtenido y su valor
@@ -136,7 +136,7 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle("Pescando... 🎣 ")
+            .setTitle("En el mar la vida es más sabrosa 🎣 ")
             .setDescription(
               `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
                 `> *${selectedItem.description}*\n`
