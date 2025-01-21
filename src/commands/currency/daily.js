@@ -23,8 +23,12 @@ module.exports = {
       );
 
       const now = new Date();
-      if (cooldownData?.daily && new Date(cooldownData.daily) > now) {
-        const nextClaim = new Date(cooldownData.daily);
+      if (
+        cooldownData.length &&
+        cooldownData[0].daily &&
+        new Date(cooldownData[0].daily) > now
+      ) {
+        const nextClaim = new Date(cooldownData[0].daily);
         return interaction.reply({
           content: `⏳ Ya has reclamado tu recompensa diaria. Puedes volver a intentarlo <t:${Math.floor(
             nextClaim.getTime() / 1000
@@ -58,8 +62,8 @@ module.exports = {
       const nextDaily = new Date(now.getTime() + cooldownDuration);
 
       await connection.query(
-        "INSERT INTO currency_users_cooldowns (user_id, daily) VALUES (?, ?) ON DUPLICATE KEY UPDATE daily = ?",
-        [userId, nextDaily, nextDaily]
+        "INSERT INTO currency_users_cooldowns (user_id, daily) VALUES (?, ?) ON DUPLICATE KEY UPDATE daily = VALUES(daily)",
+        [userId, nextDaily]
       );
 
       // Responder al usuario
