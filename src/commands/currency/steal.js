@@ -150,7 +150,7 @@ module.exports = {
               .setAuthor(author)
               .setColor(assets.color.green)
               .setDescription(
-                `${assets.emoji.check} Has robado con éxito **🔸${stolenAmount}** (${robPercentage}% del balance) a ${targetUser.tag}.`
+                `${assets.emoji.check} Le robaste **🔸${stolenAmount}** a <@${targetUser.id}> 🐈.`
               ),
           ],
         });
@@ -196,7 +196,7 @@ module.exports = {
               .setAuthor(author)
               .setColor(assets.color.red)
               .setDescription(
-                `${assets.emoji.deny} Fallaste al intentar robar a ${targetUser.tag} y perdiste **🔸${penaltyAmount}** (${robPercentage}% de tu balance).`
+                `${assets.emoji.deny} Te atraparon intentando robarle a <@${targetUser.id}> y perdiste **🔸${penaltyAmount}**.`
               ),
           ],
         });
