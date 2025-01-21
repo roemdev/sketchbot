@@ -111,7 +111,7 @@ module.exports = {
       // Actualizar el cooldown en la base de datos
       const cooldownEndTime = new Date(currentTime + cooldownDuration);
       await connection.query(
-        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "aventura", ?) ' +
+        'INSERT INTO currency_users_cooldowns (user_id, command_name, cooldown_end_time) VALUES (?, "pescar", ?) ' +
         'ON DUPLICATE KEY UPDATE cooldown_end_time = ?',
         [userId, cooldownEndTime, cooldownEndTime]
       );
