@@ -3,8 +3,9 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
 } = require("discord.js");
-const updateVoiceChannel = require("./updateVoiceChannel");
+const assets = require("../../assets.json");
 
 module.exports = {
   name: Events.GuildMemberAdd,
@@ -40,6 +41,28 @@ module.exports = {
       );
     }
 
-    await updateVoiceChannel(member.guild, voiceChannelId);
+    // Send welcome embed message to the server
+    const user = member.user;
+    const guild = member.guild;
+    const discordJoinDate = `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`;
+    const iconURL = guild.iconURL({ dynamic: true, size: 1024 });
+
+    const embed = new EmbedBuilder()
+      .setAuthor({ name: `${guild.name}`, iconURL: iconURL })
+      .setColor(assets.color.base)
+      .setTitle(`¡Damos la bienvenida a: ${user.username}!`)
+      .setThumbnail(user.displayAvatarURL({ dynamic: true }))
+      .setDescription(
+        `**Usuario:** <@${user.id}> (${user.username})\n` +
+        `**ID:** \`${user.id}\`\n` +
+        `**En Discord:** ${discordJoinDate}\n`
+      )
+      .setFooter({ text: `¡Contigo somos ${guild.memberCount} miembros!` });
+
+    member.guild.systemChannel.send({
+      content: `**${user.username}** se unió a nuestro servidor`,
+      embeds: [embed],
+      allowedMentions: { repliedUser: false },
+    });
   },
 };

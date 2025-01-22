@@ -4,11 +4,13 @@ const assets = require("../../assets.json");
 const BOOSTER_ROLE_ID = "1241182617504579594";
 const VIP_ROLE_ID = "1303816942326648884";
 const MONITORED_ROLES = [BOOSTER_ROLE_ID, VIP_ROLE_ID];
-const NOTIFICATION_CHANNEL_ID = "1330155455028400218";
 
 module.exports = {
   name: Events.GuildMemberUpdate,
   async execute(oldMember, newMember) {
+    const systemChannel = newMember.guild.systemChannel;
+    if (!systemChannel) return;
+
     const addedRoleId = MONITORED_ROLES.find(
       (roleId) =>
         !oldMember.roles.cache.has(roleId) && newMember.roles.cache.has(roleId)
@@ -16,48 +18,55 @@ module.exports = {
 
     if (!addedRoleId) return;
 
-    const notificationChannel = newMember.guild.channels.cache.get(
-      NOTIFICATION_CHANNEL_ID
-    );
-    if (!notificationChannel) return;
-
     if (addedRoleId === BOOSTER_ROLE_ID) {
       try {
+        // Asignar automáticamente el rol VIP
         await newMember.roles.add(VIP_ROLE_ID);
-        await newMember.send(
-          "¡Gracias por el boost🚀, tu apoyo es increíble! Como agradecimiento, se te ha asignado el rol **VIP**. ¡Disfrútalo!"
-        );
+
+        // Enviar embed agradeciendo por el rol Booster
+        const boosterEmbed = new EmbedBuilder()
+          .setColor(assets.color.base)
+          .setTitle("<:boost:1313684699411124286> BOOST")
+          .setDescription(
+            `¡Obtuviste el rol <@&${VIP_ROLE_ID}>!\n`+
+            `Utiliza \`/ayuda\` y ve tus beneficios.`
+          )
+          .setThumbnail(newMember.user.displayAvatarURL());
+
+        await systemChannel.send({
+          content: `<@${newMember.user.id}> ¡Gracias por el boost!`,
+          embeds: [boosterEmbed] });
       } catch (error) {
         console.error(
           `Error al asignar el rol VIP a ${newMember.user.tag}:`,
           error
         );
       }
+      return;
     }
 
-    const notificationEmbed = new EmbedBuilder()
-      .setAuthor({
-        name: newMember.user.tag,
-        iconURL: newMember.user.displayAvatarURL(),
-      })
-      .setColor(assets.color.base)
-      .setTitle("__⭐ Nuevo miembro VIP__")
-      .setDescription(
-        `* ¡Felicidades! Disfruta de tu exclusividad\n` +
-          `* Utiliza \`/ayuda\` para ver tus beneficios.`
-      )
-      .setThumbnail(newMember.user.displayAvatarURL());
+    if (addedRoleId === VIP_ROLE_ID && !newMember.roles.cache.has(BOOSTER_ROLE_ID)) {
+      // Enviar embed notificando que el rol VIP se asignó, solo si no se debe al rol Booster
+      const vipEmbed = new EmbedBuilder()
+        .setColor(assets.color.base)
+        .setTitle("⭐VIP")
+        .setDescription(
+          `¡Felicidades, ${newMember.user.displayName}!\n` +
+          `Utiliza \`/ayuda\` y ve tus beneficios.`
+        )
+        .setThumbnail(newMember.user.displayAvatarURL());
 
-    try {
-      await notificationChannel.send({
-        content: `<@${newMember.user.id}>`,
-        embeds: [notificationEmbed],
-      });
-    } catch (error) {
-      console.error(
-        `Error al enviar la notificación para ${newMember.user.tag}:`,
-        error
-      );
+      try {
+        await systemChannel.send({
+          content: `<@${newMember.user.id}> Ahora eres un miembro VIP`,
+          embeds: [vipEmbed],
+        });
+      } catch (error) {
+        console.error(
+          `Error al enviar la notificación para ${newMember.user.tag}:`,
+          error
+        );
+      }
     }
   },
 };
