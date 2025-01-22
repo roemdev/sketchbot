@@ -10,12 +10,7 @@
     "deny": "<:deny:1313237501359558809>",
     "warn": "<:warn:1313237521634689107>",
     "whitecheck": "<:whitecheck:1327651295036833884>",
-    "whitedeny": "<:whitedeny:1327651422761652264>"
-  },
-  "userRewards": {
-    "271683421065969664": {
-      "lastRewardDay": "2025-1-17",
-      "balance": 5000
-    }
+    "whitedeny": "<:whitedeny:1327651422761652264>",
+    "boost": "<:boost:1313684699411124286>"
   }
 }

@@ -26,7 +26,7 @@ module.exports = {
         // Enviar embed agradeciendo por el rol Booster
         const boosterEmbed = new EmbedBuilder()
           .setColor(assets.color.base)
-          .setTitle("<:boost:1313684699411124286> BOOST")
+          .setTitle(`${assets.emoji.boost} BOOST`)
           .setDescription(
             `¡Obtuviste el rol <@&${VIP_ROLE_ID}>!\n`+
             `Utiliza \`/ayuda\` y ve tus beneficios.`
