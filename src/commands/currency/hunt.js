@@ -3,9 +3,9 @@ const taskHandler = require("../../helpers/taskHandler");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("work") 
-    .setDescription("Este comando te permite trabajar y ganar créditos."),
+    .setName("hunt") 
+    .setDescription("Este comando te permite cazar y ganar créditos."),
   async execute(interaction) {
-    await taskHandler(interaction, "work");
+    await taskHandler(interaction, "hunt");
   },
 };

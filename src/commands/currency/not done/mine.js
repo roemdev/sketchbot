@@ -3,13 +3,13 @@ const {
   EmbedBuilder,
   MessageFlags,
 } = require("discord.js");
-const assets = require("../../../assets.json");
+const assets = require("../../../../assets.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("aventura")
+    .setName("minar")
     .setDescription(
-      "Este comando te permite embarcarte en una aventura y obtener un ítem."
+      "Este comando te permite embarcarte en una minar y obtener un ítem."
     ),
 
   async execute(interaction) {
@@ -23,24 +23,24 @@ module.exports = {
     };
 
     try {
-      // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /aventura
+      // Verificar si el usuario tiene un cooldown activo en la base de datos para el comando /minar
       const [cooldownRows] = await connection.query(
-        "SELECT adventure FROM currency_users_cooldowns WHERE user_id = ?",
+        "SELECT mine FROM currency_users_cooldowns WHERE user_id = ?",
         [userId]
       );
 
       if (cooldownRows.length > 0) {
-        const lastAdventureTime = new Date(cooldownRows[0].adventure).getTime();
-        if (currentTime < lastAdventureTime + cooldownDuration) {
-          const nextAdventureTime = Math.floor(
-            (lastAdventureTime + cooldownDuration) / 1000
+        const lastMineTime = new Date(cooldownRows[0].mine).getTime();
+        if (currentTime < lastMineTime + cooldownDuration) {
+          const nextMineTime = Math.floor(
+            (lastMineTime + cooldownDuration) / 1000
           );
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
                 .setDescription(
-                  `${assets.emoji.deny} Todavía no puedes embarcarte en una aventura. Podrás intentarlo de nuevo: <t:${nextAdventureTime}:R>.`
+                  `${assets.emoji.deny} Todavía no puedes embarcarte en una minar. Podrás intentarlo de nuevo: <t:${nextMineTime}:R>.`
                 ),
             ],
             flags: MessageFlags.Ephemeral,
@@ -62,13 +62,13 @@ module.exports = {
         );
       }
 
-      // Obtener ítems de la categoría "adventure" con peso
+      // Obtener ítems de la categoría "mine" con peso
       const [itemRows] = await connection.query(
-        'SELECT * FROM currency_items WHERE category = "adventure" AND weight IS NOT NULL'
+        'SELECT * FROM currency_items WHERE category = "mine" AND weight IS NOT NULL'
       );
 
       if (itemRows.length === 0) {
-        throw new Error('No se encontraron ítems en la categoría "adventure".');
+        throw new Error('No se encontraron ítems en la categoría "mine".');
       }
 
       // Calcular el peso total para la selección aleatoria
@@ -126,7 +126,7 @@ module.exports = {
 
       // Actualizar el cooldown en la base de datos
       await connection.query(
-        "INSERT INTO currency_users_cooldowns (user_id, adventure) VALUES (?, ?) ON DUPLICATE KEY UPDATE adventure = VALUES(adventure)",
+        "INSERT INTO currency_users_cooldowns (user_id, mine) VALUES (?, ?) ON DUPLICATE KEY UPDATE mine = VALUES(mine)",
         [userId, new Date(currentTime + cooldownDuration)]
       );
 
@@ -136,7 +136,7 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle("¿Una nueva aventura? ¡Qué bien! 🗺️ ")
+            .setTitle("Mineeroo ¡olé! ⛏️ ")
             .setDescription(
               `Obtuviste: **${selectedItem.name}** • \`${selectedItem.rarity}\` • 🔸${selectedItem.value}\n` +
                 `> *${selectedItem.description}*\n`
@@ -144,7 +144,7 @@ module.exports = {
         ],
       });
     } catch (error) {
-      console.error("Error al procesar el comando aventura:", error);
+      console.error("Error al procesar el comando minar:", error);
       return interaction.reply({
         content: "Hubo un problema. Por favor, intenta de nuevo más tarde.",
         flags: MessageFlags.Ephemeral,
