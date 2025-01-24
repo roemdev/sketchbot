@@ -49,7 +49,7 @@ module.exports = {
         .addUserOption(option => 
           option
             .setName('target_id')
-            .setDescription('Usuario a desbanear')
+            .setDescription('ID del usuario a desbanear')
             .setRequired(true))
         .addStringOption(option => 
           option
@@ -71,6 +71,7 @@ module.exports = {
         .setColor(assets.color.green)
         .setDescription(`${assets.emoji.check} **${target.username}** fue expulsado\n`)
 
+        await interaction.guild.members.kick(target);
         return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 
       } else if (interaction.options.getSubcommand() === 'ban'){
@@ -79,6 +80,7 @@ module.exports = {
         .setColor(assets.color.green)
         .setDescription(`${assets.emoji.check} **${target.username}** fue baneado\n`)
       
+        await interaction.guild.members.ban(target);
         return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 
       } else if (interaction.options.getSubcommand() === 'unban'){
@@ -87,8 +89,8 @@ module.exports = {
         .setColor(assets.color.green)
         .setDescription(`${assets.emoji.check} **${target.username}** fue desbaneado\n`)
       
+        await interaction.guild.members.unban(target);
         return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-        
       }
     }
 };
