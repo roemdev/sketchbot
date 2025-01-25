@@ -38,9 +38,8 @@ module.exports = {
         const userTag = membership == "vip" ? `<@${userId}>⭐` : `<@${userId}>`;
 
         // Concatenamos cada entrada en la descripción
-        description += `${
-          index + 1
-        }. ${userTag} •🔸${balance.toLocaleString()}\n`;
+        description += `${index + 1
+          }. ${userTag} • ⏣ ${balance.toLocaleString()}\n`;
       });
 
       // Construir el embed con la clasificación

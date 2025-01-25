@@ -47,7 +47,7 @@ module.exports = {
         .setAuthor(author)
         .setColor(assets.color.green)
         .setDescription(
-          `Balance de ${targetUser}\n> 🔸**${balance.toLocaleString()}** créditos`
+          `Balance de ${targetUser}\n> ⏣ **${balance.toLocaleString()}** créditos`
         );
 
       await interaction.reply({ embeds: [embed] });
