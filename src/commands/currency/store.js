@@ -41,10 +41,9 @@ module.exports = {
 
       items.forEach((item) => {
         embed.addFields({
-          name: `${item.name} - 🔸${item.price}`,
-          value: `>>> ${item.description || "Sin descripción"}\n**Stock**: ${
-            item.stock ?? "Ilimitado"
-          }`,
+          name: `${item.name} - ⏣ ${item.price}`,
+          value: `>>> ${item.description || "Sin descripción"}\n**Stock**: ${item.stock ?? "Ilimitado"
+            }`,
         });
       });
 

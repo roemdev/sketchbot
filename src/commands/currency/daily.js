@@ -78,7 +78,7 @@ module.exports = {
             .setColor(assets.color.green)
             .setTitle("Recompensa diaria")
             .setDescription(
-              `Has reclamado tu recompensa diaria y has obtenido **🔸${reward}** créditos!`
+              `Has reclamado tu recompensa diaria y has obtenido **⏣ ${reward}** créditos!`
             ),
         ],
       });

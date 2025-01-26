@@ -20,19 +20,19 @@ module.exports = {
       // Consultar el inventario del usuario
       const [userItems] = await connection.query(
         "SELECT ui.item_id, ui.quantity, ci.name, ci.value " +
-          "FROM currency_user_inventory ui " +
-          "JOIN currency_items ci ON ui.item_id = ci.item_id " +
-          "WHERE ui.user_id = ?",
+        "FROM currency_user_inventory ui " +
+        "JOIN currency_items ci ON ui.item_id = ci.item_id " +
+        "WHERE ui.user_id = ?",
         [userId]
       );
 
       // Consultar los ítems de la tienda que el usuario posee
       const [storeItems] = await connection.query(
         "SELECT cs.store_item_id, cs.name, cs.price, cs.stock " +
-          "FROM currency_store cs " +
-          "JOIN currency_user_inventory ui " +
-          "ON (cs.store_item_id = ui.item_id OR cs.store_item_id = ui.store_item_id) " +
-          "WHERE ui.user_id = ? AND (cs.stock > 0 OR cs.stock IS NULL)",
+        "FROM currency_store cs " +
+        "JOIN currency_user_inventory ui " +
+        "ON (cs.store_item_id = ui.item_id OR cs.store_item_id = ui.store_item_id) " +
+        "WHERE ui.user_id = ? AND (cs.stock > 0 OR cs.stock IS NULL)",
         [userId]
       );
 
@@ -42,7 +42,7 @@ module.exports = {
         inventoryDescription += `${assets.emoji.deny} No tienes ítems dropeables.\n\n`;
       } else {
         userItems.forEach((item) => {
-          inventoryDescription += `${item.name} - **${item.quantity}** - 🔸${item.value}\n`;
+          inventoryDescription += `${item.name} - **${item.quantity}** - ⏣ ${item.value}\n`;
         });
       }
 
@@ -52,9 +52,8 @@ module.exports = {
         storeDescription += `${assets.emoji.deny} No tienes ítems de la tienda.\n`;
       } else {
         storeItems.forEach((item) => {
-          storeDescription += `${item.name} - **${item.stock || "1"}** - 🔸${
-            item.price
-          }\n`;
+          storeDescription += `${item.name} - **${item.stock || "1"}** - ⏣ ${item.price
+            }\n`;
         });
       }
 

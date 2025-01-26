@@ -150,7 +150,7 @@ module.exports = {
               .setAuthor(author)
               .setColor(assets.color.green)
               .setDescription(
-                `${assets.emoji.check} Le robaste **🔸${stolenAmount}** a <@${targetUser.id}> 🐈.`
+                `${assets.emoji.check} Le robaste **⏣ ${stolenAmount}** a <@${targetUser.id}> 🐈.`
               ),
           ],
         });
@@ -196,7 +196,7 @@ module.exports = {
               .setAuthor(author)
               .setColor(assets.color.red)
               .setDescription(
-                `${assets.emoji.deny} Te atraparon intentando robarle a <@${targetUser.id}> y perdiste **🔸${penaltyAmount}**.`
+                `${assets.emoji.deny} Te atraparon intentando robarle a <@${targetUser.id}> y perdiste **⏣ ${penaltyAmount}**.`
               ),
           ],
         });

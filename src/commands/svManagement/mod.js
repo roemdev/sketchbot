@@ -5,6 +5,9 @@ const {
   PermissionFlagsBits,
   InteractionContextType,
   PermissionsBitField,
+  ButtonBuilder,
+  ButtonStyle,
+  ActionRowBuilder,
 } = require('discord.js');
 const assets = require('../../../assets.json')
 
@@ -16,12 +19,12 @@ module.exports = {
       subcommand
         .setName('kick')
         .setDescription('Expulsa a un usuario del servidor.')
-        .addUserOption(option => 
+        .addUserOption(option =>
           option
             .setName('target')
             .setDescription('Usuario a expulsar')
             .setRequired(true))
-        .addStringOption(option => 
+        .addStringOption(option =>
           option
             .setName('reason')
             .setDescription('Razón de la expulsión')
@@ -31,12 +34,12 @@ module.exports = {
       subcommand
         .setName('ban')
         .setDescription('Banea a un usuario del servidor.')
-        .addUserOption(option => 
+        .addUserOption(option =>
           option
             .setName('target')
             .setDescription('Usuario a banear')
             .setRequired(true))
-        .addStringOption(option => 
+        .addStringOption(option =>
           option
             .setName('reason')
             .setDescription('Razón del baneo')
@@ -46,12 +49,12 @@ module.exports = {
       subcommand
         .setName('unban')
         .setDescription('Desbanea a un usuario del servidor.')
-        .addUserOption(option => 
+        .addUserOption(option =>
           option
             .setName('target_id')
             .setDescription('ID del usuario a desbanear')
             .setRequired(true))
-        .addStringOption(option => 
+        .addStringOption(option =>
           option
             .setName('reason')
             .setDescription('Razón del desbaneo')
@@ -60,37 +63,59 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
     .setContexts(InteractionContextType.Guild),
 
-    async execute(interaction){
+  async execute(interaction) {
 
-      const target = interaction.options.getUser('target');
-      const reason = interaction.options.getString('reason') ?? 'No reason provided';
+    const target = interaction.options.getUser('target');
+    const reason = interaction.options.getString('reason') ?? 'No reason provided';
 
-      if (interaction.options.getSubcommand() === 'kick') {
+    if (interaction.options.getSubcommand() === 'kick') {
 
-        const embed = new EmbedBuilder()
+      const replyEmbed = new EmbedBuilder()
         .setColor(assets.color.green)
         .setDescription(`${assets.emoji.check} **${target.username}** fue expulsado\n`)
 
-        await interaction.guild.members.kick(target);
-        return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+      const privateEmbed = new EmbedBuilder()
+        .setColor('Red')
+        .setDescription(
+          '**Fuiste expulsado**\n' +
+          `> **Razón**:  ${reason}\n` +
+          `> **Responsable**: ${interaction.user.username}`
+        )
 
-      } else if (interaction.options.getSubcommand() === 'ban'){
+      const sentFromButton = new ButtonBuilder()
+        .setLabel(`Enviado desde ARKANIA`)
+        .setURL('https://discord.com/channels/942822377849507841/1330894933715845140')
+        .setStyle(ButtonStyle.Link)
 
-        const embed = new EmbedBuilder()
+      const row = new ActionRowBuilder()
+        .addComponents(sentFromButton)
+
+      target.send({ embeds: [privateEmbed], components: [row] })
+
+      await interaction.guild.members.kick(target);
+      return interaction.reply({ embeds: [replyEmbed], flags: MessageFlags.Ephemeral })
+
+    } else if (interaction.options.getSubcommand() === 'ban') {
+
+      const replyEmbed = new EmbedBuilder()
         .setColor(assets.color.green)
         .setDescription(`${assets.emoji.check} **${target.username}** fue baneado\n`)
-      
-        await interaction.guild.members.ban(target);
-        return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 
-      } else if (interaction.options.getSubcommand() === 'unban'){
+      target.send({ embeds: [privateEmbed], components: [row] })
 
-        const embed = new EmbedBuilder()
+      await interaction.guild.members.ban(target);
+      return interaction.reply({ embeds: [replyEmbed], flags: MessageFlags.Ephemeral })
+
+    } else if (interaction.options.getSubcommand() === 'unban') {
+
+      const replyEmbed = new EmbedBuilder()
         .setColor(assets.color.green)
         .setDescription(`${assets.emoji.check} **${target.username}** fue desbaneado\n`)
-      
-        await interaction.guild.members.unban(target);
-        return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
-      }
+
+      target.send({ embeds: [privateEmbed], components: [row] })
+
+      await interaction.guild.members.unban(target);
+      return interaction.reply({ embeds: [replyEmbed], flags: MessageFlags.Ephemeral })
     }
+  }
 };

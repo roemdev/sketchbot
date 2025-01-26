@@ -25,17 +25,19 @@ module.exports = {
 
         // Enviar embed agradeciendo por el rol Booster
         const boosterEmbed = new EmbedBuilder()
+          .setAuthor({ name: newMember.user.displayName, iconURL: newMember.user.displayAvatarURL({ dynamic: true }) })
           .setColor(assets.color.base)
           .setTitle(`${assets.emoji.boost} BOOST`)
           .setDescription(
-            `¡Obtuviste el rol <@&${VIP_ROLE_ID}>!\n`+
-            `Utiliza \`/ayuda\` y ve tus beneficios.`
+            `* ¡Obtuviste el rol <@&${VIP_ROLE_ID}>!\n` +
+            `* Usa \`/ayuda\` y ve tus beneficios.`
           )
           .setThumbnail(newMember.user.displayAvatarURL());
 
         await systemChannel.send({
           content: `<@${newMember.user.id}> ¡Gracias por el boost!`,
-          embeds: [boosterEmbed] });
+          embeds: [boosterEmbed]
+        });
       } catch (error) {
         console.error(
           `Error al asignar el rol VIP a ${newMember.user.tag}:`,
@@ -48,11 +50,12 @@ module.exports = {
     if (addedRoleId === VIP_ROLE_ID && !newMember.roles.cache.has(BOOSTER_ROLE_ID)) {
       // Enviar embed notificando que el rol VIP se asignó, solo si no se debe al rol Booster
       const vipEmbed = new EmbedBuilder()
+        .setAuthor({ name: newMember.user.displayName, iconURL: newMember.user.displayAvatarURL({ dynamic: true }) })
         .setColor(assets.color.base)
         .setTitle("⭐VIP")
         .setDescription(
-          `¡Felicidades, ${newMember.user.displayName}!\n` +
-          `Utiliza \`/ayuda\` y ve tus beneficios.`
+          `* ¡Disfruta de tu exclusividad!\n` +
+          `* Usa \`/ayuda\` y ve tus beneficios.`
         )
         .setThumbnail(newMember.user.displayAvatarURL());
 

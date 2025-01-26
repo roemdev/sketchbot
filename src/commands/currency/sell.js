@@ -168,7 +168,7 @@ module.exports = {
             .setAuthor(author)
             .setColor(assets.color.green)
             .setDescription(
-              `${assets.emoji.check} Has vendido **${quantityToSell} x ${itemName}** por **🔸${salePrice}** créditos.`
+              `${assets.emoji.check} Has vendido **${quantityToSell} x ${itemName}** por **⏣ ${salePrice}** créditos.`
             ),
         ],
       });
