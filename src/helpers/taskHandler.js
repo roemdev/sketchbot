@@ -86,7 +86,7 @@ const taskHandler = async (interaction, taskName) => {
           })
           .setColor(assets.color.green)
           .setDescription(
-            `${taskConfig.description} ¡Has ganado **⏣ ${reward.toLocaleString()}** créditos!`
+            `${taskConfig.description.replace('{amount}', reward.toLocaleString())}.`
           ),
       ],
     });
