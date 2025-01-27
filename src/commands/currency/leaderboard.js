@@ -31,16 +31,18 @@ module.exports = {
       // Construir la descripción del embed
       let description = "Los **10** más ricos del servidor:\n\n";
 
-      rows.forEach((row, index) => {
+      for (const [index, row] of rows.entries()) {
         const userId = row.user_id;
         const membership = row.membership;
         const balance = row.balance;
-        const userTag = membership == "vip" ? `<@${userId}>⭐` : `<@${userId}>`;
 
-        // Concatenamos cada entrada en la descripción
-        description += `${index + 1
-          }. ${userTag} • ⏣ ${balance.toLocaleString()}\n`;
-      });
+        // Obtener el username basado en el ID
+        const user = await interaction.client.users.fetch(userId);
+        const userTag = membership === "vip" ? `${user.username} ${assets.emoji.vipstar}` : user.username;
+
+        // Concatenar la información en la descripción
+        description += `${index + 1}. ${userTag} • ⏣ ${balance.toLocaleString()}\n`;
+      }
 
       // Construir el embed con la clasificación
       const embed = new EmbedBuilder()
