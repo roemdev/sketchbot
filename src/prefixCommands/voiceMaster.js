@@ -50,7 +50,7 @@ module.exports = {
     // Embed inicial
     const embed = new EmbedBuilder()
       .setColor(assets.color.base)
-      .setAuthor({ name: message.client.user.username, iconURL: message.client.user.displayAvatarURL({ dynamic: true }) })
+      .setAuthor({ name: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
       .setTitle('Interfaz del VoiceMaster')
       .setThumbnail(message.client.user.displayAvatarURL({ dynamic: true, size: 1024 }))
       .setDescription('Haz clic en los botones de abajo para controlar tu canal de voz.')
