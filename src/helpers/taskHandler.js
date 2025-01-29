@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, MessageFlags } = require("discord.js");
 const assets = require("../../assets.json")
 
 const taskHandler = async (interaction, taskName) => {
@@ -40,7 +40,7 @@ const taskHandler = async (interaction, taskName) => {
                 `${assets.emoji.deny} Todavía no puedes usar este comando. Podrás intentarlo de nuevo: <t:${nextTaskTime}:R>.`
               ),
           ],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
@@ -95,7 +95,7 @@ const taskHandler = async (interaction, taskName) => {
     return interaction.reply({
       content:
         "Hubo un error procesando este comando. Por favor, inténtalo de nuevo más tarde.",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 };
