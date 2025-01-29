@@ -85,9 +85,7 @@ const taskHandler = async (interaction, taskName) => {
             iconURL: interaction.user.displayAvatarURL(),
           })
           .setColor(assets.color.green)
-          .setDescription(
-            `${taskConfig.description} ¡Has ganado **🔸${reward.toLocaleString()}** créditos!`
-          ),
+          .setDescription(`${taskConfig.description.replace('{amount}', reward.toLocaleString())}`),
       ],
     });
   } catch (error) {

@@ -34,9 +34,12 @@ module.exports = {
       ) {
         const nextClaim = new Date(cooldownData[0].daily);
         return interaction.reply({
-          content: `⏳ Ya has reclamado tu recompensa diaria. Puedes volver a intentarlo <t:${Math.floor(
-            nextClaim.getTime() / 1000
-          )}:R>.`,
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.red)
+              .setTitle("Recompensa diaria")
+              .setDescription(`${assets.emoji.deny} Ya has reclamado tu recompensa diaria.\nLa próxima estará lista <t:${Math.floor(nextClaim.getTime() / 1000)}:R>.`),
+          ],
           flags: MessageFlags.Ephemeral,
         });
       }
@@ -78,7 +81,7 @@ module.exports = {
             .setColor(assets.color.green)
             .setTitle("Recompensa diaria")
             .setDescription(
-              `Has reclamado tu recompensa diaria y has obtenido **🔸${reward}** créditos!`
+              `Has reclamado tu recompensa diaria: **⏣ ${reward.toLocaleString()}** créditos!`
             ),
         ],
       });
