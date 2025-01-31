@@ -21,10 +21,6 @@ module.exports = {
     if (!interaction.isAutocomplete()) return;
 
     const connection = interaction.client.dbConnection;
-    const author = {
-      name: interaction.user.displayName,
-      iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-    };
 
     try {
       // Consulta los ítems disponibles en la tienda
@@ -100,8 +96,8 @@ module.exports = {
 
         await connection.query(
           "INSERT INTO currency_user_inventory (user_id, store_item_id, quantity) " +
-            "VALUES (?, ?, 1) " +
-            "ON DUPLICATE KEY UPDATE quantity = quantity + 1",
+          "VALUES (?, ?, 1) " +
+          "ON DUPLICATE KEY UPDATE quantity = quantity + 1",
           [userId, item.store_item_id]
         );
       }
@@ -190,10 +186,15 @@ module.exports = {
         return interaction.reply({
           embeds: [
             new EmbedBuilder()
-              .setAuthor(author)
               .setColor(assets.color.green)
+              .setAuthor(
+                author = {
+                  name: interaction.user.displayName,
+                  iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+                })
+              .setTitle(`${assets.emoji.check} Rol comprado`)
               .setDescription(
-                `${assets.emoji.check} Has comprado el rol **${item.name}**. Expira: <t:${expirationTimestamp}:R>`
+                `Has comprado el rol: **${item.name}**. Expira: <t:${expirationTimestamp}:R>`
               ),
           ],
         });
@@ -215,10 +216,15 @@ module.exports = {
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
-            .setTitle(author)
             .setColor(assets.color.green)
+            .setAuthor(
+              author = {
+                name: interaction.user.displayName,
+                iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+              })
+            .setTitle(`${assets.emoji.check} Item comprado`)
             .setDescription(
-              `${assets.emoji.check} Has comprado **${item.name}**.`
+              `Has comprado el item: **${item.name}**.`
             ),
         ],
       });
