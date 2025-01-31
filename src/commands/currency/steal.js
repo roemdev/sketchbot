@@ -195,7 +195,7 @@ module.exports = {
               .setAuthor(author)
               .setColor(assets.color.red)
               .setDescription(
-                `${assets.emoji.deny} Te atraparon intentando robarle a <@${targetUser.id}> y perdiste **⏣ ${penaltyAmount}**.`
+                `${assets.emoji.deny} Te atraparon intentando robarle a <@${targetUser.id}> y perdiste **⏣ ${penaltyAmount.toLocaleString()}**.`
               ),
           ],
         });
