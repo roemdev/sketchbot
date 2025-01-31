@@ -1,4 +1,4 @@
-const { 
+const {
   SlashCommandBuilder,
   PermissionFlagsBits,
   ButtonBuilder,
@@ -16,7 +16,7 @@ const ms = require("ms");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('sorteo')
+    .setName('giveaway')
     .setDescription('Inicia un nuevo sorteo')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
@@ -29,29 +29,29 @@ module.exports = {
       .setTitle('Nuevo Sorteo');
 
     const durationInput = new TextInputBuilder()
-			.setCustomId('durationInput')
-			.setLabel('Duración')
+      .setCustomId('durationInput')
+      .setLabel('Duración')
       .setPlaceholder('Ej: 1m, 2h, 3d')
-			.setStyle(TextInputStyle.Short)
+      .setStyle(TextInputStyle.Short)
       .setRequired(true);
 
     const winnersInput = new TextInputBuilder()
-			.setCustomId('winnersInput')
-			.setLabel('Número de ganadores')
+      .setCustomId('winnersInput')
+      .setLabel('Número de ganadores')
       .setValue('1')
-			.setStyle(TextInputStyle.Short)
+      .setStyle(TextInputStyle.Short)
       .setRequired(true);
-    
+
     const prizeInput = new TextInputBuilder()
-			.setCustomId('prizeInput')
-			.setLabel('Premio')
-			.setStyle(TextInputStyle.Short)
+      .setCustomId('prizeInput')
+      .setLabel('Premio')
+      .setStyle(TextInputStyle.Short)
       .setRequired(true);
 
     const descriptionInput = new TextInputBuilder()
-			.setCustomId('descriptionInput')
-			.setLabel('Descripción')
-			.setStyle(TextInputStyle.Paragraph)
+      .setCustomId('descriptionInput')
+      .setLabel('Descripción')
+      .setStyle(TextInputStyle.Paragraph)
       .setRequired(false);
 
     const durationInputRow = new ActionRowBuilder().addComponents(durationInput);
@@ -85,13 +85,12 @@ module.exports = {
           .setColor(assets.color.base)
           .setTitle(prize)
           .setDescription(
-            `${description}\n\n`+
-            `Finaliza: <t:${endDate}:R> | (<t:${endDate}:D>)\n`+
-            `Afitrión: <@${hoster}>\n`+
-            `Entradas: ${entries}\n`+
+            `${description}\n\n` +
+            `Finaliza: <t:${endDate}:R> | (<t:${endDate}:D>)\n` +
+            `Afitrión: <@${hoster}>\n` +
+            `Entradas: ${entries}\n` +
             `Ganadores: ${winners}`)
-          //.setFooter({ text: `${(new Date(endDate * 1000)).toLocaleDateString()}` })
-          
+
         const enterButton = new ButtonBuilder()
           .setCustomId('enterButton')
           .setLabel('Ingresar')
@@ -99,7 +98,7 @@ module.exports = {
           .setStyle(ButtonStyle.Primary)
 
         const enterButtonRow = new ActionRowBuilder().addComponents(enterButton)
-          
+
         await interaction.reply({ content: '¡Éxito!', flags: MessageFlags.Ephemeral });
         interaction.channel.send({ embeds: [gaEmbed], components: [enterButtonRow] })
       }
