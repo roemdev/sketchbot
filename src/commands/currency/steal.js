@@ -68,7 +68,7 @@ module.exports = {
 
       // Obtener las tasas de fallo y monto
       const [taskRows] = await connection.query(
-        'SELECT value_min, value_max FROM currency_tasks WHERE type = "rob" LIMIT 1'
+        'SELECT reward_min, reward_max FROM currency_tasks_config WHERE task_type = "rob"'
       );
 
       if (taskRows.length === 0) {
@@ -84,7 +84,7 @@ module.exports = {
         });
       }
 
-      const { value_min: failRate, value_max: robPercentage } = taskRows[0];
+      const { reward_min: failRate, reward_max: robPercentage } = taskRows[0];
       const failChance = failRate / 100; // Convertir tasa de fallo a porcentaje
       const robPercent = robPercentage / 100; // Convertir porcentaje de robo
 
@@ -148,10 +148,9 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setAuthor(author)
+              .setTitle(`${assets.emoji.check} Robo exitoso`)
               .setColor(assets.color.green)
-              .setDescription(
-                `${assets.emoji.check} Le robaste **⏣ ${stolenAmount}** a <@${targetUser.id}> 🐈.`
-              ),
+              .setDescription(`Le robaste **⏣ ${stolenAmount.toLocaleString()}** a <@${targetUser.id}> 🐈.`),
           ],
         });
       } else {

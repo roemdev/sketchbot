@@ -58,9 +58,14 @@ module.exports = {
       const resetInactivityTimer = () => {
         if (inactivityTimer) clearTimeout(inactivityTimer);
         inactivityTimer = setTimeout(() => {
-          connection.destroy();
+          if (connection.state.status === 'connected') {
+            connection.destroy();
+          }
         }, 180000); // 3 minutos
       };
+
+      // Actualiza el timer al recibir la interacción
+      resetInactivityTimer();
 
       player.on(AudioPlayerStatus.Idle, resetInactivityTimer);
       player.on('stateChange', (oldState, newState) => {
@@ -78,7 +83,10 @@ module.exports = {
           .setDescription(`${assets.emoji.deny} Hubo un error al reproducir el audio.`);
 
         interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
-        connection.destroy();
+        // Verifica si el bot sigue conectado antes de destruir la conexión
+        if (connection.state.status === 'connected') {
+          connection.destroy();
+        }
       });
 
     } catch (error) {
