@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require("discord.js");
-const taskHandler = require("../../helpers/taskHandler");
+const taskHandler = require("../../utils/taskHandler");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("hunt") 
+    .setName("hunt")
     .setDescription("Este comando te permite cazar y ganar créditos."),
   async execute(interaction) {
     await taskHandler(interaction, "hunt");

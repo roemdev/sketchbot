@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+require('dotenv').config();
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-const config = require("./config.json");
 const connection = require("./src/database/db");
 const { execSync } = require("child_process");
 
@@ -109,4 +109,4 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-client.login(config.bot.token);
+client.login(process.env.BOT_TOKEN);

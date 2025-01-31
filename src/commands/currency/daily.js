@@ -37,8 +37,8 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(assets.color.red)
-              .setTitle("Recompensa diaria")
-              .setDescription(`${assets.emoji.deny} Ya has reclamado tu recompensa diaria.\nLa próxima estará lista <t:${Math.floor(nextClaim.getTime() / 1000)}:R>.`),
+              .setTitle(`${assets.emoji.deny} Recompensa reclamada`)
+              .setDescription(`Ya has reclamado tu recompensa diaria. La próxima estará lista <t:${Math.floor(nextClaim.getTime() / 1000)}:R>.`),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -79,10 +79,8 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle("Recompensa diaria")
-            .setDescription(
-              `Has reclamado tu recompensa diaria: **⏣ ${reward.toLocaleString()}** créditos!`
-            ),
+            .setTitle(`${assets.emoji.check} Recompensa reclamada`)
+            .setDescription(`¡Aquí tienes tus créditos de hoy! **⏣ ${reward.toLocaleString()}**`),
         ],
       });
     } catch (error) {

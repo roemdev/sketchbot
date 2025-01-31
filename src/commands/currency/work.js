@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const taskHandler = require("../../helpers/taskHandler");
+const taskHandler = require("../../utils/taskHandler");
 
 module.exports = {
   data: new SlashCommandBuilder()

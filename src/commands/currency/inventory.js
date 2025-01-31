@@ -42,7 +42,7 @@ module.exports = {
         inventoryDescription += `${assets.emoji.deny} No tienes ítems dropeables.\n\n`;
       } else {
         userItems.forEach((item) => {
-          inventoryDescription += `${item.name} - **${item.quantity}** - ⏣ ${item.value}\n`;
+          inventoryDescription += `${item.name} - **${item.quantity}** - ⏣ ${item.value.toLocaleString()}\n`;
         });
       }
 
@@ -52,8 +52,7 @@ module.exports = {
         storeDescription += `${assets.emoji.deny} No tienes ítems de la tienda.\n`;
       } else {
         storeItems.forEach((item) => {
-          storeDescription += `${item.name} - **${item.stock || "1"}** - ⏣ ${item.price
-            }\n`;
+          storeDescription += `${item.name} - **${item.stock || "1"}** - ⏣ ${item.price.toLocaleString()}\n`;
         });
       }
 
