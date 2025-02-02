@@ -1,12 +1,12 @@
 const {
-  SlashCommandBuilder,
+  SlashCommandSubcommandBuilder,
   EmbedBuilder,
   MessageFlags,
 } = require("discord.js");
 const assets = require("../../../assets.json");
 
 module.exports = {
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName("clasificación")
     .setDescription(
       "Muestra la clasificación de los 10 miembros con más créditos."

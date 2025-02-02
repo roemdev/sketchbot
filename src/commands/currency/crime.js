@@ -1,10 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
+const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 const { handleCooldowns } = require('../../utils/handleCooldowns');
 const { updateUserBalance } = require('../../utils/updateUserBalance');
 
 module.exports = {
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName('crimen')
     .setDescription('Comete un crimen y ve si tienes suerte'),
 
@@ -16,12 +16,12 @@ module.exports = {
     const { cooldownActive, remainingCooldown } = await handleCooldowns(connection, userId, 'crime');
 
     if (cooldownActive) {
-      const remainingMinutes = Math.ceil(remainingCooldown / (1000 * 60));
+      const remainingUnixTimestamp = Math.floor(remainingCooldown / 1000) + Math.floor(Date.now() / 1000);
       return interaction.reply({
         embeds: [new EmbedBuilder()
           .setColor(assets.color.red)
           .setTitle(`${assets.emoji.deny} Cooldown activo`)
-          .setDescription(`Debes esperar ${remainingMinutes} minutos antes de cometer otro crimen.`)
+          .setDescription(`Podrás volver a intentarlo <t:${remainingUnixTimestamp}:R>`)
         ],
         flags: MessageFlags.Ephemeral
       });

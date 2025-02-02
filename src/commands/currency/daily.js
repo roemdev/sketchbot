@@ -1,9 +1,9 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
+const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
 const assets = require("../../../assets.json");
 const { updateUserBalance } = require("../../utils/updateUserBalance"); // Asegúrate de que esta función esté correctamente implementada
 
 module.exports = {
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName("diario")
     .setDescription("Reclama tu recompensa diaria según tu rol."),
 

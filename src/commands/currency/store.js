@@ -1,12 +1,12 @@
 const {
-  SlashCommandBuilder,
+  SlashCommandSubcommandBuilder,
   EmbedBuilder,
   MessageFlags,
 } = require("discord.js");
 const assets = require("../../../assets.json");
 
 module.exports = {
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName("tienda")
     .setDescription("Muestra todos los ítems disponibles en la tienda."),
 
