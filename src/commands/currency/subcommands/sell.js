@@ -1,12 +1,12 @@
 const {
-  SlashCommandBuilder,
+  SlashCommandSubcommandBuilder,
   EmbedBuilder,
   MessageFlags,
 } = require("discord.js");
-const assets = require("../../../assets.json");
+const assets = require("../../../../assets.json");
 
 module.exports = {
-  data: new SlashCommandBuilder()
+  data: new SlashCommandSubcommandBuilder()
     .setName("vender")
     .setDescription("Vende un ítem de tu inventario.")
     .addStringOption((option) =>

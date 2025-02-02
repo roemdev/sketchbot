@@ -1,6 +1,5 @@
 const {
-  SlashCommandBuilder,
-  PermissionFlagsBits,
+  SlashCommandSubcommandBuilder,
   ButtonBuilder,
   ButtonStyle,
   ActionRowBuilder,
@@ -10,14 +9,13 @@ const {
   EmbedBuilder,
   MessageFlags
 } = require("discord.js");
-const assets = require("../../../assets.json");
+const assets = require("../../../../assets.json");
 const ms = require("ms");
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("sorteo")
-    .setDescription("Inicia un nuevo sorteo")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
+  data: new SlashCommandSubcommandBuilder()
+    .setName("crear")
+    .setDescription("Inicia un nuevo sorteo"),
 
   async execute(interaction) {
     // Crear el formulario modal

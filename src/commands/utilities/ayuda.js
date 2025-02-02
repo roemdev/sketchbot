@@ -133,7 +133,7 @@ module.exports = {
         case "economy":
           responseEmbed = new EmbedBuilder()
             .setColor(assets.color.base)
-            .setTitle("Economía de Arkania")
+            .setTitle("Economía de Arkania - ⚠️ EN CONSTRUCCIÓN")
             .setDescription(
               "Las monedas son la moneda virtual oficial de Arkania. Puedes acumularlas participando en actividades y eventos dentro del servidor."
             )

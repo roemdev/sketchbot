@@ -10,7 +10,7 @@ async function handleCooldowns(connection, userId, taskName) {
       throw new Error(`No se encontró la configuración de cooldown para la tarea: ${taskName}`);
     }
 
-    const cooldownDuration = taskConfig[0].cooldown; // Cooldown en milisegundos
+    const cooldownDuration = taskConfig[0].cooldown;
     const currentTime = new Date();
     const cooldownEndTime = new Date(currentTime.getTime() + cooldownDuration);
 

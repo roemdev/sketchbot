@@ -1,25 +1,27 @@
 const { SlashCommandBuilder } = require('discord.js');
-const work = require('./work');
-const crime = require('./crime');
-const balance = require('./balance');
-const daily = require('./daily');
-const buy = require('./buy');
-const store = require('./store');
-const leaderboard = require('./leaderboard');
-const inventory = require('./inventory');
+const work = require('./subcommands/work');
+const crime = require('./subcommands/crime');
+const balance = require('./subcommands/balance');
+const daily = require('./subcommands/daily');
+const buy = require('./subcommands/buy');
+const store = require('./subcommands/store');
+const leaderboard = require('./subcommands/leaderboard');
+const inventory = require('./subcommands/inventory');
+const sell = require('./subcommands/sell');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('economia')
+    .setName('economía')
     .setDescription('Comandos relacionados con la economía y trabajos')
-    .addSubcommand(work.data) // Subcomando /economia trabajo
-    .addSubcommand(crime.data) // Subcomando /economia crimen
-    .addSubcommand(daily.data) // Subcomando /economia crimen
-    .addSubcommand(buy.data) // Subcomando /economia crimen
-    .addSubcommand(balance.data) // Subcomando /economia crimen
-    .addSubcommand(store.data) // Subcomando /economia crimen
-    .addSubcommand(leaderboard.data) // Subcomando /economia crimen
-    .addSubcommand(inventory.data), // Subcomando /economia crimen
+    .addSubcommand(work.data)
+    .addSubcommand(crime.data)
+    .addSubcommand(daily.data)
+    .addSubcommand(buy.data)
+    .addSubcommand(balance.data)
+    .addSubcommand(store.data)
+    .addSubcommand(leaderboard.data)
+    .addSubcommand(inventory.data)
+    .addSubcommand(sell.data),
 
   async execute(interaction) {
     // Mapea el nombre del subcomando a su función correspondiente
@@ -32,6 +34,7 @@ module.exports = {
       'tienda': store.execute,
       'clasificación': leaderboard.execute,
       'inventario': inventory.execute,
+      'vender': sell.execute,
     };
 
     const subcommand = interaction.options.getSubcommand();
