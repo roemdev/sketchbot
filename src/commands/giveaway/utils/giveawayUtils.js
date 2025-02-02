@@ -15,12 +15,35 @@ async function endGiveaway(giveawayId, client) {
 
     // Obtener las entradas del sorteo
     const [entries] = await connection.query(
-      `SELECT user_id FROM giveaway_entries WHERE giveaway_id = ?`,
+      `SELECT user_id, is_vip FROM giveaway_entries WHERE giveaway_id = ?`,
       [giveawayId]
     );
 
-    // Seleccionar ganadores aleatorios
-    const winners = entries.sort(() => Math.random() - 0.5).slice(0, winners_count);
+    // Crear una lista ponderada de entradas
+    let weightedEntries = [];
+    entries.forEach(entry => {
+      // Si el usuario es VIP, añadimos su entrada dos veces para aumentar su probabilidad
+      weightedEntries.push(entry.user_id);
+      if (entry.is_vip) {
+        weightedEntries.push(entry.user_id); // Duplicamos su entrada
+      }
+    });
+
+    // Seleccionar ganadores únicos
+    const winners = [];
+    while (winners.length < winners_count && weightedEntries.length > 0) {
+      // Seleccionar un ganador aleatorio de la lista ponderada
+      const randomIndex = Math.floor(Math.random() * weightedEntries.length);
+      const winner = weightedEntries[randomIndex];
+
+      // Si el ganador ya fue seleccionado, lo ignoramos
+      if (!winners.includes(winner)) {
+        winners.push(winner);
+
+        // Eliminar todas las entradas de este usuario para evitar que sea seleccionado nuevamente
+        weightedEntries = weightedEntries.filter(userId => userId !== winner);
+      }
+    }
 
     // Actualizar el estado del sorteo en la base de datos
     await connection.query(
@@ -33,7 +56,7 @@ async function endGiveaway(giveawayId, client) {
     const message = await channel.messages.fetch(message_id);
 
     // Anunciar los ganadores
-    const winnersMention = winners.map((winner) => `<@${winner.user_id}>`).join(", ");
+    const winnersMention = winners.map((winner) => `<@${winner}>`).join(", ");
     await message.reply(`🎉 ¡El sorteo ha terminado! Ganadores: ${winnersMention}`);
   } catch (error) {
     console.error("Error al finalizar el sorteo:", error);

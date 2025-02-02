@@ -8,7 +8,6 @@ module.exports = async function handleButton(interaction) {
     try {
       const connection = interaction.client.dbConnection;
 
-      // Verificar si el sorteo existe
       const [giveaway] = await connection.query(
         `SELECT * FROM giveaways WHERE id = ? AND status = 'active'`,
         [giveawayId]
@@ -21,10 +20,9 @@ module.exports = async function handleButton(interaction) {
         });
       }
 
-      // Consultar si el usuario tiene la entrada al sorteo
       const [userInventory] = await connection.query(
         `SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND store_item_id = ?`,
-        [interaction.user.id, 2] // '2' es el store_item_id de la entrada al sorteo
+        [interaction.user.id, 2]
       );
 
       if (userInventory.length === 0 || userInventory[0].quantity < 1) {
@@ -39,19 +37,16 @@ module.exports = async function handleButton(interaction) {
         });
       }
 
-      // Restar una entrada al sorteo
       await connection.query(
         `UPDATE currency_user_inventory SET quantity = quantity - 1 WHERE user_id = ? AND store_item_id = ?`,
         [interaction.user.id, 2]
       );
 
-      // Verificar si la cantidad de entradas es ahora 0 y eliminar el ítem si es necesario
       const [updatedInventory] = await connection.query(
         `SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND store_item_id = ?`,
         [interaction.user.id, 2]
       );
 
-      // Si la cantidad es 0, eliminar el ítem del inventario
       if (updatedInventory[0].quantity === 0) {
         await connection.query(
           `DELETE FROM currency_user_inventory WHERE user_id = ? AND store_item_id = ?`,
@@ -59,7 +54,6 @@ module.exports = async function handleButton(interaction) {
         );
       }
 
-      // Verificar si el usuario ya está inscrito en el sorteo
       const [entry] = await connection.query(
         `SELECT * FROM giveaway_entries WHERE giveaway_id = ? AND user_id = ?`,
         [giveawayId, interaction.user.id]
@@ -77,13 +71,24 @@ module.exports = async function handleButton(interaction) {
         });
       }
 
-      // Guardar la entrada en la base de datos
-      await connection.query(
-        `INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?)`,
+      const member = interaction.guild.members.cache.get(interaction.user.id);
+      const isVIP = member.roles.cache.has('1330908811946496103');
+
+      const [existingEntry] = await connection.query(
+        `SELECT 1 FROM giveaway_entries WHERE giveaway_id = ? AND user_id = ?`,
         [giveawayId, interaction.user.id]
       );
 
-      // Obtener el número actualizado de entradas
+      if (existingEntry.length > 0) {
+        return interaction.reply('Ya has participado en este sorteo.');
+      }
+
+      const query = isVIP
+        ? `INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?), (?, ?)`
+        : `INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?)`;
+
+      await connection.query(query, isVIP ? [giveawayId, interaction.user.id, giveawayId, interaction.user.id] : [giveawayId, interaction.user.id]);
+
       const [entries] = await connection.query(
         `SELECT COUNT(*) AS entryCount FROM giveaway_entries WHERE giveaway_id = ?`,
         [giveawayId]
@@ -91,24 +96,16 @@ module.exports = async function handleButton(interaction) {
 
       const entryCount = entries[0].entryCount;
 
-      // Obtener el mensaje original del sorteo
       const channel = await interaction.client.channels.fetch(giveaway[0].channel_id);
       const message = await channel.messages.fetch(giveaway[0].message_id);
 
-      // Clonar el embed original
       const embed = EmbedBuilder.from(message.embeds[0]);
-
-      // Extraer la descripción y actualizar solo el número de entradas
       let description = embed.data.description || '';
       description = description.replace(/Entradas: \*\*(\d+)\*\*/, `Entradas: **${entryCount}**`);
-
-      // Actualizar la descripción en el embed
       embed.setDescription(description);
 
-      // Editar el mensaje con el embed actualizado
       await message.edit({ embeds: [embed] });
 
-      // Responder al usuario
       await interaction.reply({
         embeds: [
           new EmbedBuilder()
