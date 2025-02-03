@@ -71,23 +71,8 @@ module.exports = async function handleButton(interaction) {
         });
       }
 
-      const member = interaction.guild.members.cache.get(interaction.user.id);
-      const isVIP = member.roles.cache.has('1330908811946496103');
-
-      const [existingEntry] = await connection.query(
-        `SELECT 1 FROM giveaway_entries WHERE giveaway_id = ? AND user_id = ?`,
-        [giveawayId, interaction.user.id]
-      );
-
-      if (existingEntry.length > 0) {
-        return interaction.reply('Ya has participado en este sorteo.');
-      }
-
-      const query = isVIP
-        ? `INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?), (?, ?)`
-        : `INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?)`;
-
-      await connection.query(query, isVIP ? [giveawayId, interaction.user.id, giveawayId, interaction.user.id] : [giveawayId, interaction.user.id]);
+      const query = `INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?)`;
+      await connection.query(query, [giveawayId, interaction.user.id]);
 
       const [entries] = await connection.query(
         `SELECT COUNT(*) AS entryCount FROM giveaway_entries WHERE giveaway_id = ?`,
