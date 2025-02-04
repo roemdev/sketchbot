@@ -8,6 +8,7 @@ const store = require('./subcommands/store');
 const leaderboard = require('./subcommands/leaderboard');
 const inventory = require('./subcommands/inventory');
 const sell = require('./subcommands/sell');
+const transfer = require('./subcommands/transfer');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,7 +22,8 @@ module.exports = {
     .addSubcommand(store.data)
     .addSubcommand(leaderboard.data)
     .addSubcommand(inventory.data)
-    .addSubcommand(sell.data),
+    .addSubcommand(sell.data)
+    .addSubcommand(transfer.data),
 
   async execute(interaction) {
     // Mapea el nombre del subcomando a su función correspondiente
@@ -34,6 +36,7 @@ module.exports = {
       'tienda': store.execute,
       'clasificación': leaderboard.execute,
       'inventario': inventory.execute,
+      'transferir': transfer.execute,
       'vender': sell.execute,
     };
 

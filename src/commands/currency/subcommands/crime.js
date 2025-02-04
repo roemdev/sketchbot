@@ -90,7 +90,7 @@ module.exports = {
           .setTitle(`${exito ? assets.emoji.check : assets.emoji.deny} Resultado`)
           .setDescription(description)
           .addFields(
-            { name: 'Crimen cometido', value: `${crime_name} ${emoji}`, inline: true },
+            { name: 'Crimen cometido', value: `${emoji} ${crime_name}`, inline: true },
             { name: `Créditos ${exito ? 'ganados' : 'perdidos'}`, value: `**⏣ ${Math.abs(ganancia).toLocaleString()}**`, inline: true }
           );
 
