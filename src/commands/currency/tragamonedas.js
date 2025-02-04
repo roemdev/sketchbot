@@ -33,7 +33,7 @@ module.exports = {
     // Función para generar el embed con el resultado
     const createEmbed = (line1, line2, line3, resultMessage, isJackpot = false) => {
       const embed = new EmbedBuilder()
-        .setColor(resultMessage === '¡Ganaste!' || isJackpot ? assets.color.green : assets.color.red)
+        .setColor(resultMessage.includes('¡Ganaste!') || isJackpot ? assets.color.green : assets.color.red) // Cambiar a verde si gana
         .setTitle(`Tragamonedas | ${resultMessage}`)
         .addFields(
           {
@@ -156,7 +156,7 @@ module.exports = {
       }
 
       // Verificar si se ganó el premio regular
-      if (resultMessage === '¡Ganaste!') {
+      if (resultMessage.includes('¡Ganaste!')) {
         disableButton = true;
         await updateUserBalance(connection, userId, regularPrize);
       }
@@ -170,8 +170,8 @@ module.exports = {
           .setCustomId('spin_again')
           .setLabel('Tirada')
           .setEmoji('🎰')
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(disableButton || spinCount >= 20)
+          .setStyle(disableButton ? ButtonStyle.Success : ButtonStyle.Primary) // Cambiar a verde si se gana
+          .setDisabled(disableButton || spinCount >= 20) // Desactivar si se gana o se alcanza el límite
       );
 
       // Responder con el nuevo embed, actualizando el estado del botón
