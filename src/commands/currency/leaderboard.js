@@ -41,7 +41,7 @@ module.exports = {
         const userTag = membership === "vip" ? `${user.username} ${assets.emoji.vipstar}` : user.username;
 
         // Concatenar la información en la descripción
-        description += `${index + 1}. ${userTag} • ⏣ ${balance.toLocaleString()}\n`;
+        description += `${index + 1}. ${userTag} • ⏣${balance.toLocaleString()}\n`;
       }
 
       // Construir el embed con la clasificación

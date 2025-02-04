@@ -81,7 +81,7 @@ module.exports = {
           .setDescription(description)
           .addFields(
             { name: 'Trabajo realizado', value: `${task_name} ${emoji}`, inline: true },
-            { name: 'Créditos ganados', value: `**⏣ ${ganancia.toLocaleString()}**`, inline: true }
+            { name: 'Créditos ganados', value: `⏣${ganancia.toLocaleString()}`, inline: true }
           );
 
         await buttonInteraction.update({

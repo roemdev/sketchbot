@@ -59,7 +59,7 @@ module.exports = {
           new EmbedBuilder()
             .setColor(assets.color.green)
             .setTitle(`${assets.emoji.check} Transferencia exitosa`)
-            .setDescription(`Has transferido ⏣ ${amount.toLocaleString()} a <@${recipient.id}>.`)
+            .setDescription(`Has transferido ⏣${amount.toLocaleString()} a <@${recipient.id}>.`)
         ]
       });
     } catch (error) {

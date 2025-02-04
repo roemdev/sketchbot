@@ -57,7 +57,7 @@ module.exports = {
         .map(({ role_id, reward_amount }) => {
           // Usamos el ID del rol y lo etiquetamos con <@&role_id>
           totalReward += Number(reward_amount);
-          return `* **<@&${role_id}>** ⏣ ${Number(reward_amount).toLocaleString()}`;
+          return `* <@&${role_id}> ⏣${Number(reward_amount).toLocaleString()}`;
         })
         .join("\n");
 

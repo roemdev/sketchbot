@@ -46,7 +46,7 @@ module.exports = {
             `\`🆔\` ${item.formatted_item_id || item.formatted_store_item_id} | ` +
             `\`📦\` **${item.quantity}** | ` +
             `\`📜\` ${item.item_name} | ` +
-            `\`💰\` ⏣ ${item.item_value.toLocaleString()}`
+            `\`💰\` ⏣${item.item_value.toLocaleString()}`
         )
         .join("\n");
 

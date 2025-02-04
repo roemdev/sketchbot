@@ -86,7 +86,7 @@ module.exports = {
     const embedResultado = new EmbedBuilder()
       .setColor(gana ? assets.color.green : assets.color.red)
       .setTitle(`Ruleta | ${gana ? `${assets.emoji.check} ¡Ganaste!` : `${assets.emoji.deny} Perdiste`}`)
-      .setDescription(`Has apostado **⏣${apuesta.toLocaleString()}** créditos.`)
+      .setDescription(`Has apostado ⏣${apuesta.toLocaleString()} créditos.`)
       .addFields(
         { name: ' ', value: `**Opción:** \`${opcion.toUpperCase()}\``, inline: true },
         { name: ' ', value: `**Resultado:** \`${numeroGanador}${colorGanador}${paridadGanador}\``, inline: true },

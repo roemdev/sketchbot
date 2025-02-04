@@ -42,7 +42,7 @@ module.exports = {
         .setAuthor(author)
         .setColor(assets.color.base)
         .setDescription(
-          `${targetUser} tiene ⏣ **${balance.toLocaleString()}** créditos.`
+          `${targetUser} tiene ⏣${balance.toLocaleString()} créditos.`
         );
 
       await interaction.reply({ embeds: [embed] });

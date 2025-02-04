@@ -91,7 +91,7 @@ module.exports = {
           .setDescription(description)
           .addFields(
             { name: 'Crimen cometido', value: `${emoji} ${crime_name}`, inline: true },
-            { name: `Créditos ${exito ? 'ganados' : 'perdidos'}`, value: `**⏣ ${Math.abs(ganancia).toLocaleString()}**`, inline: true }
+            { name: `Créditos ${exito ? 'ganados' : 'perdidos'}`, value: `⏣${Math.abs(ganancia).toLocaleString()}`, inline: true }
           );
 
         await buttonInteraction.update({

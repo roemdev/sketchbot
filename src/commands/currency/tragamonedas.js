@@ -51,9 +51,9 @@ module.exports = {
             value:
               '> **¡Bienvenido a la máquina Tragamonedas!**\n' +
               '> `🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎`\n' +
-              '> Cada tirada te cuesta **⏣25**\n' +
-              '> Saca 3 iguales en el centro y gana **⏣5,000** \n' +
-              '> ¡Consigue 3 `💎` y gana el *jackpot* **⏣100,000**!',
+              '> Cada tirada te cuesta ⏣25\n' +
+              '> Saca 3 iguales en el centro y gana ⏣5,000 \n' +
+              '> ¡Consigue 3 `💎` y gana el *jackpot* ⏣100,000!',
             inline: true
           }
         );
@@ -85,9 +85,9 @@ module.exports = {
           value:
             '> **¡Bienvenido a la máquina Tragamonedas!**\n' +
             '> `🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎`\n' +
-            '> Cada tirada te cuesta **⏣25**\n' +
-            '> Saca 3 iguales en el centro y gana **⏣5,000** \n' +
-            '> ¡Consigue 3 `💎` y gana el *jackpot* **⏣100,000**!',
+            '> Cada tirada te cuesta ⏣25\n' +
+            '> Saca 3 iguales en el centro y gana ⏣5,000 \n' +
+            '> ¡Consigue 3 `💎` y gana el *jackpot* ⏣100,000!',
           inline: true
         }
       );
