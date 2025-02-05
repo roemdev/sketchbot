@@ -2,6 +2,7 @@ const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBui
 const assets = require('../../../assets.json');
 const { getUserBalance } = require('./utils/getUserBalance');
 const { updateUserBalance } = require('./utils/updateUserBalance');
+const { getJackpotConfig } = require('./utils/getJackpotConfig');
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
@@ -12,9 +13,10 @@ module.exports = {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
     const emojis = ['🍒', '🍋', '🍊', '🍉', '🍇', '🍓', '🍍', '💎'];
-    const costPerSpin = 25;
-    const regularPrize = 5000;
-    const jackpotPrize = 100000;
+
+    // Obtener la configuración desde la base de datos
+    const { costPerSpin, regularPrize, jackpotPrize } = await getJackpotConfig(connection);
+
     let spinCount = 0;
 
     // Función para generar una jugada aleatoria
@@ -33,7 +35,7 @@ module.exports = {
     // Función para generar el embed con el resultado
     const createEmbed = (line1, line2, line3, resultMessage, isJackpot = false) => {
       const embed = new EmbedBuilder()
-        .setColor(resultMessage.includes('¡Ganaste!') || isJackpot ? assets.color.green : assets.color.red) // Cambiar a verde si gana
+        .setColor(resultMessage.includes('¡Ganaste!') || isJackpot ? assets.color.green : assets.color.red)
         .setTitle(`Tragamonedas | ${resultMessage}`)
         .addFields(
           {
@@ -49,11 +51,11 @@ module.exports = {
           {
             name: ' ',
             value:
-              '> **¡Bienvenido a la máquina Tragamonedas!**\n' +
-              '> `🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎`\n' +
-              '> Cada tirada te cuesta ⏣25\n' +
-              '> Saca 3 iguales en el centro y gana ⏣5,000 \n' +
-              '> ¡Consigue 3 `💎` y gana el *jackpot* ⏣100,000!',
+              `> **¡Bienvenido a la máquina Tragamonedas!**\n` +
+              `> \`🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎\`\n` +
+              `> Cada tirada te cuesta **⏣${costPerSpin.toLocaleString()}**\n` +
+              `> Saca 3 iguales en el centro y gana **⏣${regularPrize.toLocaleString()}** \n` +
+              `> ¡Consigue 3 \`💎\` y gana el *jackpot* **⏣${jackpotPrize.toLocaleString()}**!`,
             inline: true
           }
         );
@@ -83,11 +85,11 @@ module.exports = {
         {
           name: ' ',
           value:
-            '> **¡Bienvenido a la máquina Tragamonedas!**\n' +
-            '> `🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎`\n' +
-            '> Cada tirada te cuesta ⏣25\n' +
-            '> Saca 3 iguales en el centro y gana ⏣5,000 \n' +
-            '> ¡Consigue 3 `💎` y gana el *jackpot* ⏣100,000!',
+            `> **¡Bienvenido a la máquina Tragamonedas!**\n` +
+            `> \`🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎\`\n` +
+            `> Cada tirada te cuesta **⏣${costPerSpin.toLocaleString()}**\n` +
+            `> Saca 3 iguales en el centro y gana **⏣${regularPrize.toLocaleString()}** \n` +
+            `> ¡Consigue 3 \`💎\` y gana el *jackpot* **⏣${jackpotPrize.toLocaleString()}**!`,
           inline: true
         }
       );
@@ -170,8 +172,8 @@ module.exports = {
           .setCustomId('spin_again')
           .setLabel('Tirada')
           .setEmoji('🎰')
-          .setStyle(disableButton ? ButtonStyle.Success : ButtonStyle.Primary) // Cambiar a verde si se gana
-          .setDisabled(disableButton || spinCount >= 20) // Desactivar si se gana o se alcanza el límite
+          .setStyle(disableButton ? ButtonStyle.Success : ButtonStyle.Primary)
+          .setDisabled(disableButton || spinCount >= 20)
       );
 
       // Responder con el nuevo embed, actualizando el estado del botón
