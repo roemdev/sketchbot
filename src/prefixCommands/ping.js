@@ -20,7 +20,8 @@ module.exports = {
         { name: " ", value: `**Bot:** \`${botLatency}ms\``, inline: true },
         { name: " ", value: `**API:** \`${apiLatency}ms\``, inline: true },
         { name: " ", value: `**Uptime:** \`${uptimeFormatted}\``, inline: true }
-      );
+      )
+      .setFooter(currentDateTime);
 
     message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
   },
