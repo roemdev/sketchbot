@@ -1,8 +1,8 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField, MessageFlags } = require("discord.js");
 const assets = require("../../assets.json");
 
-const ROLE_SUPPORT_ID = "1251292331852697623"; // ID del rol de soporte
-const TICKET_CATEGORY_ID = "1338007081760063568"; // Opcional: Reemplaza con la ID de la categoría donde irán los tickets
+const ROLE_SUPPORT_ID = "1251292331852697623";
+const TICKET_CATEGORY_ID = "1338007081760063568";
 
 module.exports = {
   name: "tk",
@@ -11,27 +11,16 @@ module.exports = {
   async execute(message) {
     try {
       const openTicketEmbed = createTicketEmbed(message.guild);
-      const buttonRow = createTicketButtons();
+      const buttonRow = createTicketButton();
 
-      // Enviamos el mensaje con los botones
       const sentMessage = await message.channel.send({ embeds: [openTicketEmbed], components: [buttonRow] });
-
-      // Eliminamos el mensaje original del usuario
       message.delete().catch(() => { });
 
-      // Manejador de interacción para los botones
       const collector = sentMessage.createMessageComponentCollector();
 
       collector.on("collect", async (interaction) => {
-        try {
-          if (interaction.customId === "openTicket") {
-            await handleOpenTicket(interaction);
-          } else if (interaction.customId === "claimPrize") {
-            await interaction.reply({ content: "🎁 Has solicitado reclamar un premio. Un administrador revisará tu solicitud." });
-          }
-        } catch (error) {
-          console.error("❌ Error en la interacción:", error);
-          await interaction.reply({ content: "⚠️ Ocurrió un error, intenta nuevamente.", flags: MessageFlags.Ephemeral }).catch(() => { });
+        if (interaction.customId === "openTicket") {
+          await handleOpenTicket(interaction);
         }
       });
     } catch (error) {
@@ -40,9 +29,6 @@ module.exports = {
   },
 };
 
-/**
- * Crea el embed para la interfaz de tickets.
- */
 function createTicketEmbed(guild) {
   return new EmbedBuilder()
     .setColor(assets.color.base)
@@ -56,60 +42,48 @@ function createTicketEmbed(guild) {
     );
 }
 
-/**
- * Crea los botones de la interfaz de tickets.
- */
-function createTicketButtons() {
+function createTicketButton() {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("openTicket").setEmoji("🎫").setLabel("Abrir ticket").setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId("claimPrize").setEmoji("🎁").setLabel("Reclamar premio").setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId("openTicket").setEmoji("🎫").setLabel("Abrir ticket").setStyle(ButtonStyle.Primary)
   );
 }
 
-/**
- * Maneja la creación de un ticket cuando un usuario presiona el botón.
- */
 async function handleOpenTicket(interaction) {
   const { guild, user } = interaction;
 
-  // Verificar si el usuario ya tiene un ticket abierto
   const existingTicket = guild.channels.cache.find(
     (channel) => channel.name === `ticket-${user.username.toLowerCase()}`
   );
 
   if (existingTicket) {
-    await interaction.reply({
+    return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(assets.color.red)
           .setTitle(`${assets.emoji.deny} Ya tienes un ticket abierto`)
-          .setDescription(`> ${existingTicket}`)
+          .setDescription(`> ${existingTicket}`),
       ],
       flags: MessageFlags.Ephemeral,
     });
-    return;
   }
 
-  // Crear el canal del ticket
   const ticketChannel = await guild.channels.create({
     name: `ticket-${user.username}`,
-    type: 0, // 0 = canal de texto
-    parent: TICKET_CATEGORY_ID || null, // Asigna categoría si está configurada
+    type: 0,
+    parent: TICKET_CATEGORY_ID || null,
     permissionOverwrites: getTicketPermissions(guild, user),
   });
 
-  // Confirmar al usuario
   await interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(assets.color.green)
         .setTitle(`${assets.emoji.check} Se ha creado tu ticket`)
-        .setDescription(`Un miembro del soporte te atenderá pronto.\n> ${ticketChannel}`)
+        .setDescription(`Un miembro del soporte te atenderá pronto.\n> ${ticketChannel}`),
     ],
     flags: MessageFlags.Ephemeral,
   });
 
-  // Crear el botón "Cerrar ticket"
   const closeButtonRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("closeTicket")
@@ -118,19 +92,17 @@ async function handleOpenTicket(interaction) {
       .setEmoji("🔒")
   );
 
-  // Enviar mensaje en el canal del ticket con el botón "Cerrar ticket"
   const ticketEmbed = new EmbedBuilder()
     .setColor(assets.color.base)
-    .setTitle('Bienvenido al Soporte')
+    .setTitle("Bienvenido al Soporte")
     .setDescription(`¡Hola ${user}! ¿Cómo podemos ayudarte hoy?`);
 
   await ticketChannel.send({
     content: `${user} | <@&${ROLE_SUPPORT_ID}>!`,
     embeds: [ticketEmbed],
-    components: [closeButtonRow]
+    components: [closeButtonRow],
   });
 
-  // Manejador de interacción para el botón "Cerrar ticket"
   const closeCollector = ticketChannel.createMessageComponentCollector();
 
   closeCollector.on("collect", async (closeInteraction) => {
@@ -140,17 +112,14 @@ async function handleOpenTicket(interaction) {
   });
 }
 
-/**
- * Devuelve los permisos para el canal del ticket.
- */
 function getTicketPermissions(guild, user) {
   return [
     {
-      id: guild.id, // Todos los miembros
+      id: guild.id,
       deny: [PermissionsBitField.Flags.ViewChannel],
     },
     {
-      id: user.id, // Usuario que abrió el ticket
+      id: user.id,
       allow: [
         PermissionsBitField.Flags.ViewChannel,
         PermissionsBitField.Flags.SendMessages,
@@ -159,11 +128,11 @@ function getTicketPermissions(guild, user) {
       ],
     },
     {
-      id: guild.client.user.id, // Bot
+      id: guild.client.user.id,
       allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
     },
     {
-      id: ROLE_SUPPORT_ID, // Rol de soporte
+      id: ROLE_SUPPORT_ID,
       allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
     },
   ];
@@ -172,20 +141,17 @@ function getTicketPermissions(guild, user) {
 async function handleCloseTicket(interaction, ticketChannel) {
   const member = interaction.member;
 
-  // Verifica si el usuario tiene el rol de soporte
   if (!member.roles.cache.has(ROLE_SUPPORT_ID)) {
-    await interaction.reply({
+    return interaction.reply({
       embeds: [
         new EmbedBuilder()
           .setColor(assets.color.red)
           .setTitle(`${assets.emoji.deny} Sin permisos`)
-          .setDescription('No tienes permitido realizar esta acción.')
+          .setDescription("No tienes permitido realizar esta acción."),
       ],
-      flags: MessageFlags.Ephemeral
+      flags: MessageFlags.Ephemeral,
     });
-    return;
   }
 
-  // Eliminar el canal sin enviar respuesta
   await ticketChannel.delete().catch(console.error);
 }
