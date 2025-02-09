@@ -1,8 +1,8 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField, MessageFlags } = require("discord.js");
 const assets = require("../../assets.json");
 
-const ROLE_SUPPORT_ID = "1330908926459514880"; // ID del rol de soporte
-const TICKET_CATEGORY_ID = "1337590734924283955"; // Opcional: Reemplaza con la ID de la categoría donde irán los tickets
+const ROLE_SUPPORT_ID = "1251292331852697623"; // ID del rol de soporte
+const TICKET_CATEGORY_ID = "1338007081760063568"; // Opcional: Reemplaza con la ID de la categoría donde irán los tickets
 
 module.exports = {
   name: "tk",
@@ -170,5 +170,22 @@ function getTicketPermissions(guild, user) {
 }
 
 async function handleCloseTicket(interaction, ticketChannel) {
-  await ticketChannel.delete();
+  const member = interaction.member;
+
+  // Verifica si el usuario tiene el rol de soporte
+  if (!member.roles.cache.has(ROLE_SUPPORT_ID)) {
+    await interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(assets.color.red)
+          .setTitle(`${assets.emoji.deny} Sin permisos`)
+          .setDescription('No tienes permitido realizar esta acción.')
+      ],
+      flags: MessageFlags.Ephemeral
+    });
+    return;
+  }
+
+  // Eliminar el canal sin enviar respuesta
+  await ticketChannel.delete().catch(console.error);
 }
