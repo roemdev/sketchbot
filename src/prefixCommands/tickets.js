@@ -98,7 +98,7 @@ async function handleOpenTicket(interaction) {
     .setDescription(`¡Hola ${user}! ¿Cómo podemos ayudarte hoy?`);
 
   await ticketChannel.send({
-    content: `${user} | <@&${ROLE_SUPPORT_ID}>!`,
+    content: `${user} | <@&${ROLE_SUPPORT_ID}>`,
     embeds: [ticketEmbed],
     components: [closeButtonRow],
   });
