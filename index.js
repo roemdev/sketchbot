@@ -162,7 +162,6 @@ client.on("messageCreate", async (message) => {
 
 // Run giveaway check when bot is ready
 client.once("ready", async () => {
-  console.log(`Logged in as ${client.user.tag}`);
   await checkAndEndGiveaways();
 });
 
