@@ -8,18 +8,24 @@ module.exports = {
   name: Events.InteractionCreate,
   async execute(interaction) {
     if (interaction.isAutocomplete()) {
-      return handleAutocomplete(interaction);
+      await handleAutocomplete(interaction);
+      return;
     }
 
     if (interaction.isChatInputCommand()) {
-      return handleChatInputCommand(interaction);
+      await handleChatInputCommand(interaction);
+      return;
     }
 
     if (interaction.isButton()) {
       if (interaction.customId.startsWith('ga')) { // ga - giveaway
-        return handleButton(interaction);
-      } else if (interaction.customId.startsWith('vm')) { // vm - voice master
-        return handleVoiceMasterCommand(interaction);
+        await handleButton(interaction);
+        return;
+      }
+
+      if (interaction.customId.startsWith('vm')) { // vm - voice master
+        await handleVoiceMasterCommand(interaction);
+        return;
       }
     }
   },
