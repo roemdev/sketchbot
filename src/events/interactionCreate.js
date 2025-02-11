@@ -23,10 +23,10 @@ module.exports = {
         return;
       }
 
-      if (interaction.customId.startsWith('vm')) { // vm - voice master
-        await handleVoiceMasterCommand(interaction);
-        return;
-      }
+      // if (interaction.customId.startsWith('vm')) { // vm - voice master
+      //   await handleVoiceMasterCommand(interaction);
+      //   return;
+      // }
     }
   },
 };
