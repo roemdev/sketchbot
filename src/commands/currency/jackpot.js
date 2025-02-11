@@ -1,8 +1,8 @@
 const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
-const { getUserBalance } = require('./utils/getUserBalance');
-const { updateUserBalance } = require('./utils/updateUserBalance');
-const { getJackpotConfig } = require('./utils/getJackpotConfig');
+const { getUserBalance } = require('../../utilities/getUserBalance');
+const { updateUserBalance } = require('../../utilities/updateUserBalance');
+const { getJackpotConfig } = require('../../utilities/getJackpotConfig');
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()

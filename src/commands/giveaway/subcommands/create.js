@@ -90,18 +90,18 @@ module.exports = {
           `${description}\n\nFinaliza: <t:${endDate}:R> | (<t:${endDate}:D>)\nAnfitrión: <@${hoster}>\nEntradas: **0**\nGanadores: **${winners}**`
         );
 
-      const enterButton = new ButtonBuilder()
-        .setCustomId(`enterButton_${giveawayId}`)
+      const gaButton = new ButtonBuilder()
+        .setCustomId(`gaButton_${giveawayId}`)
         .setLabel(" ")
         .setEmoji("🎉")
         .setStyle(ButtonStyle.Primary);
 
-      const enterButtonRow = new ActionRowBuilder().addComponents(enterButton);
+      const gaButtonRow = new ActionRowBuilder().addComponents(gaButton);
 
       await modalInteraction.reply({ content: "Sorteo creado con éxito", flags: MessageFlags.Ephemeral });
 
       // Enviar el mensaje del sorteo y actualizar su ID en la base de datos
-      const message = await interaction.channel.send({ embeds: [gaEmbed], components: [enterButtonRow] });
+      const message = await interaction.channel.send({ embeds: [gaEmbed], components: [gaButtonRow] });
 
       await connection.query(`UPDATE giveaways SET message_id = ? WHERE id = ?`, [message.id, giveawayId]);
 

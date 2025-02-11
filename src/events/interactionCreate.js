@@ -1,7 +1,8 @@
 const { Events } = require("discord.js");
-const handleAutocomplete = require("../utils/autocompleteHandler");
-const handleChatInputCommand = require("../utils/chatInputCommandHandler");
-const handleButton = require("../commands/giveaway/utils/giveawayButtonHandler");
+const handleAutocomplete = require("../handlers/autocompleteHandler");
+const handleChatInputCommand = require("../handlers/chatInputCommandHandler");
+const handleButton = require("../handlers/giveawayButtonHandler");
+const { handleVoiceMasterCommand } = require('../handlers/voiceMasterHandler');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -15,7 +16,11 @@ module.exports = {
     }
 
     if (interaction.isButton()) {
-      return handleButton(interaction);
+      if (interaction.customId.startsWith('ga')) { // ga - giveaway
+        return handleButton(interaction);
+      } else if (interaction.customId.startsWith('vm')) { // vm - voice master
+        return handleVoiceMasterCommand(interaction);
+      }
     }
   },
 };

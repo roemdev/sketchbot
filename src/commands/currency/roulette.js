@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
-const { getUserBalance } = require('./utils/getUserBalance');
-const { updateUserBalance } = require('./utils/updateUserBalance');
+const { getUserBalance } = require('../../utilities/getUserBalance');
+const { updateUserBalance } = require('../../utilities/updateUserBalance');
 
 module.exports = {
   data: new SlashCommandBuilder()

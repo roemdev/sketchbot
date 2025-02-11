@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 require('dotenv').config();
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-const connection = require("./src/database/db");
+const connection = require("./db");
 const { execSync } = require("child_process");
 
 // Create discord client
