@@ -21,7 +21,7 @@ module.exports = {
         { name: " ", value: `**API:** \`${apiLatency}ms\``, inline: true },
         { name: " ", value: `**Uptime:** \`${uptimeFormatted}\``, inline: true }
       )
-      .setFooter(currentDateTime);
+      .setFooter({ text: currentDateTime });
 
     message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
   },
