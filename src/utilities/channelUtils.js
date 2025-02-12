@@ -91,7 +91,7 @@ async function handleInfoButton(interaction, channel, owner) {
       `**Online:** ${channel.members.size}\n`
     );
 
-  await interaction.reply({ embeds: [infoEmbed], flags: MessageFlags.Ephemeral });
+  await interaction.followUp({ embeds: [infoEmbed], flags: MessageFlags.Ephemeral });
 }
 
 
