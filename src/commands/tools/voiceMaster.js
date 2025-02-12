@@ -14,9 +14,10 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(assets.color.base)
       .setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
+      .setThumbnail(interaction.client.user.displayAvatarURL({ dynamic: true }))
       .setTitle('Interfaz VoiceMaster')
       .setDescription('Haz clic en los botones de abajo para controlar tu canal de voz.')
-      .addFields({ name: 'Uso de los botones', value: '🔒 — Bloquear\n👁️ — Ocultar\n🔫 — Expulsar\n📑 — Información\n🎙️ — Reclamar' });
+      .addFields({ name: 'Uso de los botones', value: '🔒 — **Bloquear** el canal de voz.\n👁️ — **Ocultar** el canal de voz.\n🔫 — **Expulsar** a alguien del canal de voz.\n📑 — **Información** sobre el canal de voz.\n🎙️ — **Reclamar** el canal de voz.' });
 
     // Definir los botones en un array para facilitar su escalabilidad
     const buttons = [
@@ -34,7 +35,7 @@ module.exports = {
     );
 
     // Responder con el embed y los botones
-    await interaction.reply({ content: '`✅`', flags: MessageFlags.Ephemeral })
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     await interaction.deleteReply();
     interaction.channel.send({ embeds: [embed], components: [actionRow] });
   },
