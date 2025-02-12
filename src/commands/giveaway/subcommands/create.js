@@ -83,22 +83,25 @@ module.exports = {
       const giveawayId = result.insertId;
 
       const gaEmbed = new EmbedBuilder()
-        .setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
         .setColor(assets.color.base)
         .setTitle(prize)
         .setDescription(
           `${description}\n\nFinaliza: <t:${endDate}:R> | (<t:${endDate}:D>)\nAnfitrión: <@${hoster}>\nEntradas: **0**\nGanadores: **${winners}**`
-        );
+        )
+        .setTimestamp(Date.now() + duration)
+        .setFooter({ text: 'Abierto' })
 
       const gaButton = new ButtonBuilder()
         .setCustomId(`gaButton_${giveawayId}`)
         .setLabel(" ")
         .setEmoji("🎉")
-        .setStyle(ButtonStyle.Primary);
+        .setStyle(ButtonStyle.Secondary);
 
       const gaButtonRow = new ActionRowBuilder().addComponents(gaButton);
 
-      await modalInteraction.reply({ content: "Sorteo creado con éxito", flags: MessageFlags.Ephemeral });
+      await modalInteraction.deferReply({ flags: MessageFlags.Ephemeral });
+      await modalInteraction.deleteReply();
+
 
       // Enviar el mensaje del sorteo y actualizar su ID en la base de datos
       const message = await interaction.channel.send({ embeds: [gaEmbed], components: [gaButtonRow] });
@@ -143,7 +146,8 @@ module.exports = {
           // Actualizar la parte de ganadores en el embed
           let description = embed.data.description || "";
           description = description.replace(/Ganadores: \*\*.*\*\*/, `Ganadores: **${winnersMention}**`);
-          embed.setDescription(description);
+          embed.setDescription(description)
+          embed.setFooter({ text: 'Finalizado' })
 
           // Obtener el botón actual y deshabilitarlo
           const oldActionRow = message.components[0];

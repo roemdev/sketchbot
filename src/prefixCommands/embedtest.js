@@ -7,8 +7,9 @@ module.exports = {
   description: "Embed test",
 
   async execute(message) {
-    message.reply({ 
+    message.reply({
       content: 'Hola bb',
-      allowedMentions: { repliedUser: false } })
+      allowedMentions: { repliedUser: false }
+    })
   },
 };

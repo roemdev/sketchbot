@@ -3,6 +3,7 @@ const handleAutocomplete = require("../handlers/autocompleteHandler");
 const handleChatInputCommand = require("../handlers/chatInputCommandHandler");
 const handleButton = require("../handlers/giveawayButtonHandler");
 const { handleVoiceMasterCommand } = require('../handlers/voiceMasterHandler');
+const { handleOpenTicket } = require('../handlers/ticketHandler')
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -23,10 +24,15 @@ module.exports = {
         return;
       }
 
-      // if (interaction.customId.startsWith('vm')) { // vm - voice master
-      //   await handleVoiceMasterCommand(interaction);
-      //   return;
-      // }
+      if (interaction.customId.startsWith('vm')) { // vm - voice master
+        await handleVoiceMasterCommand(interaction);
+        return;
+      }
+
+      if (interaction.customId.startsWith('tk')) { // vm - voice master
+        await handleOpenTicket(interaction);
+        return;
+      }
     }
   },
 };
