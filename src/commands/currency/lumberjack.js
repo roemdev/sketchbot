@@ -61,26 +61,33 @@ module.exports = {
       );
 
       if (cooldownRows.length > 0) {
-        const lastUsed = new Date(cooldownRows[0].last_used).getTime();
-        const cooldownDuration = jobData.cooldown * 1000; // en milisegundos
-        const remainingTime = cooldownDuration - (Date.now() - lastUsed);
+        // Obtener el tiempo de la última ejecución del trabajo en UTC
+        const lastUsedUTC = new Date(cooldownRows[0].last_used).getTime() - (new Date().getTimezoneOffset() * 60000);
 
-        // Ajustar el tiempo restante si es mayor que el cooldown (para evitar valores de 4 horas u otros excesos)
-        const adjustedRemainingTime = remainingTime > cooldownDuration ? 0 : remainingTime;
+        // Convertir el cooldown a milisegundos
+        const cooldownDuration = jobData.cooldown * 1000;
 
-        console.log("Último uso (UTC):", new Date(lastUsed).toLocaleString('en-US', { timeZone: 'UTC' }));
-        console.log("Duración del cooldown (milisegundos):", cooldownDuration);
-        console.log("Tiempo restante ajustado (milisegundos):", adjustedRemainingTime);
+        // Obtener el tiempo actual en UTC
+        const currentTimeUTC = Date.now();
 
-        // Si el tiempo restante ajustado es mayor que 0, muestra el cooldown
-        if (adjustedRemainingTime > 0) {
-          const timestamp = Math.floor((Date.now() + adjustedRemainingTime) / 1000); // Convertir a segundos UNIX
+        // Calcular el tiempo transcurrido desde la última ejecución
+        const elapsedTime = currentTimeUTC - lastUsedUTC;
+
+        // Verificar si el tiempo transcurrido es menor que el cooldown
+        if (elapsedTime < cooldownDuration) {
+          // Calcular el tiempo restante del cooldown
+          const remainingTime = cooldownDuration - elapsedTime;
+
+          // Convertir el tiempo restante a segundos UNIX para mostrarlo en Discord
+          const timestamp = Math.floor((currentTimeUTC + remainingTime) / 1000);
+
+          // Mostrar el mensaje de cooldown activo
           return interaction.reply({
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.red)
                 .setTitle(`${assets.emoji.deny} Cooldown activo`)
-                .setDescription(`Debes esperar ⏳<t:${timestamp}:R> antes de volver realizar este trabajo.`)
+                .setDescription(`Debes esperar <t:${timestamp}:R>⏳ antes de volver a realizar este trabajo.`)
             ],
             flags: MessageFlags.Ephemeral,
           });
