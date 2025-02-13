@@ -4,8 +4,8 @@ const assets = require("../../../assets.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("talar")
-    .setDescription("Trabaja como leñador y obtén recompensas")
+    .setName("minar")
+    .setDescription("Trabaja como minero y obtén recompensas")
     .addStringOption((option) =>
       option
         .setName("mapa")
@@ -28,12 +28,12 @@ module.exports = {
 
       await interaction.respond(choices);
     } catch (error) {
-      console.error("Error en autocomplete para /leñador:", error);
+      console.error("Error en autocomplete para /minar:", error);
       await interaction.respond([]);
     }
   },
 
   async execute(interaction) {
-    await executeJob(interaction, "Leñador", assets);
+    await executeJob(interaction, "Minero", assets);
   },
 };
