@@ -86,10 +86,19 @@ module.exports = {
         });
       }
 
-      await connection.query(
-        "UPDATE curr_user_inventory SET quantity = quantity - ? WHERE user_id = ? AND item_id = ?",
-        [quantity, userId, item.id]
-      );
+      const remainingQuantity = inventory[0].quantity - quantity;
+
+      if (remainingQuantity > 0) {
+        await connection.query(
+          "UPDATE curr_user_inventory SET quantity = ? WHERE user_id = ? AND item_id = ?",
+          [remainingQuantity, userId, item.id]
+        );
+      } else {
+        await connection.query(
+          "DELETE FROM curr_user_inventory WHERE user_id = ? AND item_id = ?",
+          [userId, item.id]
+        );
+      }
 
       await connection.query(
         "UPDATE curr_users SET balance = balance + ? WHERE id = ?",
