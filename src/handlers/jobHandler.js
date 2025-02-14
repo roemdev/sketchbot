@@ -1,4 +1,4 @@
-const { MessageFlags, EmbedBuilder } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 const {
   getCooldown,
   setCooldown,
@@ -19,10 +19,10 @@ const executeJob = async (interaction, jobName, assets) => {
     "SELECT id, min_coins, max_coins, cooldown FROM curr_jobs WHERE name = ?;",
     [jobName]
   );
+
   if (!jobRows || jobRows.length === 0) {
     return interaction.reply({
       content: `Error: No se encontró el trabajo '${jobName}'.`,
-      flags: MessageFlags.Ephemeral,
     });
   }
   const jobData = jobRows[0];
@@ -46,7 +46,6 @@ const executeJob = async (interaction, jobName, assets) => {
             .setTitle(`${assets.emoji.deny} Cooldown activo`)
             .setDescription(`Debes esperar <t:${timestamp}:R>⏳ antes de volver a realizar este trabajo.`),
         ],
-        flags: MessageFlags.Ephemeral,
       });
     }
   }
@@ -56,7 +55,6 @@ const executeJob = async (interaction, jobName, assets) => {
   if (!requiredItem) {
     return interaction.reply({
       content: "Este mapa no requiere ningún ítem o no existe.",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -70,7 +68,6 @@ const executeJob = async (interaction, jobName, assets) => {
           .setTitle(`${assets.emoji.deny} No puedes realizar este trabajo`)
           .setDescription(`Para realizar este trabajo necesitas el ítem **${requiredItem.item_emoji} ${requiredItem.item_name}**`),
       ],
-      flags: MessageFlags.Ephemeral,
     });
   }
 
