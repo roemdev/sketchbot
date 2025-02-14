@@ -1,9 +1,9 @@
-const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
 const assets = require("../../../assets.json");
 const { getUserBalance } = require("../../utilities/userBalanceUtils");
 
 module.exports = {
-  data: new SlashCommandSubcommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("balance")
     .setDescription("Muestra tu balance actual de créditos")
     .addUserOption((option) =>

@@ -1,8 +1,8 @@
-const { SlashCommandSubcommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const assets = require("../../../assets.json");
 
 module.exports = {
-  data: new SlashCommandSubcommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("comprar")
     .setDescription("Compra un ítem o un rol de la tienda.")
     .addStringOption((option) =>

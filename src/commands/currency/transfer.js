@@ -1,9 +1,9 @@
-const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 const { updateUserBalance, getUserBalance } = require('../../utilities/userBalanceUtils');
 
 module.exports = {
-  data: new SlashCommandSubcommandBuilder()
+  data: new SlashCommandBuilder()
     .setName('transferir')
     .setDescription('Transfiere créditos a otro usuario')
     .addUserOption(option =>

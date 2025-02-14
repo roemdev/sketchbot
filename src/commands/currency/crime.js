@@ -1,10 +1,10 @@
-const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 const { handleCooldowns } = require('../../handlers/handleCooldowns');
 const { updateUserBalance } = require('../../utilities/userBalanceUtils');
 
 module.exports = {
-  data: new SlashCommandSubcommandBuilder()
+  data: new SlashCommandBuilder()
     .setName('crimen')
     .setDescription('Comete un crimen y ve si tienes suerte'),
 

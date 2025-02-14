@@ -1,10 +1,10 @@
-const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 const { getUserBalance, updateUserBalance } = require('../../utilities/userBalanceUtils');
 const { getJackpotConfig } = require('../../utilities/getJackpotConfig');
 
 module.exports = {
-  data: new SlashCommandSubcommandBuilder()
+  data: new SlashCommandBuilder()
     .setName('tragamonedas')
     .setDescription('Juega a las tragamonedas y gana premios!'),
 

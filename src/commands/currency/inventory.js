@@ -1,5 +1,5 @@
 const {
-  SlashCommandSubcommandBuilder,
+  SlashCommandBuilder,
   EmbedBuilder,
   MessageFlags,
 } = require("discord.js");
@@ -7,7 +7,7 @@ const assets = require("../../../assets.json");
 const { getUserBalance } = require("../../utilities/userBalanceUtils");
 
 module.exports = {
-  data: new SlashCommandSubcommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("inventario")
     .setDescription("Muestra los ítems en tu inventario."),
 
