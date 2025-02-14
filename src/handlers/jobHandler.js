@@ -87,20 +87,20 @@ const executeJob = async (interaction, jobName, assets) => {
     );
   }
 
-  // 8️⃣ Determinar la cantidad de monedas ganadas
-  const monedasGanadas = Math.floor(
+  // 8️⃣ Determinar la cantidad de credits ganadas
+  const creditsGanadas = Math.floor(
     Math.random() * (jobData.max_coins - jobData.min_coins + 1)
   ) + jobData.min_coins;
 
   // 9️⃣ Actualizar balance del usuario
-  await updateUserBalance(userId, monedasGanadas, connection);
+  await updateUserBalance(userId, creditsGanadas, connection);
 
   // 🔟 Registrar cooldown
   await setCooldown(userId, jobId, connection);
 
   // 11️⃣ Construir el mensaje de recompensa
   const recompensaTexto = rewards
-    .map((item) => `${itemMap[item.item_id].emoji} **${itemMap[item.item_id].name}** x${item.cantidad}`)
+    .map((item) => `> ${itemMap[item.item_id].emoji} ${itemMap[item.item_id].name} x${item.cantidad}`)
     .join("\n");
 
   return interaction.reply({
@@ -108,8 +108,8 @@ const executeJob = async (interaction, jobName, assets) => {
       new EmbedBuilder()
         .setColor(assets.color.green)
         .setTitle(`🗺️ Trabajaste en ${mapa}`)
-        .setDescription(
-          `${recompensaTexto}\n💰 **${monedasGanadas}** monedas\n\n> *Consumiste **${requiredItem.item_emoji} ${requiredItem.item_name}** x1*`
+        .setDescription(`Has obtenido: \n` +
+          `${recompensaTexto}\n> 💰 **${creditsGanadas}** créditos\n\nConsumiste:\n> ${requiredItem.item_emoji} | **${requiredItem.item_name}**`
         ),
     ],
   });

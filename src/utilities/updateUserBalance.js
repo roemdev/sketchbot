@@ -1,17 +1,17 @@
 async function updateUserBalance(connection, userId, amount) {
   try {
-    const [userData] = await connection.execute('SELECT balance FROM currency_users WHERE user_id = ?', [userId]);
+    const [userData] = await connection.execute('SELECT balance FROM curr_users WHERE id = ?', [userId]);
 
     let newBalance;
 
     if (userData.length === 0) {
       newBalance = amount < 0 ? 0 : amount;
-      await connection.execute('INSERT INTO currency_users (user_id, balance) VALUES (?, ?)', [userId, newBalance]);
+      await connection.execute('INSERT INTO curr_users (id, balance) VALUES (?, ?)', [userId, newBalance]);
     } else {
       newBalance = userData[0].balance + amount;
       if (newBalance < 0) newBalance = 0;
 
-      await connection.execute('UPDATE currency_users SET balance = ? WHERE user_id = ?', [newBalance, userId]);
+      await connection.execute('UPDATE curr_users SET balance = ? WHERE id = ?', [newBalance, userId]);
     }
 
     return newBalance;

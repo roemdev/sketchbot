@@ -42,7 +42,7 @@ module.exports = {
           new EmbedBuilder()
             .setColor(assets.color.green)
             .setTitle(`${assets.emoji.check} Créditos añadidos`)
-            .setDescription(`Se han añadido ⏣ ${amount.toLocaleString()} a <@${user.id}>.`)
+            .setDescription(`Se han añadido ⏣**${amount.toLocaleString()}** a <@${user.id}>.`)
         ],
       });
     } catch (error) {

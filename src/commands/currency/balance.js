@@ -30,7 +30,7 @@ module.exports = {
             `${targetUser} todavía no tiene créditos.`
           );
 
-        return interaction.reply({ embeds: [embedNoData], flags: MessageFlags.Ephemeral });
+        return interaction.reply({ embeds: [embedNoData] });
       }
 
       // Si el usuario tiene balance
@@ -42,7 +42,7 @@ module.exports = {
         .setAuthor(author)
         .setColor(assets.color.base)
         .setDescription(
-          `${targetUser} tiene ⏣${balance.toLocaleString()} créditos.`
+          `${targetUser} tiene ⏣**${balance.toLocaleString()}** créditos.`
         );
 
       await interaction.reply({ embeds: [embed] });

@@ -3,7 +3,6 @@ const getCooldown = async (userId, jobId, connection) => {
     "SELECT last_used FROM curr_cooldowns WHERE user_id = ? AND action_id = ? AND action_type = 'job';",
     [userId, jobId]
   );
-
   return rows.length > 0 ? new Date(rows[0].last_used).getTime() : null;
 };
 
@@ -25,7 +24,6 @@ const getRequiredItem = async (mapa, jobId, connection) => {
      WHERE cm.name = ? AND cmr.job_id = ?;`,
     [mapa, jobId]
   );
-
   return rows.length > 0 ? rows[0] : null;
 };
 
@@ -34,7 +32,6 @@ const checkUserHasItem = async (userId, itemId, connection) => {
     "SELECT quantity FROM curr_user_inventory WHERE user_id = ? AND item_id = ?;",
     [userId, itemId]
   );
-
   return rows.length > 0 && rows[0].quantity > 0;
 };
 
@@ -46,26 +43,25 @@ const removeItem = async (userId, itemId, connection) => {
 };
 
 const generateRewards = async (jobId, connection) => {
-  const madera = Math.floor(Math.random() * 3) + 1;
-  const hojas = Math.floor(Math.random() * 3) + 1;
-  const basura = Math.min(5 - (madera + hojas), Math.floor(Math.random() * 4));
-
-  const itemIds = [1, 2, 3];
-  const [itemData] = await connection.query(
-    "SELECT id, name, emoji FROM curr_items WHERE id IN (?, ?, ?);",
-    itemIds
+  const [dropData] = await connection.query(
+    `SELECT cmd.item_id, cmd.drop_rate, ci.name, ci.emoji
+     FROM curr_map_drops cmd
+     JOIN curr_items ci ON cmd.item_id = ci.id
+     WHERE cmd.job_id = ?;`,
+    [jobId]
   );
 
-  const itemMap = itemData.reduce((map, item) => {
-    map[item.id] = { name: item.name, emoji: item.emoji };
+  const rewards = dropData
+    .filter(item => Math.random() * 100 < item.drop_rate)
+    .map(item => ({
+      item_id: item.item_id,
+      cantidad: Math.floor(Math.random() * 3) + 1,
+    }));
+
+  const itemMap = dropData.reduce((map, item) => {
+    map[item.item_id] = { name: item.name, emoji: item.emoji };
     return map;
   }, {});
-
-  const rewards = [
-    { item_id: 1, cantidad: madera },
-    { item_id: 2, cantidad: hojas },
-    ...(basura > 0 ? [{ item_id: 3, cantidad: basura }] : [])
-  ];
 
   return { rewards, itemMap };
 };
