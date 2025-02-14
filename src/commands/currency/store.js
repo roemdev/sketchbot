@@ -29,7 +29,6 @@ module.exports = {
                 `${assets.emoji.deny} Actualmente no hay ítems disponibles en la tienda.`
               ),
           ],
-          flags: MessageFlags.Ephemeral,
         });
       }
 

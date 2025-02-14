@@ -30,7 +30,6 @@ module.exports = {
             .setTitle(`${assets.emoji.deny} Acción inválida`)
             .setDescription('No puedes transferirte créditos a ti mismo.')
         ],
-        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -46,7 +45,6 @@ module.exports = {
               .setTitle(`${assets.emoji.deny} Fondos insuficientes`)
               .setDescription('No tienes suficientes créditos para esta transferencia.')
           ],
-          flags: MessageFlags.Ephemeral
         });
       }
 

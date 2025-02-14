@@ -1,4 +1,4 @@
-const { SlashCommandSubcommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
 const assets = require("../../../assets.json");
 
 module.exports = {
@@ -115,7 +115,7 @@ module.exports = {
       console.error("Error al procesar la venta:", error);
       return interaction.reply({
         content: "Hubo un problema al procesar tu venta. Intenta de nuevo más tarde.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

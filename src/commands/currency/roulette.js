@@ -40,7 +40,6 @@ module.exports = {
           .setTitle('Saldo insuficiente')
           .setDescription('No tienes suficiente saldo para realizar esta apuesta.')
         ],
-        flags: MessageFlags.Ephemeral
       });
     }
 

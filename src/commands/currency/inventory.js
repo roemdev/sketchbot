@@ -33,7 +33,6 @@ module.exports = {
               .setColor(assets.color.red)
               .setDescription(`${assets.emoji.deny} No tienes ítems en tu inventario.`),
           ],
-          flags: MessageFlags.Ephemeral,
         });
       }
 

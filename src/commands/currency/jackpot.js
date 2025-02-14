@@ -120,7 +120,6 @@ module.exports = {
       if (userBalance < costPerSpin) {
         return buttonInteraction.reply({
           embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle('Saldo insuficiente').setDescription('No tienes suficiente saldo para jugar.')],
-          flags: MessageFlags.Ephemeral
         });
       }
 

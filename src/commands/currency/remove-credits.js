@@ -28,7 +28,6 @@ module.exports = {
             .setTitle(`${assets.emoji.deny} Uso incorrecto`)
             .setDescription('Debes proporcionar un usuario y una cantidad válida.\n> Ejemplo: `/remove-credits usuario:@usuario cantidad:100`')
         ],
-        flags: MessageFlags.Ephemeral,
       });
     }
 

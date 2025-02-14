@@ -23,7 +23,6 @@ module.exports = {
       if (rows.length === 0) {
         return interaction.reply({
           content: "No hay datos disponibles para mostrar la clasificación.",
-          flags: MessageFlags.Ephemeral,
         });
       }
 

@@ -23,7 +23,6 @@ module.exports = {
           .setTitle(`${assets.emoji.deny} Cooldown activo`)
           .setDescription(`Podrás volver a intentarlo <t:${remainingUnixTimestamp}:R>`)
         ],
-        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -33,7 +32,6 @@ module.exports = {
       if (rows.length < 3) {
         return interaction.reply({
           embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle(`${assets.emoji.deny} Error`).setDescription('No hay suficientes crímenes disponibles.')],
-          flags: MessageFlags.Ephemeral
         });
       }
 
