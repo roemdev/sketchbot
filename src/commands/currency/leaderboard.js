@@ -7,18 +7,17 @@ const assets = require("../../../assets.json");
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
-    .setName("clasificación")
-    .setDescription(
-      "Muestra la clasificación de los 10 miembros con más créditos."
-    ),
+    .setName("clasificacion")
+    .setDescription("Muestra la clasificación de los 10 miembros con más créditos."),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
+    const guild = interaction.guild;
 
     try {
       // Obtener los 10 usuarios con más balance
       const [rows] = await connection.query(
-        "SELECT user_id, membership, balance FROM currency_users ORDER BY balance DESC LIMIT 10"
+        "SELECT id, balance FROM curr_users ORDER BY balance DESC LIMIT 10"
       );
 
       if (rows.length === 0) {
@@ -28,35 +27,46 @@ module.exports = {
         });
       }
 
-      // Construir la descripción del embed
-      let description = "Los **10** más ricos del servidor:\n\n";
+      // Obtener los nombres de los usuarios
+      const description = await Promise.all(
+        rows.map(async (row, index) => {
+          let username = "Usuario desconocido";
 
-      for (const [index, row] of rows.entries()) {
-        const userId = row.user_id;
-        const membership = row.membership;
-        const balance = row.balance;
+          try {
+            // Asegúrate de que estamos tratando el id como string para evitar truncados
+            const userIdString = row.id.toString();
 
-        // Obtener el username basado en el ID
-        const user = await interaction.client.users.fetch(userId);
-        const userTag = membership === "vip" ? `${user.username} ${assets.emoji.vipstar}` : user.username;
+            // Intentar obtener al usuario desde la caché o hacer un fetch
+            const member = await guild.members.fetch(userIdString).catch(() => null);
+            if (member) {
+              username = member.user.username;
+            } else {
+              // Si el usuario no está en el servidor, intenta hacer fetch global
+              const user = await interaction.client.users.fetch(userIdString).catch(() => null);
+              if (user) {
+                username = user.username;
+              }
+            }
+          } catch (error) {
+            console.error(`Error al obtener usuario ${row.id}:`, error);
+          }
 
-        // Concatenar la información en la descripción
-        description += `${index + 1}. ${userTag} • ⏣${balance.toLocaleString()}\n`;
-      }
+          return `\`${index + 1}.\` ${username} • ⏣${row.balance.toLocaleString()}`;
+        })
+      );
 
       // Construir el embed con la clasificación
       const embed = new EmbedBuilder()
         .setColor(assets.color.base)
         .setTitle("🏦 Clasificación de Arkania")
-        .setDescription(description);
+        .setDescription(description.join("\n"));
 
       // Enviar el embed con la clasificación
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error("Error al obtener la clasificación:", error);
       return interaction.reply({
-        content:
-          "Hubo un error al obtener la clasificación. Por favor, intenta más tarde.",
+        content: "Hubo un error al obtener la clasificación. Por favor, intenta más tarde.",
         flags: MessageFlags.Ephemeral,
       });
     }
