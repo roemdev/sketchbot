@@ -45,8 +45,8 @@ module.exports = {
 
     try {
       const [items] = await connection.query(
-        "SELECT id, name, cost, emoji FROM curr_items WHERE BINARY name = ?",
-        [itemName.trim()]
+        "SELECT id, name, cost, emoji FROM curr_items WHERE BINARY name = ? OR id = ?",
+        [itemName.trim(), itemName.trim()]
       );
 
       if (items.length === 0) {
@@ -94,6 +94,13 @@ module.exports = {
         [userId, item.id, quantity]
       );
 
+      await connection.query(
+        "UPDATE curr_items " +
+        "SET stock = stock - ? " +
+        "WHERE id = ?",
+        [quantity, item.id]
+      );
+
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
@@ -104,7 +111,8 @@ module.exports = {
             })
             .setTitle(`${assets.emoji.check} Compra realizada`)
             .setDescription(
-              `Has comprado [${quantity}] ${itemEmoji} **${item.name}** por **${totalPrice}** créditos.`
+              `> **[ ${quantity} ]** ${itemEmoji} ${item.name}\n` +
+              `> Gastaste **⏣${totalPrice.toLocaleString()}** créditos.`
             ),
         ],
       });

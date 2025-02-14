@@ -16,7 +16,7 @@ module.exports = {
     try {
       // Consulta los ítems disponibles en la tienda
       const [items] = await connection.query(
-        "SELECT name, description, price, stock FROM currency_store"
+        "SELECT id, name, description, emoji, cost, stock FROM curr_items WHERE type = 'shop'"
       );
 
       // Verificar si hay ítems en la tienda
@@ -41,9 +41,10 @@ module.exports = {
 
       items.forEach((item) => {
         embed.addFields({
-          name: `${item.name} - ⏣${item.price.toLocaleString()}`,
-          value: `>>> ${item.description || "Sin descripción"}\n**Stock**: ${item.stock ?? "Sin límite"
-            }`,
+          name: `\`🆔\` \`${item.id}\` | \`${item.emoji || "❓"}\` ${item.name} | \`💰\` ${item.cost}`,
+          value:
+            `> ${item.description || "Sin descripción"}\n` +
+            `> **Stock**: ${item.stock == null ? 'Ilimitado' : item.stock}`,
         });
       });
 

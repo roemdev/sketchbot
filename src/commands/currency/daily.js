@@ -1,6 +1,6 @@
 const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags } = require("discord.js");
 const assets = require("../../../assets.json");
-const { updateUserBalance } = require("../../utilities/updateUserBalance"); // Asegúrate de que esta función esté correctamente implementada
+const { updateUserBalance } = require("../../utilities/userBalanceUtils");
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
@@ -11,64 +11,69 @@ module.exports = {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
     const roles = interaction.member.roles.cache;
-    const cooldownDuration = 86400000; // 24 horas en milisegundos
     const author = {
       name: interaction.user.displayName,
       iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
     };
 
     try {
-      // Verificar cooldown
-      const [cooldownData] = await connection.query(
-        "SELECT daily FROM currency_users_cooldowns WHERE user_id = ?",
-        [userId]
-      );
-
-      const now = new Date();
-      if (cooldownData.length && cooldownData[0].daily && new Date(cooldownData[0].daily) > now) {
-        const nextClaim = new Date(cooldownData[0].daily);
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.red)
-              .setTitle(`${assets.emoji.deny} Recompensa reclamada`)
-              .setDescription(`Ya has reclamado tu recompensa diaria. La próxima estará lista <t:${Math.floor(nextClaim.getTime() / 1000)}:R>.`),
-          ],
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
-      // Obtener todas las recompensas individuales según los roles del usuario
+      // Obtener las recompensas y cooldown desde la base de datos
       const [roleRewards] = await connection.query(
-        "SELECT role_id, reward_amount FROM currency_roles_rewards WHERE role_id IN (?) ORDER BY reward_amount DESC",
+        "SELECT id, role_id, reward, cooldown FROM curr_role_rewards WHERE role_id IN (?) ORDER BY reward DESC",
         [roles.map((role) => role.id)]
       );
 
       if (!roleRewards.length) {
         return interaction.reply({
           content: `${assets.emoji.deny} No tienes un rol con recompensa diaria asignada.`,
-          flags: MessageFlags.Ephemeral,
         });
       }
 
-      // Construir los detalles de la recompensa
+      // Obtener el cooldown en segundos
+      const cooldownSeconds = roleRewards[0].cooldown;
+      const cooldownDuration = cooldownSeconds * 1000; // Convertir a milisegundos
+
+      // Verificar cooldown
+      const [cooldownData] = await connection.query(
+        "SELECT last_used FROM curr_cooldowns WHERE user_id = ? AND action_type = 'daily'",
+        [userId]
+      );
+
+      const now = new Date();
+      if (cooldownData.length && cooldownData[0].last_used) {
+        const lastUsedUTC = new Date(cooldownData[0].last_used);
+        if (now - lastUsedUTC < cooldownDuration) {
+          const nextClaim = new Date(lastUsedUTC.getTime() + cooldownDuration);
+          return interaction.reply({
+            embeds: [
+              new EmbedBuilder()
+                .setColor(assets.color.red)
+                .setTitle(`${assets.emoji.deny} Recompensa reclamada`)
+                .setDescription(`Ya has reclamado tu recompensa diaria. La próxima estará lista <t:${Math.floor(nextClaim.getTime() / 1000)}:R>⏳.`),
+            ],
+          });
+        }
+      }
+
+      // Calcular la recompensa total y generar detalles
       let totalReward = 0;
       let rewardDetails = roleRewards
-        .map(({ role_id, reward_amount }) => {
-          // Usamos el ID del rol y lo etiquetamos con <@&role_id>
-          totalReward += Number(reward_amount);
-          return `* <@&${role_id}> ⏣${Number(reward_amount).toLocaleString()}`;
+        .map(({ role_id, reward }) => {
+          totalReward += Number(reward);
+          return `<@&${role_id}> ⏣**${Number(reward).toLocaleString()}**`;
         })
         .join("\n");
 
       // Actualizar el balance del usuario
       await updateUserBalance(connection, userId, totalReward);
 
-      // Actualizar el cooldown
-      const nextDaily = new Date(now.getTime() + cooldownDuration);
+      // Registrar el cooldown en la tabla (con la fecha actual en formato compatible con MySQL)
+      const currentUTC = new Date();
+      const formattedUTC = currentUTC.toISOString().slice(0, 19).replace("T", " "); // Formato: 'YYYY-MM-DD HH:MM:SS'
+
       await connection.query(
-        "INSERT INTO currency_users_cooldowns (user_id, daily) VALUES (?, ?) ON DUPLICATE KEY UPDATE daily = VALUES(daily)",
-        [userId, nextDaily]
+        "INSERT INTO curr_cooldowns (user_id, action_id, action_type, last_used) VALUES (?, ?, 'daily', ?) ON DUPLICATE KEY UPDATE last_used = VALUES(last_used)",
+        [userId, roleRewards[0].id, formattedUTC]
       );
 
       // Responder con el embed detallado
@@ -78,7 +83,7 @@ module.exports = {
             .setAuthor(author)
             .setColor(assets.color.green)
             .setTitle(`${assets.emoji.check} Créditos reclamados`)
-            .setDescription(`¡Aquí tienes tus créditos de hoy!\n\n${rewardDetails}`)
+            .setDescription(`¡Aquí tienes tus créditos de hoy!\n> ${rewardDetails}`)
         ],
       });
     } catch (error) {

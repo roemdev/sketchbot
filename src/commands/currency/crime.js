@@ -1,7 +1,7 @@
 const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
 const { handleCooldowns } = require('../../handlers/handleCooldowns');
-const { updateUserBalance } = require('../../utilities/updateUserBalance');
+const { updateUserBalance } = require('../../utilities/userBalanceUtils');
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
@@ -67,7 +67,7 @@ module.exports = {
         const exito = Math.random() * 100 >= failrate;
         let color, ganancia;
 
-        const [userData] = await connection.execute('SELECT balance FROM currency_users WHERE user_id = ?', [userId]);
+        const [userData] = await connection.execute('SELECT balance FROM curr_users WHERE id = ?', [userId]);
         let balanceActual = userData[0]?.balance || 0;
 
         if (exito) {
@@ -91,7 +91,7 @@ module.exports = {
           .setDescription(description)
           .addFields(
             { name: 'Crimen cometido', value: `${emoji} ${crime_name}`, inline: true },
-            { name: `Créditos ${exito ? 'ganados' : 'perdidos'}`, value: `⏣${Math.abs(ganancia).toLocaleString()}`, inline: true }
+            { name: `Créditos ${exito ? 'ganados' : 'perdidos'}`, value: `**⏣${Math.abs(ganancia).toLocaleString()}**`, inline: true }
           );
 
         await buttonInteraction.update({

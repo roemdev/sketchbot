@@ -1,7 +1,6 @@
 const { SlashCommandSubcommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
-const { getUserBalance } = require('../../utilities/getUserBalance');
-const { updateUserBalance } = require('../../utilities/updateUserBalance');
+const { getUserBalance, updateUserBalance } = require('../../utilities/userBalanceUtils');
 const { getJackpotConfig } = require('../../utilities/getJackpotConfig');
 
 module.exports = {
@@ -106,7 +105,7 @@ module.exports = {
     const message = await interaction.reply({ embeds: [initialEmbed], components: [row] });
 
     // Collector para manejar las interacciones con el botón
-    const collector = message.createMessageComponentCollector({ max: 20 });
+    const collector = message.createMessageComponentCollector({ max: 30 });
 
     collector.on('collect', async (buttonInteraction) => {
       if (buttonInteraction.user.id !== interaction.user.id) {
@@ -129,9 +128,9 @@ module.exports = {
       await updateUserBalance(connection, userId, -costPerSpin);
 
       spinCount++; // Incrementar el contador de usos
-      if (spinCount > 20) {
+      if (spinCount > 30) {
         return buttonInteraction.update({
-          embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle('Límite alcanzado').setDescription('Has alcanzado el límite de 20 usos del botón.')],
+          embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle('Límite alcanzado').setDescription('Has alcanzado el límite de 30 usos del botón.')],
           components: [new ActionRowBuilder().addComponents(
             new ButtonBuilder()
               .setCustomId('spin_again')
@@ -173,7 +172,7 @@ module.exports = {
           .setLabel('Tirada')
           .setEmoji('🎰')
           .setStyle(disableButton ? ButtonStyle.Success : ButtonStyle.Primary)
-          .setDisabled(disableButton || spinCount >= 20)
+          .setDisabled(disableButton || spinCount >= 30)
       );
 
       // Responder con el nuevo embed, actualizando el estado del botón
