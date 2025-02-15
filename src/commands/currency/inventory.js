@@ -38,7 +38,7 @@ module.exports = {
 
       // Construir la lista de ítems
       const itemList = items
-        .map(item => `\`🆔\` \`${item.id}\` | \`${item.emoji || "❓"}\` ${item.name} | \`📦\` **${item.quantity}**`)
+        .map(item => `\`🆔\` \`${item.id}\` | ${item.emoji || "❓"} ${item.name} | \`📦\` **${item.quantity}**`)
         .join("\n");
       const balance = await getUserBalance(connection, userId);
 

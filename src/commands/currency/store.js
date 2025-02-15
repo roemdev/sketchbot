@@ -40,7 +40,7 @@ module.exports = {
 
       items.forEach((item) => {
         embed.addFields({
-          name: `\`🆔\` \`${item.id}\` | \`${item.emoji || "❓"}\` ${item.name} | \`💰\` ${item.cost}`,
+          name: `\`🆔\` \`${item.id}\` | ${item.emoji || "❓"} ${item.name} | \`💰\` ${item.cost.toLocaleString()}`,
           value:
             `> ${item.description || "Sin descripción"}\n` +
             `> **Stock**: ${item.stock == null ? 'Ilimitado' : item.stock}`,
