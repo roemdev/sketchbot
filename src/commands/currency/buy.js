@@ -120,7 +120,7 @@ module.exports = {
       console.error("Error al procesar la compra:", error);
       return interaction.reply({
         content: "Hubo un problema al procesar tu compra. Intenta de nuevo más tarde.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },
