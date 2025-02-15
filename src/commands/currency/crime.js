@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const assets = require('../../../assets.json');
-const { handleCooldowns } = require('../../handlers/handleCooldowns');
 const { updateUserBalance } = require('../../utilities/userBalanceUtils');
 
 module.exports = {
@@ -11,20 +10,6 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-
-    // Verificar y manejar el cooldown para la tarea "crime"
-    const { cooldownActive, remainingCooldown } = await handleCooldowns(connection, userId, 'crime');
-
-    if (cooldownActive) {
-      const remainingUnixTimestamp = Math.floor(remainingCooldown / 1000) + Math.floor(Date.now() / 1000);
-      return interaction.reply({
-        embeds: [new EmbedBuilder()
-          .setColor(assets.color.red)
-          .setTitle(`${assets.emoji.deny} Cooldown activo`)
-          .setDescription(`Podrás volver a intentarlo <t:${remainingUnixTimestamp}:R>`)
-        ],
-      });
-    }
 
     try {
       const [rows] = await connection.execute('SELECT crime_name, emoji, description, profit, fine, failrate FROM currency_crime_config WHERE is_active = TRUE');
@@ -111,7 +96,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error('Error en el comando /botones:', error);
+      console.error('Error en el comando /crimen:', error);
       interaction.reply({
         embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle(`${assets.emoji.deny} Error`).setDescription('Hubo un problema. Inténtalo de nuevo.')],
         flags: MessageFlags.Ephemeral

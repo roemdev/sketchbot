@@ -21,7 +21,7 @@ module.exports = async function handleButton(interaction) {
       }
 
       const [userInventory] = await connection.query(
-        `SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND store_item_id = ?`,
+        `SELECT quantity FROM curr_user_inventory WHERE user_id = ? AND item_id = ?`,
         [interaction.user.id, 2]
       );
 
