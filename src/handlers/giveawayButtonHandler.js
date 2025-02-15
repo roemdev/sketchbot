@@ -22,7 +22,7 @@ module.exports = async function handleButton(interaction) {
 
       const [userInventory] = await connection.query(
         `SELECT quantity FROM curr_user_inventory WHERE user_id = ? AND item_id = ?`,
-        [interaction.user.id, 2]
+        [interaction.user.id, 10]
       );
 
       if (userInventory.length === 0 || userInventory[0].quantity < 1) {
@@ -38,19 +38,19 @@ module.exports = async function handleButton(interaction) {
       }
 
       await connection.query(
-        `UPDATE currency_user_inventory SET quantity = quantity - 1 WHERE user_id = ? AND store_item_id = ?`,
-        [interaction.user.id, 2]
+        `UPDATE curr_user_inventory SET quantity = quantity - 1 WHERE user_id = ? AND item_id = ?`,
+        [interaction.user.id, 10]
       );
 
       const [updatedInventory] = await connection.query(
-        `SELECT quantity FROM currency_user_inventory WHERE user_id = ? AND store_item_id = ?`,
-        [interaction.user.id, 2]
+        `SELECT quantity FROM curr_user_inventory WHERE user_id = ? AND item_id = ?`,
+        [interaction.user.id, 10]
       );
 
       if (updatedInventory[0].quantity === 0) {
         await connection.query(
-          `DELETE FROM currency_user_inventory WHERE user_id = ? AND store_item_id = ?`,
-          [interaction.user.id, 2]
+          `DELETE FROM curr_user_inventory WHERE user_id = ? AND item_id = ?`,
+          [interaction.user.id, 10]
         );
       }
 
