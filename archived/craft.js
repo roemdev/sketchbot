@@ -36,9 +36,8 @@ module.exports = {
     const itemName = interaction.options.getString("herramienta").trim();
 
     try {
-      // Buscar el ítem que el usuario quiere craftear
       const [items] = await connection.query(
-        `SELECT ccr.recipe_id, ccr.result_item_id, ci.name, ci.emoji 
+        `SELECT ccr.recipe_id, ccr.result_item_id, ci.name, ci.emoji, ccr.success_rate 
          FROM curr_crafting_recipes ccr 
          JOIN curr_items ci ON ccr.result_item_id = ci.id 
          WHERE ci.name = ?;`, [itemName]
@@ -46,18 +45,14 @@ module.exports = {
 
       if (items.length === 0) {
         return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} No se encontró el ítem "${itemName}".`)
-          ],
+          embeds: [new EmbedBuilder().setColor(assets.color.red).setDescription(`${assets.emoji.deny} No se encontró el ítem "${itemName}".`)],
         });
       }
 
       const item = items[0];
       const itemEmoji = item.emoji || '❓';
+      const successRate = item.success_rate;
 
-      // Obtener los materiales necesarios
       const [materials] = await connection.query(
         `SELECT cci.ingredient_item_id, ci.name, ci.emoji, cci.quantity_needed, ccr.cost 
          FROM curr_crafting_ingredients cci 
@@ -68,11 +63,7 @@ module.exports = {
 
       if (materials.length === 0) {
         return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.red)
-              .setDescription(`${assets.emoji.deny} No hay receta definida para "${itemName}".`)
-          ],
+          embeds: [new EmbedBuilder().setColor(assets.color.red).setDescription(`${assets.emoji.deny} No hay receta definida para "${itemName}".`)],
         });
       }
 
@@ -84,10 +75,11 @@ module.exports = {
         .setTitle('¡🛠️ Craftman!')
         .setDescription(
           `¡Hola <@${userId}>! 👋\n\n` +
-          `Estos son los materiales necesarios para craftear:
-           \`🆔\` \`${item.result_item_id}\` | ${itemEmoji} **${itemName}**.\n\n` +
+          `Estos son los materiales necesarios para craftear:\n\n` +
+          `\`🆔\` \`${item.result_item_id}\` | ${itemEmoji} **${itemName}**.\n\n` +
           `>>> ${itemList}\n` +
-          `\`💰\` **⏣${craftCost.toLocaleString()}** por mano de obra.`
+          `\`💰\` **⏣${craftCost.toLocaleString()}** por mano de obra.\n` +
+          `\`🎲\` **${successRate}%** de probabilidad de éxito.`
         )
         .setFooter({ text: 'El intento consumirá los materiales y el costo.' });
 
@@ -99,10 +91,9 @@ module.exports = {
           .setStyle(ButtonStyle.Secondary)
       );
 
-      await interaction.reply({ embeds: [embed], components: [row] });
+      const message = await interaction.reply({ embeds: [embed], components: [row] });
 
-      // Manejo del botón de crafteo
-      const collector = interaction.channel.createMessageComponentCollector({});
+      const collector = message.createMessageComponentCollector({});
 
       collector.on('collect', async buttonInteraction => {
         if (buttonInteraction.user.id !== userId) {
@@ -112,53 +103,22 @@ module.exports = {
           });
         }
 
-        // Verificar balance del usuario
         const userBalance = await getUserBalance(connection, userId);
         if (userBalance < craftCost) {
-          // Cambiar el color del embed y desactivar el botón
-          const embed = new EmbedBuilder()
-            .setColor(assets.color.red)
-            .setDescription(`${assets.emoji.deny} No tienes suficientes créditos.`);
-
-          const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setCustomId(`craft_${userId}_${item.result_item_id}`)
-              .setLabel('Craftear')
-              .setEmoji('🛠️')
-              .setStyle(ButtonStyle.Danger)
-              .setDisabled(true) // Desactivar el botón
-          );
-
-          return buttonInteraction.update({ embeds: [embed], components: [row] });
+          embed.addFields({ name: ' ', value: `${assets.emoji.deny} Crafteo fallido: Fondos insuficientes.` });
+          return buttonInteraction.update({ embeds: [embed] });
         }
 
-        // Verificar materiales del usuario
         for (const mat of materials) {
           const [userItems] = await connection.query(
-            `SELECT quantity FROM curr_user_inventory WHERE user_id = ? AND item_id = ?;`, [userId, mat.ingredient_item_id]
+            `SELECT item_id, quantity FROM curr_user_inventory WHERE user_id = ? AND item_id = ?;`, [userId, mat.ingredient_item_id]
           );
           if (!userItems.length || userItems[0].quantity < mat.quantity_needed) {
-            // Cambiar el color del embed y desactivar el botón
-            const embed = new EmbedBuilder()
-              .setTitle(`🛠️ Craftman | ${assets.emoji.check} Crafteo fallido`)
-              .setColor(assets.color.red)
-              .setDescription(`No tienes suficientes:\n> \`🆔\` \`${mat.ingredient_item_id}\` | ${mat.emoji} ${mat.name}.`);
-
-            const row = new ActionRowBuilder().addComponents(
-              new ButtonBuilder()
-                .setCustomId(`craft_${userId}_${item.result_item_id}`)
-                .setLabel('Craftear')
-                .setEmoji('🛠️')
-                .setStyle(ButtonStyle.Danger)
-                .setDisabled(true) // Desactivar el botón
-            );
-
-            collector.stop();
-            return buttonInteraction.update({ embeds: [embed], components: [row] });
+            embed.addFields({ name: ' ', value: `${assets.emoji.warn} Falta ${mat.emoji} ${mat.name}.` });
+            return buttonInteraction.update({ embeds: [embed] });
           }
         }
 
-        // Restar materiales y créditos
         await updateUserBalance(connection, userId, -craftCost);
         for (const mat of materials) {
           await connection.query(
@@ -167,22 +127,21 @@ module.exports = {
           );
         }
 
-        // Agregar ítem crafteado al inventario
-        await connection.query(
-          `INSERT INTO curr_user_inventory (user_id, item_id, quantity) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE quantity = quantity + 1;`,
-          [userId, item.result_item_id]
-        );
+        // Aplicar la tasa de éxito
+        const random = Math.random() * 100;
+        if (random <= successRate) {
+          // Crafteo exitoso
+          await connection.query(
+            `INSERT INTO curr_user_inventory (user_id, item_id, quantity) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE quantity = quantity + 1;`,
+            [userId, item.result_item_id]
+          );
+          embed.addFields({ name: ' ', value: `${assets.emoji.check} Crafteo exitoso. ¡Has obtenido ${itemEmoji} ${itemName}!` });
+        } else {
+          // Crafteo fallido
+          embed.addFields({ name: ' ', value: `${assets.emoji.deny} Crafteo fallido. Se perdieron los materiales.` });
+        }
 
-        // Responder con éxito
-        await buttonInteraction.update({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle(`🛠️ Craftman | ${assets.emoji.check} Crafteo exitoso`)
-              .setColor(assets.color.green)
-              .setDescription(`Obtuviste:\n> \`🆔\` \`${item.result_item_id}\` | ${itemEmoji} **${itemName}**.\n\n`)
-          ],
-          components: []
-        });
+        await buttonInteraction.update({ embeds: [embed] });
       });
     } catch (error) {
       console.error("Error en /craft:", error);
