@@ -45,7 +45,7 @@ module.exports = {
       // Crear el embed con la lista de ítems
       const inventoryEmbed = new EmbedBuilder()
         .setColor(assets.color.base)
-        .setTitle("🎒 Tu Inventario")
+        .setTitle("🎒 Tu mochila")
         .setDescription(`${itemList}`)
         .setFooter({ text: `Balance: ⏣${balance.toLocaleString()} créditos` })
 

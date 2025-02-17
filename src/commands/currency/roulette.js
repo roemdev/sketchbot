@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const assets = require('../../../assets.json');
 const { getUserBalance, updateUserBalance } = require('../../utilities/userBalanceUtils');
 
