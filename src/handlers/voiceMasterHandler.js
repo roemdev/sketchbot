@@ -1,20 +1,10 @@
-const { PermissionFlagsBits, EmbedBuilder, MessageFlags } = require('discord.js');
+const { EmbedBuilder, MessageFlags } = require('discord.js');
 const { toggleChannelLock, toggleChannelVisibility, handleMemberKick, handleInfoButton } = require('../utilities/channelUtils');
 const { voiceChannelsMap } = require('../events/joinToCreate');
 const assets = require('../../assets.json');
 
-async function checkPermissions(interaction) {
-  if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
-    await interaction.reply({ content: 'No tienes permisos para usar este comando.', flags: MessageFlags.Ephemeral }).catch(() => { });
-    return false;
-  }
-  return true;
-}
-
 async function handleVoiceMasterCommand(interaction) {
   try {
-    if (!await checkPermissions(interaction)) return;
-
     const filter = (i) => ['vmLock', 'vmHide', 'vmKick', 'vmInfo', 'vmClaim'].includes(i.customId);
 
     const collector = interaction.channel.createMessageComponentCollector({ filter });
