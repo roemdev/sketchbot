@@ -104,6 +104,7 @@ module.exports = {
 
 
       // Enviar el mensaje del sorteo y actualizar su ID en la base de datos
+      await interaction.channel.send('<@&1326020955922763887> **¡Nuevo sorteo!** 🎉')
       const message = await interaction.channel.send({ embeds: [gaEmbed], components: [gaButtonRow] });
 
       await connection.query(`UPDATE giveaways SET message_id = ? WHERE id = ?`, [message.id, giveawayId]);
