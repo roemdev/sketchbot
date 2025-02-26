@@ -5,6 +5,7 @@ const assets = require('../../assets.json');
 
 async function handleVoiceMasterCommand(interaction) {
   try {
+    // Filtro para los botones válidos.
     const filter = (i) => ['vmLock', 'vmHide', 'vmKick', 'vmInfo', 'vmClaim'].includes(i.customId);
 
     const collector = interaction.channel.createMessageComponentCollector({ filter });
@@ -13,8 +14,10 @@ async function handleVoiceMasterCommand(interaction) {
       try {
         if (!i.isButton()) return;
 
+        // Detener el collector para evitar múltiples respuestas.
         collector.stop();
 
+        // Si aún no se ha diferido ni respondido la interacción, se difiere.
         if (!i.deferred && !i.replied) {
           await i.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => { });
         }
@@ -38,9 +41,13 @@ async function handleVoiceMasterCommand(interaction) {
         }
 
         if (i.customId === 'vmClaim') {
-          return await i.followUp({ content: 'Función en construcción', flags: MessageFlags.Ephemeral }).catch(() => { });
+          return await i.followUp({
+            content: 'Función en construcción',
+            flags: MessageFlags.Ephemeral
+          }).catch(() => { });
         }
 
+        // Verificar que el usuario es el propietario.
         const isOwner = owner === i.user.id;
         if (!isOwner) {
           return await i.followUp({
@@ -54,6 +61,7 @@ async function handleVoiceMasterCommand(interaction) {
           }).catch(() => { });
         }
 
+        // Ejecutar la acción según el botón presionado.
         switch (i.customId) {
           case 'vmLock':
             await toggleChannelLock(i, voiceChannel);
@@ -69,7 +77,10 @@ async function handleVoiceMasterCommand(interaction) {
       } catch (error) {
         console.error("Error en el evento de botón:", error);
         if (!i.replied && !i.deferred) {
-          await i.followUp({ content: 'Ocurrió un error al procesar tu solicitud.', flags: MessageFlags.Ephemeral }).catch(() => { });
+          await i.followUp({
+            content: 'Ocurrió un error al procesar tu solicitud.',
+            flags: MessageFlags.Ephemeral
+          }).catch(() => { });
         }
       }
     });
