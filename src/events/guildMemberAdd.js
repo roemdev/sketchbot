@@ -13,7 +13,6 @@ module.exports = {
     const isBot = member.user.bot;
     const userRole = member.guild.roles.cache.get("1215767915329228890");
     const botRole = member.guild.roles.cache.get("1291149296921743372");
-    const voiceChannelId = "1327513515438772335";
 
     // Assign role based on member type
     if (isBot && botRole) {
@@ -24,7 +23,7 @@ module.exports = {
 
     // Send private welcome message to the user
     try {
-      const welcomeMessage = `¡Hola! 👋 Este es un breve mensaje para darte la bienvenida a la comunidad de Arkania. Nos emociona mucho tenerte aquí y que formes parte de nosotros.\n\nSi aun no lo has hecho, te invitamos a echarle un vistazo a <#1324197251882422327> para ponerte en marcha.\n\nPara ayudarnos a conocerte mejor, por favor tómate un momento de presentarte en <#1173781298721063014>. Si gustas, puedes usar la siguiente plantilla:\n\nNombre: [Tu nombre]\nPaís: [El país donde estás o donde naciste]\nInvitado por: [Quien te invitó a la comunidad o cómo accediste a ella]\nJuegos favoritos: [Tus juegos favoritos desde siempre o los actuales]\nExpectativa: [¿Qué esperas de la comunidad?]\n\nSiéntete libre de añadir toda la información que desees. ¡Buscamos conocerte!\n\n¡Esperamos que disfrutes siendo parte de la comunidad Arkania! 🥳`;
+      const welcomeMessage = `¡Hola! 👋 Este es un breve mensaje para darte la bienvenida a la comunidad de Arkania. Nos emociona mucho tenerte aquí y que formes parte de nosotros.\n\nSi aun no lo has hecho, te invitamos a echarle un vistazo a <#1324197251882422327> para ponerte en marcha.\n\nPara ayudarnos a conocerte mejor, por favor tómate un momento de presentarte. Si gustas, puedes usar la siguiente plantilla:\n\nNombre: [Tu nombre]\nPaís: [El país donde estás o donde naciste]\nInvitado por: [Quien te invitó a la comunidad o cómo accediste a ella]\nJuegos favoritos: [Tus juegos favoritos desde siempre o los actuales]\nExpectativa: [¿Qué esperas de la comunidad?]\n\nSiéntete libre de añadir toda la información que desees. ¡Buscamos conocerte!\n\n¡Esperamos que disfrutes siendo parte de la comunidad Arkania! 🥳`;
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -50,7 +49,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setAuthor({ name: `${guild.name}`, iconURL: iconURL })
       .setColor(assets.color.base)
-      .setTitle(`¡Damos la bienvenida a: ${user.username}!`)
+      .setTitle(`¡Damos la bienvenida a ${user.username}!`)
       .setThumbnail(user.displayAvatarURL({ dynamic: true }))
       .setDescription(
         `**Usuario:** <@${user.id}> (${user.username})\n` +
