@@ -56,7 +56,7 @@ module.exports = {
         return {
           name: `${role.emoji} ${role.title}`,
           value: usersInRole.length ? usersInRole.map(user => `<@${user.user_id}> - ${user.amount.toLocaleString()}`).join("\n") : 'Vacío',
-          inline: true
+          inline: false
         };
       });
 
@@ -173,16 +173,7 @@ module.exports = {
           await updateNobleRoles(i);
         } else {
           console.error("Error: updateNobleRoles no está definido correctamente.");
-        }
-
-        await modalInteraction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.green)
-              .setTitle(`${assets.emoji.check} Donación exitosa`)
-              .setDescription(`Has donado **⏣${amount.toLocaleString()}** y se ha sumado a tu total.`)
-          ], flags: MessageFlags.Ephemeral
-        });
+        };
 
         const updatedEmbed = await createNoblezaEmbed();
         await nobiMessage.edit({ embeds: [updatedEmbed] });
