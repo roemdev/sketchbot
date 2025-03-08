@@ -1,7 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } = require('discord.js')
-const { addDonation, getDonationRank, getNobilityRoles } = require('../../utilities/nobilityUtils')
-const { getUserBalance, updateUserBalance } = require('../../utilities/userBalanceUtils')
-const assets = require('../../../assets.json')
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } = require('discord.js');
+const { addDonation, getDonationRank, getNobilityRoles } = require('../../utilities/nobilityUtils');
+const { getUserBalance, updateUserBalance } = require('../../utilities/userBalanceUtils');
+const assets = require('../../../assets.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,16 +10,16 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
   async execute(interaction) {
-    const connection = interaction.client.dbConnection
-    const userId = interaction.user.id
+    const connection = interaction.client.dbConnection;
 
+    // Obtener roles de nobleza
     const nobilityRoles = await getNobilityRoles(connection);
     if (!nobilityRoles || nobilityRoles.length === 0) {
-      console.log('No se encontraron roles.');
-      return;
+      return interaction.reply({ content: 'No se encontraron roles de nobleza.', flags: MessageFlags.Ephemeral });
     }
 
-    const fields = nobilityRoles
+    // Embed principal con roles de nobleza
+    const rolesFields = nobilityRoles
       .map((role, index) => `**${index + 1}.** ${role.emoji || '❓'} • <@&${role.role_id || 'Sin rol'}> • Max: **${role.limit || 'Sin límite'}**`)
       .join('\n');
 
@@ -28,150 +28,137 @@ module.exports = {
       .setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL() })
       .setThumbnail(interaction.client.user.displayAvatarURL({ dynamic: true }))
       .setTitle('🏰 Nobleza de Arkania')
-      .setDescription('El Sistema de Nobleza en Arkania otorga títulos especiales a los jugadores que invierten monedas en el servidor. Cuanto más donas, más alto puedes ascender en la jerarquía nobiliaria.')
+      .setDescription('El Sistema de Nobleza en Arkania otorga títulos especiales a los jugadores que invierten monedas en el servidor.')
       .addFields(
-        { name: 'Títulos disponibles', value: fields },
-        { name: 'Funcionamiento de los botones', value: '`🔃` - Actualiza la tabla de nobleza.\n`💰` - Revisa la cantidad que has donado.' }
+        { name: 'Títulos disponibles', value: rolesFields },
+        { name: 'Botones disponibles', value: '`🔃` - Actualiza el ranking.\n`💰` - Ver mi donación.\n`💎` - Donar monedas.' }
       );
 
-    const topDonors = await getDonationRank(connection)
-    const description = topDonors
+    // Embed de ranking de donaciones
+    const topDonors = await getDonationRank(connection);
+    const rankDescription = topDonors
       .map((donor, index) => `**${index + 1}.** <@${donor.user_id}> • ⏣${donor.amount.toLocaleString()} monedas`)
-      .join('\n')
+      .join('\n') || "Aún no hay donaciones.";
 
     const rankEmbed = new EmbedBuilder()
       .setColor(assets.color.base)
-      .setDescription(description)
+      .setDescription(rankDescription);
 
-    const updateNobi = new ButtonBuilder()
-      .setCustomId('update')
-      .setLabel(' ')
-      .setEmoji('🔃')
-      .setStyle(ButtonStyle.Secondary)
+    // Botones de acción
+    const buttons = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder().setCustomId('update').setEmoji('🔃').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId('my_donation').setEmoji('💰').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId('donate').setLabel('Donar monedas').setStyle(ButtonStyle.Primary)
+      );
 
-    const myDonationButton = new ButtonBuilder()
-      .setCustomId('my_donation')
-      .setLabel(' ')
-      .setEmoji('💰')
-      .setStyle(ButtonStyle.Secondary)
+    // Enviar mensaje inicial
+    const nobiMessage = await interaction.reply({ embeds: [nobiEmbed, rankEmbed], components: [buttons] });
 
-    const donateButton = new ButtonBuilder()
-      .setCustomId('donate')
-      .setLabel('Realizar donación')
-      .setStyle(ButtonStyle.Primary)
-
-    const actionRow = new ActionRowBuilder()
-      .addComponents(updateNobi, myDonationButton, donateButton)
-
-    const nobiMessage = await interaction.channel.send({ embeds: [nobiEmbed, rankEmbed], components: [actionRow] })
-
-    await interaction.reply({ content: 'Enviado', flags: MessageFlags.Ephemeral })
-
-    const collector = nobiMessage.createMessageComponentCollector()
+    // Coleccionista de botones
+    const collector = nobiMessage.createMessageComponentCollector();
 
     collector.on('collect', async (i) => {
       if (i.customId === 'update') {
-        const updatedTopDonors = await getDonationRank(connection)
-        const updatedDescription = updatedTopDonors
+        await i.deferUpdate(); // Evita el error de doble respuesta
+
+        // Obtener ranking actualizado
+        const updatedDonors = await getDonationRank(connection);
+        const updatedDescription = updatedDonors
           .map((donor, index) => `**${index + 1}.** <@${donor.user_id}> • ⏣${donor.amount.toLocaleString()} monedas`)
-          .join('\n') || "Aún no hay donaciones."
+          .join('\n') || "Aún no hay donaciones.";
 
-        rankEmbed.setDescription(updatedDescription)
+        const updatedRankEmbed = new EmbedBuilder()
+          .setColor(assets.color.base)
+          .setDescription(updatedDescription);
 
-        await nobiMessage.edit({ embeds: [nobiEmbed, rankEmbed], components: [actionRow] })
+        await i.editReply({ embeds: [nobiEmbed, updatedRankEmbed], components: [buttons] });
+        await i.followUp({
+          embeds: [new EmbedBuilder()
+            .setColor(assets.color.green)
+            .setTitle('Ranking actualizado')
+          ], flags: MessageFlags.Ephemeral
+        });
+
       } else if (i.customId === 'my_donation') {
+        await i.deferReply({ flags: MessageFlags.Ephemeral });
 
-        const donation = await getDonationRank(connection, userId);
+        const userDonation = await getUserBalance(connection, i.user.id);
+        await i.followUp({
+          embeds: [new EmbedBuilder()
+            .setColor(assets.color.base)
+            .setDescription(`Total donado: ⏣${userDonation.toLocaleString()}`)
+          ]
+        });
 
-        if (donation.length > 0) {
-          await i.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor(assets.color.base)
-                .setDescription(`Total donado: **⏣${donation[0].amount.toLocaleString()}**`)
-            ],
-            flags: MessageFlags.Ephemeral
-          });
-        } else {
-          await i.reply({
-            content: 'No se encontraron donaciones para este usuario.',
-            flags: MessageFlags.Ephemeral
-          });
-        }
       } else if (i.customId === 'donate') {
         const modal = new ModalBuilder()
-          .setCustomId(`donation-${i.user.id}`)
-          .setTitle('Ingresa la cantidad a donar')
-          .addComponents(
-            new ActionRowBuilder().addComponents(
-              new TextInputBuilder()
-                .setCustomId('donationAmount')
-                .setLabel('Cantidad a donar')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-            )
-          )
+          .setCustomId('donate_modal')
+          .setTitle('Donación de monedas');
 
-        await i.showModal(modal)
+        const amountInput = new TextInputBuilder()
+          .setCustomId('donation_amount')
+          .setLabel('Cantidad a donar')
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true);
 
-        try {
-          const modalInteraction = await i.awaitModalSubmit({ time: 60000 })
+        modal.addComponents(new ActionRowBuilder().addComponents(amountInput));
 
-          if (!modalInteraction.customId.startsWith('donation-')) return
-
-          const donationAmount = modalInteraction.fields.getTextInputValue('donationAmount')
-          const amount = Number(donationAmount)
-
-          if (isNaN(amount) || amount <= 0) {
-            return modalInteraction.reply({
-              embeds: [
-                new EmbedBuilder()
-                  .setColor(assets.color.red)
-                  .setTitle(`${assets.emoji.deny} Cantidad inválida`)
-                  .setDescription('Debes ingresar una cantidad válida.')
-              ],
-              flags: MessageFlags.Ephemeral
-            })
-          }
-
-          try {
-            const balance = await getUserBalance(connection, userId)
-            if (balance <= 0) {
-              return modalInteraction.reply({
-                embeds: [
-                  new EmbedBuilder()
-                    .setColor(assets.color.red)
-                    .setTitle(`${assets.emoji.deny} No tienes créditos`)
-                ],
-                flags: MessageFlags.Ephemeral
-              })
-            } else {
-              await addDonation(connection, userId, amount)
-              await updateUserBalance(connection, userId, -amount)
-              return modalInteraction.reply({
-                embeds: [
-                  new EmbedBuilder()
-                    .setColor(assets.color.green)
-                    .setTitle(`${assets.emoji.check} ¡Donación realizada con éxito!`)
-                ],
-                flags: MessageFlags.Ephemeral
-              })
-            }
-          } catch (error) {
-            console.error(error)
-            return modalInteraction.reply({
-              embeds: [
-                new EmbedBuilder()
-                  .setColor(assets.color.red)
-                  .setTitle(`${assets.emoji.error} Algo salió mal. Inténtalo de nuevo más tarde.`)
-              ],
-              flags: MessageFlags.Ephemeral
-            })
-          }
-        } catch (error) {
-          if (error.code !== 'InteractionCollectorError') console.error(error)
-        }
+        await i.showModal(modal);
       }
-    })
+    });
+
+    // Manejo de la modal de donación
+    interaction.client.on('interactionCreate', async (modalInteraction) => {
+      if (!modalInteraction.isModalSubmit() || modalInteraction.customId !== 'donate_modal') return;
+
+      await modalInteraction.deferReply({ flags: MessageFlags.Ephemeral });
+
+      const amount = parseInt(modalInteraction.fields.getTextInputValue('donation_amount'), 10);
+      if (isNaN(amount) || amount <= 0) {
+        return modalInteraction.editReply({
+          embeds: [new EmbedBuilder()
+            .setColor(assets.color.red)
+            .setTitle('Ingresa una cantidad válida')
+          ], flags: MessageFlags.Ephemeral
+        });
+      }
+
+      // Verificar balance del usuario
+      const userBalance = await getUserBalance(connection, modalInteraction.user.id);
+      if (userBalance < amount) {
+        return modalInteraction.editReply({
+          embeds: [new EmbedBuilder()
+            .setColor(assets.color.red)
+            .setTitle('No tienes suficientes créditos')
+          ],
+          flags: MessageFlags.Ephemeral
+        });
+      }
+
+      // Restar balance y registrar donación
+      await updateUserBalance(connection, modalInteraction.user.id, -amount);
+      await addDonation(connection, modalInteraction.user.id, amount);
+
+      await modalInteraction.editReply({
+        embeds: [new EmbedBuilder()
+          .setColor(assets.color.green)
+          .setTitle(`Has donado ⏣${amount.toLocaleString()} monedas.`)
+        ],
+        flags: MessageFlags.Ephemeral
+      });
+
+      // Actualizar ranking tras donación
+      const updatedDonors = await getDonationRank(connection);
+      const updatedDescription = updatedDonors
+        .map((donor, index) => `**${index + 1}.** <@${donor.user_id}> • ⏣${donor.amount.toLocaleString()} monedas`)
+        .join('\n') || "Aún no hay donaciones.";
+
+      const updatedRankEmbed = new EmbedBuilder()
+        .setColor(assets.color.base)
+        .setDescription(updatedDescription);
+
+      await nobiMessage.edit({ embeds: [nobiEmbed, updatedRankEmbed], components: [buttons] });
+    });
   }
-}
+};
