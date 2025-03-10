@@ -3,8 +3,8 @@ const {
   EmbedBuilder,
   MessageFlags,
 } = require("discord.js");
-const assets = require("../../../assets.json");
-const { getUserBalance } = require("../../utilities/userBalanceUtils");
+const assets = require("../../../../config/assets.json");
+const { getUserBalance } = require("./utils/userBalanceUtils");
 
 module.exports = {
   data: new SlashCommandBuilder()

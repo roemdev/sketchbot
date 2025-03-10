@@ -1,5 +1,5 @@
 const { PermissionsBitField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
-const assets = require('../../../../assets.json');
+const assets = require('../../../../config/assets.json');
 
 async function modifyChannelPermission(channel, permission, value) {
   await channel.permissionOverwrites.edit(channel.guild.id, { [permission]: value });

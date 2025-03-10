@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, MessageFlags } = require("discord.js");
 const { getTicketPermissions, ROLE_SUPPORT_ID, TICKET_CATEGORY_ID } = require("./ticketUtils");
-const assets = require('../../../../assets.json')
+const assets = require('../../../../config/assets.json')
 
 async function handleOpenTicket(interaction) {
   const { guild, user } = interaction;

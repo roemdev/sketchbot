@@ -6,7 +6,7 @@ const {
   ActionRowBuilder,
   PermissionFlagsBits
 } = require("discord.js");
-const assets = require("../../assets.json");
+const assets = require("../../config/assets.json");
 
 module.exports = {
   name: "pr",
@@ -93,8 +93,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(assets.color.yellow)
           .setDescription(
-            `${assets.emoji.warn} <@${
-              i.user.id
+            `${assets.emoji.warn} <@${i.user.id
             }>: Ya tienes estos roles: ${existingRoles
               .map((role) => role.toString())
               .join(", ")}`
@@ -109,8 +108,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(assets.color.green)
           .setDescription(
-            `${assets.emoji.check} <@${
-              i.user.id
+            `${assets.emoji.check} <@${i.user.id
             }>: Te asigné los roles: ${roleObjects
               .map((role) => role.toString())
               .join(", ")}`

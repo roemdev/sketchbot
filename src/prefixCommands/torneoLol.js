@@ -1,19 +1,19 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const assets = require('../../assets.json')
+const assets = require('../../config/assets.json')
 
 module.exports = {
     name: 'torneolol',
     description: 'Envía el embed de inscripción al torneo para todos los miembros.',
     async execute(message, args) {
 
-      if (!message.member.permissions.has(PermissionFlagsBits.ManageEvents)) {
-        const deny = new EmbedBuilder()
-          .setColor(assets.color.base)
-          .setDescription(`${assets.emoji.deny} No puedes ejecutar este comando.`)
-        return message.reply({ embeds: [deny], allowedMentions: { repliedUser: false } });
-      }
+        if (!message.member.permissions.has(PermissionFlagsBits.ManageEvents)) {
+            const deny = new EmbedBuilder()
+                .setColor(assets.color.base)
+                .setDescription(`${assets.emoji.deny} No puedes ejecutar este comando.`)
+            return message.reply({ embeds: [deny], allowedMentions: { repliedUser: false } });
+        }
 
         // Embed principal del torneo
         const torneoEmbed = new EmbedBuilder()
@@ -27,13 +27,13 @@ module.exports = {
             )
             .setImage('https://i.imgur.com/cUq8oRq.png');
 
-            const row = new ActionRowBuilder().addComponents(
-              new ButtonBuilder()
-                  .setCustomId('inscribirme')
-                  .setLabel('Inscribirme')
-                  .setStyle(ButtonStyle.Primary)
-                );
-          
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('inscribirme')
+                .setLabel('Inscribirme')
+                .setStyle(ButtonStyle.Primary)
+        );
+
 
         // Enviar el embed del torneo
         await message.channel.send({ embeds: [torneoEmbed], components: [row] });
@@ -122,35 +122,35 @@ module.exports = {
                     if (i.customId === 'aprobar') {
                         const filePath = path.join(__dirname, 'torneolol.json');
                         let inscritos = [];
-                    
+
                         if (fs.existsSync(filePath)) {
                             inscritos = JSON.parse(fs.readFileSync(filePath));
                         }
-                    
+
                         inscritos.push({ invocador: nombreInvocador, discordId: modalInteraction.user.displayName });
-                    
+
                         fs.writeFileSync(filePath, JSON.stringify(inscritos, null, 2));
-                    
+
                         // Respuesta al moderador
                         const embedAprobadoModerador = new EmbedBuilder()
                             .setColor(assets.color.green)
                             .setDescription(`${assets.emoji.check} Inscripción aprobada.`);
-                    
+
                         await i.reply({ embeds: [embedAprobadoModerador], flags: MessageFlags.Ephemeral });
-                                        
-                        await modalInteraction.user.send({ content:`${assets.emoji.check} Tu inscripción fue confirmada. ¡Buena suerte en el torneo!`});
-                    
+
+                        await modalInteraction.user.send({ content: `${assets.emoji.check} Tu inscripción fue confirmada. ¡Buena suerte en el torneo!` });
+
                     } else if (i.customId === 'denegar') {
                         // Respuesta al moderador
                         const embedDenegadoModerador = new EmbedBuilder()
                             .setColor(assets.color.red) // Rojo
                             .setDescription(`${assets.emoji.deny} Inscripción denegada.`);
-                    
+
                         await i.reply({ embeds: [embedDenegadoModerador], flags: MessageFlags.Ephemeral });
-                  
+
                         await modalInteraction.user.send({ content: `${assets.emoji.deny} No pudimos confirmar tu inscripción.\n\nRevisa los datos enviados o contacta a un administrador.` });
                     }
-                    
+
 
                     await i.message.edit({
                         components: [

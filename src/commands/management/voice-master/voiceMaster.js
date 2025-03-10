@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, MessageFlags } = require('discord.js');
-const { handleVoiceMasterCommand } = require('../../handlers/voiceMasterHandler');
-const assets = require('../../../../assets.json');
+const { handleVoiceMasterCommand } = require('./voiceMasterHandler');
+const assets = require('../../../../config/assets.json');
 
 module.exports = {
   data: new SlashCommandBuilder()

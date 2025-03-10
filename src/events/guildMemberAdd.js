@@ -5,7 +5,7 @@ const {
   ButtonStyle,
   EmbedBuilder,
 } = require("discord.js");
-const assets = require("../../assets.json");
+const assets = require("../../config/assets.json");
 
 module.exports = {
   name: Events.GuildMemberAdd,

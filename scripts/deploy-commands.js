@@ -1,54 +1,52 @@
 const { REST, Routes } = require("discord.js");
-require('dotenv').config();
+require("dotenv").config({ path: "./config/.env" });
 const fs = require("node:fs");
 const path = require("node:path");
 
 const commands = [];
-// Grab all the command folders from the commands directory you created earlier
-const foldersPath = path.join(__dirname, "./src/commands");
-const commandFolders = fs.readdirSync(foldersPath);
+const foldersPath = path.join(__dirname, "../src/commands");
 
-for (const folder of commandFolders) {
-  // Grab all the command files from the commands directory you created earlier
-  const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs
-    .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".js"));
-  // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    if ("data" in command && "execute" in command) {
-      commands.push(command.data.toJSON());
-    } else {
-      console.log(
-        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-      );
+// Función recursiva para cargar comandos desde subcarpetas
+function loadCommands(dir) {
+  const files = fs.readdirSync(dir);
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+
+    if (fs.lstatSync(filePath).isDirectory()) {
+      loadCommands(filePath); // 🔄 Si es una carpeta, se llama recursivamente
+    } else if (file.endsWith(".js")) {
+      const command = require(filePath);
+      if ("data" in command && "execute" in command) {
+        commands.push(command.data.toJSON());
+      }
     }
   }
 }
 
-// Construct and prepare an instance of the REST module
+// Cargar todos los comandos desde la carpeta principal
+loadCommands(foldersPath);
+
+// Instancia del REST client
 const rest = new REST().setToken(process.env.BOT_TOKEN);
 
-// and deploy your commands!
+// Desplegar los comandos
 (async () => {
   try {
-    console.log(
-      `Started refreshing ${commands.length} application (/) commands.`
-    );
+    console.log(`🔄 Encontrados ${commands.length} comandos para desplegar.`);
+    console.log(`🚀 Iniciando la actualización de comandos...`);
 
-    // The put method is used to fully refresh all commands in the guild with the current set
+    // Registrar comandos en Discord
     const data = await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+      Routes.applicationGuildCommands(
+        process.env.CLIENT_ID,
+        process.env.GUILD_ID
+      ),
       { body: commands }
     );
 
-    console.log(
-      `Successfully reloaded ${data.length} application (/) commands.`
-    );
+    console.log(`✅ ${data.length} comandos desplegados exitosamente.`);
   } catch (error) {
-    // And of course, make sure you catch and log any errors!
-    console.error(error);
+    console.error("❌ Error al desplegar comandos:", error);
   }
 })();

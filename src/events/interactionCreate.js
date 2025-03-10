@@ -1,9 +1,9 @@
 const { Events } = require("discord.js");
 const handleAutocomplete = require("../handlers/autocompleteHandler");
 const handleChatInputCommand = require("../handlers/chatInputCommandHandler");
-const handleButton = require("../handlers/giveawayButtonHandler");
-const { handleVoiceMasterCommand } = require('../handlers/voiceMasterHandler');
-const { handleOpenTicket } = require('../handlers/ticketHandler')
+const handleButton = require("../commands/fun/giveaway/giveawayButtonHandler");
+const { handleVoiceMasterCommand } = require('../commands/management/voice-master/voiceMasterHandler');
+const { handleOpenTicket } = require('../commands/management/ticket-system/ticketHandler')
 
 module.exports = {
   name: Events.InteractionCreate,

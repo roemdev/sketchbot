@@ -9,7 +9,7 @@ const {
   EmbedBuilder,
   MessageFlags
 } = require("discord.js");
-const assets = require("../../../../../assets.json");
+const assets = require("../../../../../config/assets.json");
 const ms = require("ms");
 
 module.exports = {

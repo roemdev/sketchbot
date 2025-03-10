@@ -1,7 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
 const googleTTS = require('google-tts-api');
-const assets = require("../../../assets.json");
+const assets = require("../../../config/assets.json");
 const ffmpeg = require('@ffmpeg-installer/ffmpeg');
 process.env.FFMPEG_PATH = ffmpeg.path;
 

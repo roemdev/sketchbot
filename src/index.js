@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path");
-require('dotenv').config();
+require('dotenv').config({ path: './config/.env' });
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-const connection = require("./db");
+const connection = require("../config/database");
 const { execSync } = require("child_process");
 
 // Create discord client
@@ -21,7 +21,7 @@ client.dbConnection = connection;
 
 // Deploy slash commands
 try {
-  const fileToRun = path.join(__dirname, "deploy-commands.js");
+  const fileToRun = path.join(__dirname, "../scripts/deploy-commands.js");
   execSync(`node ${fileToRun}`);
   console.log("commands deploy: ✔");
 } catch (error) {
@@ -30,32 +30,32 @@ try {
 
 // Load slash commands
 client.commands = new Collection();
-const foldersPath = path.join(__dirname, "./src/commands");
-const commandFolders = fs.readdirSync(foldersPath);
 
-for (const folder of commandFolders) {
-  const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs
-    .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".js"));
+function loadCommands(dir) {
+  const files = fs.readdirSync(dir);
 
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+  for (const file of files) {
+    const filePath = path.join(dir, file);
 
-    if ("data" in command && "execute" in command) {
-      client.commands.set(command.data.name, command);
-    } else {
-      console.log(
-        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-      );
+    if (fs.lstatSync(filePath).isDirectory()) {
+      loadCommands(filePath);
+    } else if (file.endsWith(".js")) {
+      const command = require(filePath);
+
+      if ("data" in command && "execute" in command) {
+        client.commands.set(command.data.name, command);
+      }
     }
   }
 }
 
+// 🔄 Iniciar la carga de comandos desde la carpeta "commands"
+loadCommands(path.join(__dirname, "./commands"));
+
+
 // Load prefix commands
 client.prefixCommands = new Collection();
-const prefixFoldersPath = path.join(__dirname, "./src/prefixCommands");
+const prefixFoldersPath = path.join(__dirname, "./prefixCommands");
 const prefixCommandFiles = fs.readdirSync(prefixFoldersPath);
 
 for (const file of prefixCommandFiles) {
@@ -75,7 +75,7 @@ for (const file of prefixCommandFiles) {
 }
 
 // Load events
-const eventsPath = path.join(__dirname, "./src/events");
+const eventsPath = path.join(__dirname, "./events");
 const eventFiles = fs
   .readdirSync(eventsPath)
   .filter((file) => file.endsWith(".js"));

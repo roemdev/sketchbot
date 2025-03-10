@@ -1,5 +1,5 @@
 const { Events, EmbedBuilder } = require("discord.js");
-const assets = require("../../assets.json");
+const assets = require("../../config/assets.json");
 
 const BOOSTER_ROLE_ID = "1241182617504579594";
 const VIP_ROLE_ID = "1303816942326648884";

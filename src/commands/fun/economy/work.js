@@ -1,8 +1,8 @@
 // Archivo principal del comando
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
-const { getUserBalance, updateUserBalance } = require('../../utilities/userBalanceUtils');
-const { checkCooldown, updateCooldown } = require('../../utilities/cooldownUtils');
-const assets = require('../../../assets.json');
+const { getUserBalance, updateUserBalance } = require('./utils/userBalanceUtils');
+const { checkCooldown, updateCooldown } = require('./utils/cooldownUtils');
+const assets = require('../../../../config/assets.json');
 
 module.exports = {
   data: new SlashCommandBuilder()

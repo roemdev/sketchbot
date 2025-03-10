@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const { handleOpenTicket } = require("./ticketHandler");
-const assets = require("../../../../assets.json");
+const assets = require("../../../../config/assets.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
