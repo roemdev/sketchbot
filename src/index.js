@@ -21,7 +21,7 @@ client.dbConnection = connection;
 
 // Deploy slash commands
 try {
-  const fileToRun = path.join(__dirname, "../scripts/deploy-commands.js");
+  const fileToRun = path.join(__dirname, "../scripts/deploy-commands");
   execSync(`node ${fileToRun}`);
   console.log("commands deploy: ✔");
 } catch (error) {
