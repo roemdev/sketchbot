@@ -7,7 +7,7 @@ const {
   removeItem,
   generateRewards,
   updateUserBalance,
-} = require("../utilities/jobsUtils");
+} = require("../utils/jobsUtils");
 
 const executeJob = async (interaction, jobName, assets) => {
   const connection = interaction.client.dbConnection;

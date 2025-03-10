@@ -1,7 +1,7 @@
 const { EmbedBuilder, MessageFlags } = require('discord.js');
-const { toggleChannelLock, toggleChannelVisibility, handleMemberKick, handleInfoButton } = require('../utilities/channelUtils');
-const { voiceChannelsMap } = require('../events/joinToCreate');
-const assets = require('../../assets.json');
+const { toggleChannelLock, toggleChannelVisibility, handleMemberKick, handleInfoButton } = require('./channelUtils');
+const { voiceChannelsMap } = require('../../../events/joinToCreate');
+const assets = require('../../../../assets.json');
 
 async function handleVoiceMasterCommand(interaction) {
   try {

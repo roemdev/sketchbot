@@ -1,5 +1,5 @@
 const { MessageFlags, EmbedBuilder } = require('discord.js');
-const assets = require('../../assets.json');
+const assets = require('../../../../assets.json');
 
 module.exports = async function handleButton(interaction) {
   const [action, giveawayId] = interaction.customId.split('_');
