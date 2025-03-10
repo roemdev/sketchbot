@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const kick = require('./subcommands/kick');
 const ban = require('./subcommands/ban');
-const unban = require('./subcommands/kick');
-const mute = require('./subcommands/ban');
+const unban = require('./subcommands/unban');
+const mute = require('./subcommands/mute');
 
 module.exports = {
   data: new SlashCommandBuilder()
