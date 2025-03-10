@@ -1,4 +1,6 @@
-const { SlashCommandSubcommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const sendError = require('../utils/embedsMsg')
+const assets = require('../../../../../config/assets.json')
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
@@ -12,7 +14,7 @@ module.exports = {
     .addStringOption(option =>
       option.setName('razón')
         .setDescription('Razón de la expulsión')
-        .setRequired(true)
+        .setRequired(false)
     )
     .addAttachmentOption(option =>
       option.setName('prueba1')
@@ -33,18 +35,23 @@ module.exports = {
     const member = await interaction.guild.members.fetch(user.id).catch(() => null);
 
     // Verificaciones
+
     if (!member) {
-      return interaction.reply({ content: 'No se pudo encontrar al usuario en el servidor.', flags: MessageFlags.Ephemeral });
+      return sendError(interaction, `Usuario \`${user}\` no encontrado.`);
     }
     if (user.id === interaction.user.id) {
-      return interaction.reply({ content: 'No puedes expulsarte a ti mismo.', flags: MessageFlags.Ephemeral });
+      return sendError(interaction, 'No puedes expulsarte a ti mismo.');
     }
     if (user.id === interaction.client.user.id) {
-      return interaction.reply({ content: 'No puedo expulsarme a mí mismo.', flags: MessageFlags.Ephemeral });
+      return sendError(interaction, 'No puedo expulsarme a mí mismo.');
     }
 
     try {
       // Enviar mensaje privado al usuario expulsado
+      const kickEmbed = new EmbedBuilder()
+        .setColor(assets.color.green)
+        .setDescription(`${assets.emoji.check} **${user.username}** expulsado`)
+
       let dmMessage = `Has sido expulsado de **${interaction.guild.name}** por la razón: ${reason}`;
       if (proof1 || proof2) {
         dmMessage += '\nPruebas adjuntas:';
@@ -56,7 +63,11 @@ module.exports = {
       await user.send(dmOptions).catch(() => { });
       //await member.kick(reason);
 
-      return interaction.reply({ content: `✅ ${user.tag} ha sido expulsado con éxito.`, flags: MessageFlags.Ephemeral });
+      const successEmbed = new EmbedBuilder()
+        .setColor(assets.color.green)
+        .setDescription(`${assets.emoji.check} **${user.username}** expulsado`)
+
+      return interaction.reply({ embeds: [successEmbed], flags: MessageFlags.Ephemeral });
     } catch (error) {
       console.error(error);
       return interaction.reply({ content: '❌ Hubo un error al intentar expulsar al usuario.', flags: MessageFlags.Ephemeral });
