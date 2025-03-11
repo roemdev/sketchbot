@@ -1,6 +1,6 @@
 const { EmbedBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const ms = require('ms'); // Importamos la dependencia ms
-const assets = require('../../../../../config/assets.json');
+const assets = require('../../../../config/assets.json');
 
 async function punish(interaction, action, duration = null) {
   const user = interaction.options.getUser('usuario');
