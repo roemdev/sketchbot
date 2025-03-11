@@ -1,5 +1,5 @@
 const { SlashCommandSubcommandBuilder } = require('discord.js');
-const { punish } = require('../utils/punishHandler');
+const { punish } = require('../punishHandler');
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
