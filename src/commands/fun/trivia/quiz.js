@@ -73,7 +73,7 @@ module.exports = {
           }
         });
 
-        embed.setTitle(chosenOption.correct ? `${assets.emoji.check} Correcto` : `${assets.emoji.deny} Incorrecto`)
+        embed.setTitle(chosenOption.correct ? `${assets.emoji.check} ¡Correcto!` : `${assets.emoji.deny} ¡Incorrecto!`)
           .setColor(chosenOption.correct ? assets.color.green : assets.color.red)
           .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.`);
 
