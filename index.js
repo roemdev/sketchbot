@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 require('dotenv').config({ path: './config/.env' });
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-const connection = require("../config/database");
+const connection = require("./config/database");
 const { execSync } = require("child_process");
 
 // Create discord client
@@ -21,7 +21,7 @@ client.dbConnection = connection;
 
 // Deploy slash commands
 try {
-  const fileToRun = path.join(__dirname, "../scripts/deploy-commands");
+  const fileToRun = path.join(__dirname, "./scripts/deploy-commands");
   execSync(`node ${fileToRun}`);
   console.log("commands deploy: ✔");
 } catch (error) {
@@ -50,12 +50,12 @@ function loadCommands(dir) {
 }
 
 // 🔄 Iniciar la carga de comandos desde la carpeta "commands"
-loadCommands(path.join(__dirname, "./commands"));
+loadCommands(path.join(__dirname, "./src/commands"));
 
 
 // Load prefix commands
 client.prefixCommands = new Collection();
-const prefixFoldersPath = path.join(__dirname, "./prefixCommands");
+const prefixFoldersPath = path.join(__dirname, "./src/prefixCommands");
 const prefixCommandFiles = fs.readdirSync(prefixFoldersPath);
 
 for (const file of prefixCommandFiles) {
@@ -75,7 +75,7 @@ for (const file of prefixCommandFiles) {
 }
 
 // Load events
-const eventsPath = path.join(__dirname, "./events");
+const eventsPath = path.join(__dirname, "./src/events");
 const eventFiles = fs
   .readdirSync(eventsPath)
   .filter((file) => file.endsWith(".js"));
