@@ -1,10 +1,4 @@
-const {
-  Events,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} = require("discord.js");
+const { Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require("discord.js");
 const assets = require("../../config/assets.json");
 
 module.exports = {
@@ -14,14 +8,15 @@ module.exports = {
     const userRole = member.guild.roles.cache.get("1215767915329228890");
     const botRole = member.guild.roles.cache.get("1291149296921743372");
 
-    // Assign role based on member type
+    // Asignar rol según el tipo de miembro
     if (isBot && botRole) {
       await member.roles.add(botRole).catch(console.error);
+      return; // Si es bot, termina la ejecución aquí
     } else if (userRole) {
       await member.roles.add(userRole).catch(console.error);
     }
 
-    // Send private welcome message to the user
+    // Enviar mensaje de bienvenida privado
     try {
       const welcomeMessage = `¡Hola! 👋 Este es un breve mensaje para darte la bienvenida a la comunidad de Arkania. Nos emociona mucho tenerte aquí y que formes parte de nosotros.\n\nSi aun no lo has hecho, te invitamos a echarle un vistazo a <#1324197251882422327> para ponerte en marcha.\n\nPara ayudarnos a conocerte mejor, por favor tómate un momento de presentarte. Si gustas, puedes usar la siguiente plantilla:\n\nNombre: [Tu nombre]\nPaís: [El país donde estás o donde naciste]\nInvitado por: [Quien te invitó a la comunidad o cómo accediste a ella]\nJuegos favoritos: [Tus juegos favoritos desde siempre o los actuales]\nExpectativa: [¿Qué esperas de la comunidad?]\n\nSiéntete libre de añadir toda la información que desees. ¡Buscamos conocerte!\n\n¡Esperamos que disfrutes siendo parte de la comunidad Arkania! 🥳`;
 
@@ -40,7 +35,7 @@ module.exports = {
       );
     }
 
-    // Send welcome embed message to the server
+    // Enviar mensaje de bienvenida al canal del servidor
     const user = member.user;
     const guild = member.guild;
     const discordJoinDate = `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`;
@@ -61,7 +56,6 @@ module.exports = {
     member.guild.systemChannel.send({
       content: `**${user.username}** se unió a nuestro servidor`,
       embeds: [embed],
-      allowedMentions: { repliedUser: false },
     });
   },
 };
