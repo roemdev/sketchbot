@@ -30,3 +30,5 @@ module.exports = {
     return punish(interaction, 'baneado');
   },
 };
+
+module.exports.isSubcommand = true;

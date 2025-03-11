@@ -36,3 +36,5 @@ module.exports = {
     return punish(interaction, 'muteado', duration);
   },
 };
+
+module.exports.isSubcommand = true;

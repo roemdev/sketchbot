@@ -71,3 +71,5 @@ module.exports = {
     }
   },
 };
+
+module.exports.isSubcommand = true;

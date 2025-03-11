@@ -6,7 +6,6 @@ const path = require("node:path");
 const commands = [];
 const foldersPath = path.join(__dirname, "../src/commands");
 
-// Función recursiva para cargar comandos desde subcarpetas
 function loadCommands(dir) {
   const files = fs.readdirSync(dir);
 
@@ -17,9 +16,20 @@ function loadCommands(dir) {
       loadCommands(filePath); // 🔄 Si es una carpeta, se llama recursivamente
     } else if (file.endsWith(".js")) {
       const command = require(filePath);
-      if ("data" in command && "execute" in command) {
-        commands.push(command.data.toJSON());
+
+      // ⚠️ Filtrar comandos que sean exclusivamente subcomandos
+      if (!("data" in command && "execute" in command)) {
+        console.log(`⏩ Ignorando subcomando: ${filePath}`);
+        continue;
       }
+
+      // 🚨 Verificar si el comando es parte de otro (subcomando)
+      if (command.isSubcommand) {
+        console.log(`⏩ Ignorando subcomando: ${filePath}`);
+        continue;
+      }
+
+      commands.push(command.data.toJSON());
     }
   }
 }

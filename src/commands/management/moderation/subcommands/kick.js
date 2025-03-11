@@ -30,3 +30,5 @@ module.exports = {
     return punish(interaction, 'expulsado');
   },
 };
+
+module.exports.isSubcommand = true;

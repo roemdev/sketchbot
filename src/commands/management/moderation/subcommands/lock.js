@@ -27,7 +27,7 @@ module.exports = {
         embeds: [new EmbedBuilder()
           .setColor(assets.color.red)
           .setTitle(`${assets.emoji.deny} Canal ya bloqueado`)
-          .setDescription('Este canal ya está bloqueado para @everyone.')
+          .setDescription('Este canal ya está bloqueado.')
         ],
         flags: MessageFlags.Ephemeral
       });
@@ -69,3 +69,5 @@ module.exports = {
     }
   },
 };
+
+module.exports.isSubcommand = true;

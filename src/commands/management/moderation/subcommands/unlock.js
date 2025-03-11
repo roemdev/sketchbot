@@ -27,7 +27,7 @@ module.exports = {
         embeds: [new EmbedBuilder()
           .setColor(assets.color.green)
           .setTitle(`${assets.emoji.check} Canal ya desbloqueado`)
-          .setDescription('Este canal ya está desbloqueado para @everyone.')
+          .setDescription('Este canal ya está desbloqueado.')
         ],
         flags: MessageFlags.Ephemeral
       });
@@ -67,3 +67,5 @@ module.exports = {
     }
   },
 };
+
+module.exports.isSubcommand = true;
