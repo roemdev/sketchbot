@@ -3,15 +3,15 @@ const assets = require('../../../../../config/assets.json');
 
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
-    .setName('lock')
-    .setDescription('Bloquea el canal para que @everyone no pueda enviar mensajes.')
+    .setName('unlock')
+    .setDescription('Desbloquea el canal para que @everyone pueda enviar mensajes nuevamente.')
     .addChannelOption(option =>
       option.setName('canal')
-        .setDescription('El canal que deseas bloquear')
+        .setDescription('El canal que deseas desbloquear')
         .setRequired(false))
     .addStringOption(option =>
       option.setName('razón')
-        .setDescription('Razón del bloqueo')
+        .setDescription('Razón del desbloqueo')
         .setRequired(false)),
 
   async execute(interaction) {
@@ -20,50 +20,48 @@ module.exports = {
     const everyoneRole = interaction.guild.roles.everyone;
     const botUser = interaction.client.user; // Obtener el bot como usuario
 
-    // Verificar si el canal ya está bloqueado
+    // Verificar si el canal ya está desbloqueado
     const currentPermissions = channel.permissionOverwrites.cache.get(everyoneRole.id);
-    if (currentPermissions && currentPermissions.deny.has(PermissionFlagsBits.SendMessages)) {
+    if (!currentPermissions || !currentPermissions.deny.has(PermissionFlagsBits.SendMessages)) {
       return interaction.reply({
         embeds: [new EmbedBuilder()
-          .setColor(assets.color.red)
-          .setTitle(`${assets.emoji.deny} Canal ya bloqueado`)
-          .setDescription('Este canal ya está bloqueado para @everyone.')
+          .setColor(assets.color.green)
+          .setTitle(`${assets.emoji.check} Canal ya desbloqueado`)
+          .setDescription('Este canal ya está desbloqueado para @everyone.')
         ],
         flags: MessageFlags.Ephemeral
       });
     }
 
     try {
-      // Bloquear el canal para @everyone y permitir que el bot envíe mensajes
+      // Desbloquear el canal para @everyone
       await channel.permissionOverwrites.edit(everyoneRole, {
-        SendMessages: false
+        SendMessages: null // Restaurar permisos
       });
       await channel.permissionOverwrites.edit(botUser, {
         ViewChannel: true,
         SendMessages: true
       });
 
+      const successEmbed = new EmbedBuilder()
+        .setColor(assets.color.green)
+        .setTitle(`${assets.emoji.check} Canal desbloqueado`)
+        .setDescription(`> **Razón:** ${reason}`)
+        .setFooter({ text: `@${interaction.user.username}`, iconURL: `${interaction.user.displayAvatarURL()}` })
+        .setTimestamp();
+
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-      await channel.send({
-        embeds: [
-          new EmbedBuilder()
-            .setColor(assets.color.yellow)
-            .setTitle(`${assets.emoji.warn} Canal bloqueado`)
-            .setDescription(`> **Razón:** ${reason}`)
-            .setFooter({ text: `@${interaction.user.username}`, iconURL: `${interaction.user.displayAvatarURL()}` })
-            .setTimestamp()
-        ]
-      });
+      await channel.send({ embeds: [successEmbed] });
 
       if (interaction.options.getChannel('canal')) {
-        await interaction.editReply({ embeds: [new EmbedBuilder().setColor(assets.color.green).setDescription(`${assets.emoji.check} Canal bloqueado`)] });
+        await interaction.editReply(`Canal desbloqueado <#${channel.id}>`);
       } else {
         await interaction.deleteReply();
       }
     } catch (error) {
       console.error(error);
       return interaction.reply({
-        content: '❌ Hubo un problema al intentar bloquear el canal.',
+        content: '❌ Hubo un problema al intentar desbloquear el canal.',
         flags: MessageFlags.Ephemeral
       });
     }
