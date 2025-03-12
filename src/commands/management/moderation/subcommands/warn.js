@@ -63,7 +63,7 @@ module.exports = {
         .setColor(assets.color.yellow)
         .setDescription(`${assets.emoji.check} **${user.username}** ha sido advertido.\n> **Razón:** ${reason}`);
 
-      return interaction.reply({ embeds: [successEmbed], flags: MessageFlags.Ephemeral });
+      return interaction.reply({ embeds: [successEmbed] });
 
     } catch (error) {
       console.error(error);

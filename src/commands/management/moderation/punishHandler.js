@@ -74,7 +74,7 @@ function sendError(interaction, message) {
     .setTitle(`${assets.emoji.deny} Castigo no ejecutado`)
     .setDescription(message);
 
-  return interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
+  return interaction.reply({ embeds: [errorEmbed] });
 }
 
 module.exports = { punish };
