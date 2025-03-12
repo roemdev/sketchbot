@@ -42,7 +42,7 @@ module.exports = {
         .setTitle(`${assets.emoji.check} Usuario desbaneado`)
         .setDescription(`**${bannedUser.user.username}** ha sido desbaneado.\n> **Razón:** ${reason}`);
 
-      return interaction.reply({ embeds: [successEmbed] });
+      return interaction.reply({ embeds: [successEmbed], flags: MessageFlags.Ephemeral });
     } catch (error) {
       console.error(error);
       return interaction.reply({ content: '❌ Hubo un error al intentar desbanear al usuario.', flags: MessageFlags.Ephemeral });
