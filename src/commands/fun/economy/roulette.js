@@ -57,7 +57,7 @@ module.exports = {
           .setTitle(`${assets.emoji.roulette} Ruleta | Apuesta en curso`)
           .setDescription(`Resultado en: <t:${revealTime}:R>`)
           .addFields(
-            { name: `Apuesta`, value: `${apuesta.toLocaleString()}`, inline: true },
+            { name: `Apuesta`, value: `⏣${apuesta.toLocaleString()}`, inline: true },
             { name: `Opción`, value: `\`${opcion.toLocaleString()}\``, inline: true }
           )
       ]
