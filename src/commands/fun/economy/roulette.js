@@ -43,10 +43,31 @@ module.exports = {
       });
     }
 
+    // Restar la apuesta al saldo antes de jugar
+    await updateUserBalance(connection, userId, -apuesta);
+
+    // Calcular el tiempo del reveal
+    const revealTime = Math.floor((Date.now() + 10000) / 1000);
+
+    // Enviar el primer embed con la apuesta realizada
+    await interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(assets.color.base)
+          .setTitle(`${assets.emoji.roulette} Ruleta | Apuesta en curso`)
+          .setDescription(`Resultado en: <t:${revealTime}:R>`)
+          .addFields(
+            { name: `Apuesta`, value: `⏣${apuesta.toLocaleString()}`, inline: true },
+            { name: `Opción`, value: `\`${opcion.toLocaleString()}\``, inline: true }
+          )
+      ]
+    });
+
+    // Esperar 10 segundos
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
     // Generar un número aleatorio entre 0 y 36
     const numeroGanador = Math.floor(Math.random() * 37);
-
-    // Determinar el color y la paridad del número ganador
     const esRojo = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(numeroGanador);
     const colorGanador = esRojo ? '🔴' : (numeroGanador === 0 ? '🟢' : '⚫');
     const paridadGanador = numeroGanador === 0 ? 'CER' : (numeroGanador % 2 === 0 ? 'PAR' : 'IMP');
@@ -76,22 +97,19 @@ module.exports = {
 
     // Calcular el premio
     const premio = gana ? apuesta * 2 : 0;
-
-    // Actualizar el saldo del usuario
-    await updateUserBalance(connection, userId, gana ? premio : -apuesta);
+    if (gana) await updateUserBalance(connection, userId, premio);
 
     // Crear el embed con el resultado
     const embedResultado = new EmbedBuilder()
       .setColor(gana ? assets.color.green : assets.color.red)
       .setTitle(`Ruleta | ${gana ? `${assets.emoji.check} ¡Ganaste!` : `${assets.emoji.deny} Perdiste`}`)
-      .setDescription(`Has apostado ⏣${apuesta.toLocaleString()} créditos.`)
       .addFields(
         { name: ' ', value: `**Opción:** \`${opcion.toUpperCase()}\``, inline: true },
         { name: ' ', value: `**Resultado:** \`${numeroGanador}${colorGanador}${paridadGanador}\``, inline: true },
-        { name: ' ', value: `**Ganancia:** ⏣${premio.toLocaleString()} créditos`, inline: true },
+        { name: ' ', value: `**Ganancia:** ⏣${premio.toLocaleString()} créditos`, inline: false },
       );
 
     // Responder con el resultado
-    await interaction.reply({ embeds: [embedResultado] });
+    await interaction.followUp({ embeds: [embedResultado] });
   }
 };
