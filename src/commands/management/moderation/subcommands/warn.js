@@ -1,4 +1,5 @@
 const { SlashCommandSubcommandBuilder, EmbedBuilder, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { logModeration } = require('../punishHandler'); // Importamos la función de logs
 const assets = require('../../../../../config/assets.json');
 
 module.exports = {
@@ -47,7 +48,7 @@ module.exports = {
       // Enviar advertencia al usuario por MD
       const warnEmbed = new EmbedBuilder()
         .setColor(assets.color.yellow)
-        .setDescription(`**Has sido advertido**\n**Moderador**: ${interaction.user.username}\n> **Razón**: ${reason}`);
+        .setDescription(`**Has sido advertido**\n> **Mod**: ${interaction.user.username}\n> **Razón**: ${reason}`);
 
       const sentFrom = new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
@@ -57,6 +58,9 @@ module.exports = {
       const row = new ActionRowBuilder().addComponents(sentFrom);
 
       await user.send({ embeds: [warnEmbed], components: [row] }).catch(() => { });
+
+      // Loguear advertencia en el canal de moderación
+      await logModeration(interaction, "Warn", user, reason);
 
       // Respuesta en el chat
       const successEmbed = new EmbedBuilder()

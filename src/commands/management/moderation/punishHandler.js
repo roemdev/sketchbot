@@ -27,7 +27,7 @@ async function punish(interaction, action, duration = null) {
     // Embed para el usuario castigado
     const actionEmbed = new EmbedBuilder()
       .setColor(assets.color.red)
-      .setDescription(`**Has sido ${action}**\n**Moderador**: ${interaction.user.username}\n> **Razón**: ${reason}`);
+      .setDescription(`**Has sido ${action}**\n> **Mod**: ${interaction.user.username}\n> **Razón**: ${reason}`);
 
     if (muteTimeMs) {
       actionEmbed.addFields({ name: ' ', value: `> Duración ${duration}` });
@@ -60,7 +60,10 @@ async function punish(interaction, action, duration = null) {
       successEmbed.addFields({ name: ' ', value: `> Duración: ${duration}` });
     }
 
+    await logModeration(interaction, action, user, reason, duration);
+
     return interaction.editReply({ embeds: [successEmbed] });
+
   } catch (error) {
     console.error(error);
     return interaction.reply({ content: '❌ Hubo un error al intentar realizar la acción.', flags: MessageFlags.Ephemeral });
@@ -74,7 +77,36 @@ function sendError(interaction, message) {
     .setTitle(`${assets.emoji.deny} Castigo no ejecutado`)
     .setDescription(message);
 
-  return interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
+  return interaction.reply({ embeds: [errorEmbed] });
 }
 
-module.exports = { punish };
+async function logModeration(interaction, action, user, reason, duration = null) {
+  const guild = interaction.guild;
+  const safetyChannel = guild.safetyAlertsChannel;
+
+  if (!safetyChannel) return; // Si no hay canal de alertas configurado, no hacer nada
+
+  // Normalizar los nombres de las acciones
+  if (action === "muteado") action = "Mute";
+  else if (action === "expulsado") action = "Kick";
+  else if (action === "baneado") action = "Ban";
+  else if (action === "Warn") action = "Warn"; // Soporte para advertencias
+
+  const durationText = action === "Mute" && duration ? `> **Duración:** ${duration}\n` : "";
+
+  const embed = new EmbedBuilder()
+    .setColor(assets.color.base)
+    .setThumbnail(user.displayAvatarURL())
+    .setTitle(action)
+    .setDescription(
+      `> **Usuario:** @${user.username} (<@${user.id}>)\n` +
+      `> **Razón:** ${reason}\n` +
+      durationText
+    )
+    .setFooter({ text: `@${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
+    .setTimestamp();
+
+  await safetyChannel.send({ embeds: [embed] });
+}
+
+module.exports = { punish, logModeration };
