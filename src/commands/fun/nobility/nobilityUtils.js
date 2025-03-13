@@ -31,7 +31,7 @@ async function getDonation(connection, userId) {
 
 async function getDonators(connection) {
   try {
-    const [rows] = await connection.execute('SELECT user_id, amount FROM noble_donations LIMIT 6');
+    const [rows] = await connection.execute('SELECT user_id, amount FROM noble_donations ORDER BY amount DESC LIMIT 6');
     return rows; // Retorna los resultados
   } catch (error) {
     console.error(`Error en getDonators: `, error);

@@ -1,10 +1,25 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, EmbedBuilder } = require('discord.js');
-const { addDonate, getDonation } = require('./nobilityUtils');
+const { addDonate, getDonation, getDonators } = require('./nobilityUtils');
 const assets = require('../../../../config/assets.json')
+const fs = require('fs');
+const path = require('path');
+const settingsPath = path.join(__dirname, '../../botSetting.json');
+
+// Función para leer la configuración
+function readSettings() {
+  if (!fs.existsSync(settingsPath)) return {};
+  return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+}
+
+// Función para guardar la configuración
+function saveSettings(data) {
+  fs.writeFileSync(settingsPath, JSON.stringify(data, null, 2), 'utf8');
+}
 
 function createButtons() {
   return new ActionRowBuilder()
     .addComponents(
+      new ButtonBuilder().setCustomId('nb_rank').setEmoji('👑').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_my_donation').setEmoji('💰').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_claim_roles').setEmoji('✨').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_donate').setLabel('Donar').setEmoji('💵').setStyle(ButtonStyle.Primary)
@@ -29,6 +44,49 @@ async function handleButtonInteraction(interaction) {
     } else if (interaction.customId === 'nb_claim_roles') {
 
       await interaction.reply({ content: 'Presionaste el botón ✨nb_claim_roles.', flags: MessageFlags.Ephemeral });
+
+    } else if (interaction.customId === 'nb_rank') {
+
+      const donations = await getDonators(connection);
+
+      const donationText = donations
+        .map((donator, index) => `**${index + 1}.** <@${donator.user_id}> • **${donator.amount.toLocaleString()}**`)
+        .join("\n") || "No hay donaciones registradas.";
+
+      const nobiRankEmbed = new EmbedBuilder()
+        .setColor(assets.color.base)
+        .setTitle('Tabla de donaciones')
+        .setDescription(donationText);
+
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+      // Leer el ID del mensaje desde botSetting.json
+      const settings = readSettings();
+      const messageId = settings.nobiRankMessageId;
+
+      try {
+        if (messageId) {
+          // Intentar obtener el mensaje existente
+          const existingMessage = await interaction.channel.messages.fetch(messageId).catch(() => null);
+
+          if (existingMessage) {
+            // Si existe, editarlo
+            await existingMessage.edit({ embeds: [nobiRankEmbed] });
+          } else {
+            // Si el mensaje no existe, enviar uno nuevo y guardar el ID
+            const sentMessage = await interaction.channel.send({ embeds: [nobiRankEmbed] });
+            settings.nobiRankMessageId = sentMessage.id;
+            saveSettings(settings);
+          }
+        } else {
+          // Si no hay mensaje guardado, enviar uno nuevo y guardar el ID
+          const sentMessage = await interaction.channel.send({ embeds: [nobiRankEmbed] });
+          settings.nobiRankMessageId = sentMessage.id;
+          saveSettings(settings);
+        }
+      } catch (error) { }
+
+      await interaction.deleteReply();
 
     } else if (interaction.customId === 'nb_donate') {
 
