@@ -1,0 +1,32 @@
+const { updateUserBalance, getUserBalance } = require('../economy/utils/userBalanceUtils')
+
+async function addDonate(connection, userId, amount) {
+  try {
+
+    const balance = await getUserBalance(connection, userId)
+
+    if (balance <= 0) { return false }
+
+    const [rows] = await connection.execute(
+      'INSERT INTO noble_donations (user_id, amount) VALUES (?, ?) ON DUPLICATE KEY UPDATE amount = amount + ?',
+      [userId, amount, amount]
+    );
+
+    await updateUserBalance(connection, userId, -amount);
+  } catch (error) {
+    console.error(`Error en addDonate para el usuario ${userId}:`, error);
+    throw error;
+  }
+}
+
+async function getDonation(connection, userId) {
+  try {
+    const [rows] = await connection.execute('SELECT user_id, amount FROM noble_donations WHERE user_id = ?', [userId]);
+    return rows.length ? rows[0].amount : 0
+  } catch (error) {
+    console.error(`Error en getDonation para el usuario ${userId}:`, error);
+    throw error;
+  }
+}
+
+module.exports = { addDonate, getDonation }
