@@ -19,10 +19,10 @@ function saveSettings(data) {
 function createButtons() {
   return new ActionRowBuilder()
     .addComponents(
-      new ButtonBuilder().setCustomId('nb_rank').setEmoji('👑').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId('nb_rank').setEmoji('🔃').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_my_donation').setEmoji('💰').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_claim_roles').setEmoji('✨').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('nb_donate').setLabel('Donar').setEmoji('💵').setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId('nb_donate').setLabel('Donar').setEmoji('🪙').setStyle(ButtonStyle.Primary)
     );
 }
 

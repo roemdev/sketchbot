@@ -19,7 +19,7 @@ module.exports = {
       .setDescription('El Sistema de Nobleza en Arkania otorga títulos especiales a los jugadores que invierten monedas en el servidor.')
       .addFields({
         name: 'Uso de los botones',
-        value: '`👑` — Actualizar el ranking de donaciones.\n `💰` — Ver el total que has donado.\n`✨` — Reclamar el rol de tu posición.\n`💵` — Realizar donaciones.'
+        value: '`🔃` — **Actualizar** el ranking de donaciones.\n `💰` — **Ver** el total que has donado.\n`✨` — **Reclamar** el rol de tu posición.\n`🪙` — **Realizar** donaciones.'
       })
 
     const buttons = createButtons();
