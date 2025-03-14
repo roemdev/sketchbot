@@ -55,7 +55,7 @@ async function handleButtonInteraction(interaction) {
 
       const nobiRankEmbed = new EmbedBuilder()
         .setColor(assets.color.base)
-        .setTitle('Tabla de donaciones')
+        .setTitle('👑 Tabla de donaciones')
         .setDescription(donationText);
 
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
