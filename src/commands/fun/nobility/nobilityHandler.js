@@ -43,7 +43,7 @@ async function handleButtonInteraction(interaction) {
 
     } else if (interaction.customId === 'nb_claim_roles') {
 
-      await interaction.reply({ content: 'Presionaste el botón ✨nb_claim_roles.', flags: MessageFlags.Ephemeral });
+      await interaction.reply({ content: 'Función aun en desarrollo', flags: MessageFlags.Ephemeral });
 
     } else if (interaction.customId === 'nb_rank') {
 
