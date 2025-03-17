@@ -4,14 +4,9 @@ async function addDonate(connection, userId, amount) {
   try {
 
     const balance = await getUserBalance(connection, userId)
-
     if (balance <= 0) { return false }
 
-    const [rows] = await connection.execute(
-      'INSERT INTO noble_donations (user_id, amount) VALUES (?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)',
-      [userId, amount]
-    );
-
+    await connection.execute('INSERT INTO noble_donations (user_id, amount) VALUES (?, ?) ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)', [userId, amount]);
     await updateUserBalance(connection, userId, -amount);
   } catch (error) {
     console.error(`Error en addDonate para el usuario ${userId}: `, error);

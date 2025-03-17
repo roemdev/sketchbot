@@ -19,10 +19,10 @@ function saveSettings(data) {
 function createButtons() {
   return new ActionRowBuilder()
     .addComponents(
-      new ButtonBuilder().setCustomId('nb_rank').setEmoji('👑').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId('nb_rank').setEmoji('🔃').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_my_donation').setEmoji('💰').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('nb_claim_roles').setEmoji('✨').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('nb_donate').setLabel('Donar').setEmoji('💵').setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId('nb_donate').setLabel('Donar').setEmoji('🪙').setStyle(ButtonStyle.Primary)
     );
 }
 
@@ -43,7 +43,7 @@ async function handleButtonInteraction(interaction) {
 
     } else if (interaction.customId === 'nb_claim_roles') {
 
-      await interaction.reply({ content: 'Presionaste el botón ✨nb_claim_roles.', flags: MessageFlags.Ephemeral });
+      await interaction.reply({ content: 'Función aun en desarrollo', flags: MessageFlags.Ephemeral });
 
     } else if (interaction.customId === 'nb_rank') {
 
@@ -55,7 +55,7 @@ async function handleButtonInteraction(interaction) {
 
       const nobiRankEmbed = new EmbedBuilder()
         .setColor(assets.color.base)
-        .setTitle('Tabla de donaciones')
+        .setTitle('👑 Tabla de donaciones')
         .setDescription(donationText);
 
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
