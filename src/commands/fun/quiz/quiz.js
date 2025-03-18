@@ -9,7 +9,7 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const rewardAmount = 500;
+    const rewardAmount = 15;
 
     try {
       const [rows] = await connection.execute("SELECT * FROM trivia_questions ORDER BY RAND() LIMIT 1");
