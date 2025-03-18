@@ -9,6 +9,7 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
+    const rewardAmount = 500;
 
     try {
       const [rows] = await connection.execute("SELECT * FROM trivia_questions ORDER BY RAND() LIMIT 1");
@@ -73,20 +74,32 @@ module.exports = {
           }
         });
 
-        embed.setTitle(chosenOption.correct ? `${assets.emoji.check} ¡Correcto!` : `${assets.emoji.deny} ¡Incorrecto!`)
-          .setColor(chosenOption.correct ? assets.color.green : assets.color.red)
-          .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.`);
-
-        await i.update({ embeds: [embed], components: [buttons] });
-
-        // Si la respuesta es correcta, actualizar la base de datos
         if (chosenOption.correct) {
+          embed.setTitle(`${assets.emoji.check} ¡Correcto!`)
+            .setColor(assets.color.green)
+            .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.
+
+            Has ganado **${rewardAmount} monedas**! 🪙`);
+
+          // Actualizar la base de datos
           await connection.execute(`
             INSERT INTO trivia_scores (user_id, score) 
             VALUES (?, 1) 
             ON DUPLICATE KEY UPDATE score = score + 1
           `, [userId]);
+
+          await connection.execute(`
+            INSERT INTO curr_users (id, balance) 
+            VALUES (?, ?) 
+            ON DUPLICATE KEY UPDATE balance = balance + ?
+          `, [userId, rewardAmount, rewardAmount]);
+        } else {
+          embed.setTitle(`${assets.emoji.deny} ¡Incorrecto!`)
+            .setColor(assets.color.red)
+            .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.`);
         }
+
+        await i.update({ embeds: [embed], components: [buttons] });
       });
 
       collector.on('end', async (_, reason) => {
