@@ -9,7 +9,7 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const rewardAmount = 15;
+    const rewardAmount = Math.floor(Math.random() * (25 - 10 + 1)) + 10; // Número aleatorio entre 10 y 25
 
     try {
       const [rows] = await connection.execute("SELECT * FROM trivia_questions ORDER BY RAND() LIMIT 1");
@@ -38,13 +38,13 @@ module.exports = {
           new ButtonBuilder()
             .setCustomId(`trivia_${index}`)
             .setLabel(option.label)
-            .setStyle(ButtonStyle.Primary)
+            .setStyle(ButtonStyle.Secondary)
         );
       });
 
       await interaction.reply({ embeds: [embed], components: [buttons] });
       const message = await interaction.fetchReply();
-      const collector = message.createMessageComponentCollector({ time: 10000 });
+      const collector = message.createMessageComponentCollector({ time: 20000 }); // Tiempo aumentado a 20 segundos
 
       collector.on('collect', async i => {
         if (i.user.id !== interaction.user.id) {
@@ -79,7 +79,7 @@ module.exports = {
             .setColor(assets.color.green)
             .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.
 
-            Has ganado **${rewardAmount} monedas**! 🪙`);
+            ¡Has ganado **${rewardAmount}** monedas!`);
 
           // Actualizar la base de datos
           await connection.execute(`
