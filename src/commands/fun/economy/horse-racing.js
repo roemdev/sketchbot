@@ -134,7 +134,8 @@ module.exports = {
                 embeds: [
                   new EmbedBuilder()
                     .setColor(colorMap[caballoGanador.color] || 0xFFFFFF) // Blanco por defecto si no hay coincidencia
-                    .setDescription(`¡${caballoGanador.emoji} (${caballoGanador.color}) ha ganado la carrera! 🎉`)
+                    .setTitle('¡Finaliza la carrera!')
+                    .setDescription(`¡El caballo ganador es el de color: ${caballoGanador.color}! ¡Felicidades a los ganadores!`)
                 ]
               });
 
