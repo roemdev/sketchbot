@@ -34,7 +34,7 @@ module.exports = {
       const colores = ['🔴', '🟢', '🔵', '🟡', '🟣'];
       const caballos = colores.map((color) => ({
         color,
-        emoji: '<:horse:1351939506324111513>',
+        emoji: '<:horse:1352494846652317706>',
         posicion: 0,
       }));
 
@@ -50,9 +50,9 @@ module.exports = {
         .join('\n');
 
       const embedInicial = new EmbedBuilder()
-        .setTitle('<:horse:1351939506324111513> Carrera de Caballos')
+        .setTitle('<:horse:1352494846652317706> | Carrera de Caballos')
         .setDescription(
-          `La carrera comenzará <t:${tiempoInicio}:R>. ¡Prepárense! 🏁\n\n**¡Haz clic en el botón para apostar!**\n\n${pistaInicial}`
+          `La carrera comenzará <t:${tiempoInicio}:R>. ¡Hagan sus apuestas!\n\n${pistaInicial}`
         )
         .setColor(assets.color.base)
         .setFooter({ text: `ID: ${carreraId}` });
@@ -105,7 +105,7 @@ module.exports = {
               .join('\n');
 
             embedInicial
-              .setTitle('🎉 ¡Carrera en progreso!')
+              .setTitle('¡Inicia la carrera! 🎉')
               .setDescription(pistaVisual);
 
             await interaction.editReply({ embeds: [embedInicial], components: [botonDesactivado] });
