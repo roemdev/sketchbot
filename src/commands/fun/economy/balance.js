@@ -5,7 +5,7 @@ const { getUserBalance } = require("./utils/userBalanceUtils");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("balance")
-    .setDescription("Muestra tu balance actual de créditos")
+    .setDescription("Muestra tu balance actual de monedas")
     .addUserOption((option) =>
       option
         .setName("usuario")
@@ -27,7 +27,7 @@ module.exports = {
           .setColor(assets.color.red)
           .setTitle(`${assets.emoji.deny} Sin balance`)
           .setDescription(
-            `${targetUser} todavía no tiene créditos.`
+            `${targetUser} todavía no tiene monedas.`
           );
 
         return interaction.reply({ embeds: [embedNoData] });
@@ -42,7 +42,7 @@ module.exports = {
         .setAuthor(author)
         .setColor(assets.color.base)
         .setDescription(
-          `${targetUser} tiene ⏣**${balance.toLocaleString()}** créditos.`
+          `${targetUser} tiene **${balance.toLocaleString()}** monedas.`
         );
 
       await interaction.reply({ embeds: [embed] });

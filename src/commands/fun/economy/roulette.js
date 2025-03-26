@@ -106,7 +106,7 @@ module.exports = {
       .addFields(
         { name: ' ', value: `**Opción:** \`${opcion.toUpperCase()}\``, inline: true },
         { name: ' ', value: `**Resultado:** \`${numeroGanador}${colorGanador}${paridadGanador}\``, inline: true },
-        { name: ' ', value: `**Ganancia:** ⏣${premio.toLocaleString()} créditos`, inline: false },
+        { name: ' ', value: `**Ganancia:** ${premio.toLocaleString()} monedas`, inline: false },
       );
 
     // Responder con el resultado

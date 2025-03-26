@@ -95,8 +95,8 @@ module.exports = {
               .setTitle(`${crime.emoji} ${crimeName} exitoso`)
               .setDescription(
                 target
-                  ? crime.success_msg.replace('{user}', `<@${target.id}>`).replace('{profit}', `**⏣${profit.toLocaleString()}**`)
-                  : crime.success_msg.replace('{profit}', `**⏣${profit.toLocaleString()}**`)
+                  ? crime.success_msg.replace('{user}', `<@${target.id}>`).replace('{profit}', `**${profit.toLocaleString()}**`)
+                  : crime.success_msg.replace('{profit}', `**${profit.toLocaleString()}**`)
               )
           ]
         });
@@ -110,8 +110,8 @@ module.exports = {
               .setTitle(`${crime.emoji} ${crimeName} fallado`)
               .setDescription(
                 target
-                  ? crime.fail_msg.replace('{user}', `<@${target.id}>`).replace('{fine}', `**⏣${fine.toLocaleString()}**`)
-                  : crime.fail_msg.replace('{fine}', `**⏣${fine.toLocaleString()}**`)
+                  ? crime.fail_msg.replace('{user}', `<@${target.id}>`).replace('{fine}', `**${fine.toLocaleString()}**`)
+                  : crime.fail_msg.replace('{fine}', `**${fine.toLocaleString()}**`)
               )
           ]
         });

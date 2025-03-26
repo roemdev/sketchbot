@@ -109,7 +109,7 @@ const executeJob = async (interaction, jobName, assets) => {
         .setColor(assets.color.green)
         .setTitle(`🗺️ Trabajaste en ${mapa}`)
         .setDescription(`Has obtenido: \n` +
-          `${recompensaTexto}\n> 💰 **${creditsGanadas.toLocaleString()}** créditos\n\nConsumiste:\n> ${requiredItem.item_emoji} | **${requiredItem.item_name}**`
+          `${recompensaTexto}\n> **${creditsGanadas.toLocaleString()}** monedas\n\nConsumiste:\n> ${requiredItem.item_emoji} | **${requiredItem.item_name}**`
         ),
     ],
   });

@@ -52,9 +52,9 @@ module.exports = {
             value:
               `> **¡Bienvenido a la máquina Tragamonedas!**\n` +
               `> \`🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎\`\n` +
-              `> Cada tirada te cuesta **⏣${costPerSpin.toLocaleString()}**\n` +
-              `> Saca 3 iguales en el centro y gana **⏣${regularPrize.toLocaleString()}** \n` +
-              `> ¡Consigue 3 \`💎\` y gana el *jackpot* **⏣${jackpotPrize.toLocaleString()}**!`,
+              `> Cada tirada te cuesta **${costPerSpin.toLocaleString()}**\n` +
+              `> Saca 3 iguales en el centro y gana **${regularPrize.toLocaleString()}** \n` +
+              `> ¡Consigue 3 \`💎\` y gana el *jackpot* **${jackpotPrize.toLocaleString()}**!`,
             inline: true
           }
         );
@@ -86,9 +86,9 @@ module.exports = {
           value:
             `> **¡Bienvenido a la máquina Tragamonedas!**\n` +
             `> \`🍒🍋🍊🍉🍇🍓🍍💎🍒🍋🍊🍉🍇🍓🍍💎\`\n` +
-            `> Cada tirada te cuesta **⏣${costPerSpin.toLocaleString()}**\n` +
-            `> Saca 3 iguales en el centro y gana **⏣${regularPrize.toLocaleString()}** \n` +
-            `> ¡Consigue 3 \`💎\` y gana el *jackpot* **⏣${jackpotPrize.toLocaleString()}**!`,
+            `> Cada tirada te cuesta **${costPerSpin.toLocaleString()}**\n` +
+            `> Saca 3 iguales en el centro y gana **${regularPrize.toLocaleString()}** \n` +
+            `> ¡Consigue 3 \`💎\` y gana el *jackpot* **${jackpotPrize.toLocaleString()}**!`,
           inline: true
         }
       );

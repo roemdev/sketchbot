@@ -94,7 +94,7 @@ function manejarApuestas(interaction, connection, carreraId) {
       embeds: [
         new EmbedBuilder()
           .setColor(caballoElegido.color)
-          .setDescription(`¡<@${modalResponse.user.id}> apostó ${cantidad} al caballo ${caballoElegido.emoji}!`)
+          .setDescription(`¡<@${modalResponse.user.id}> apostó **${cantidad.toLocaleString()}** al caballo ${caballoElegido.emoji}!`)
       ]
     });
   });

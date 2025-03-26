@@ -36,7 +36,7 @@ module.exports = {
           // Restar el impuesto del balance del usuario
           await connection.execute('UPDATE curr_users SET balance = balance - ? WHERE id = ?', [taxAmount, user.id]);
           totalTaxesCollected += taxAmount;
-          taxDetails.push(`\`1.\` <@${user.id}> **-**${taxAmount.toLocaleString()}`);
+          taxDetails.push(`* <@${user.id}> **-${taxAmount.toLocaleString()}**`);
         }
       }
 
@@ -49,7 +49,7 @@ module.exports = {
             .setColor(assets.color.base)
             .setTitle('🏦 Cobro de impuestos')
             .setDescription(taxDetails.join('\n'))
-            .setFooter({ text: `Total cobrado: ⏣${totalTaxesCollected.toLocaleString()}` })]
+            .setFooter({ text: `Total cobrado: ${totalTaxesCollected.toLocaleString()} monedas` })]
       })
       await interaction.deleteReply();
     } catch (error) {
