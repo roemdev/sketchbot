@@ -82,7 +82,7 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setDescription(`¡Aquí tienes tus monedas de hoy!\n> ${rewardDetails}`)
+            .setDescription(`¡Aquí tienes tus monedas de hoy!\n>>> ${rewardDetails}`)
         ],
       });
     } catch (error) {
