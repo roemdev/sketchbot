@@ -5,15 +5,15 @@ const { updateUserBalance, getUserBalance } = require('./utils/userBalanceUtils'
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('transferir')
-    .setDescription('Transfiere créditos a otro usuario')
+    .setDescription('Transfiere monedas a otro usuario')
     .addUserOption(option =>
       option.setName('usuario')
-        .setDescription('Usuario al que deseas transferir créditos')
+        .setDescription('Usuario al que deseas transferir monedas')
         .setRequired(true)
     )
     .addIntegerOption(option =>
       option.setName('cantidad')
-        .setDescription('Cantidad de créditos a transferir')
+        .setDescription('Cantidad de monedas a transferir')
         .setRequired(true)
     ),
 
@@ -28,7 +28,7 @@ module.exports = {
           new EmbedBuilder()
             .setColor(assets.color.red)
             .setTitle(`${assets.emoji.deny} Acción inválida`)
-            .setDescription('No puedes transferirte créditos a ti mismo.')
+            .setDescription('No puedes transferirte monedas a ti mismo.')
         ],
       });
     }
@@ -43,7 +43,7 @@ module.exports = {
             new EmbedBuilder()
               .setColor(assets.color.red)
               .setTitle(`${assets.emoji.deny} Fondos insuficientes`)
-              .setDescription('No tienes suficientes créditos para esta transferencia.')
+              .setDescription('No tienes suficientes monedas para esta transferencia.')
           ],
         });
       }
@@ -56,7 +56,7 @@ module.exports = {
           new EmbedBuilder()
             .setColor(assets.color.green)
             .setTitle(`${assets.emoji.check} Transferencia exitosa`)
-            .setDescription(`Has transferido ⏣${amount.toLocaleString()} a <@${recipient.id}>.`)
+            .setDescription(`Has transferido **${amount.toLocaleString()}** a <@${recipient.id}>.`)
         ]
       });
     } catch (error) {

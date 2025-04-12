@@ -5,15 +5,15 @@ const { updateUserBalance } = require('./utils/userBalanceUtils');
 module.exports = {
   data: new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents)
-    .setName('add-credits')
-    .setDescription('Añade créditos a un usuario')
+    .setName('add-coins')
+    .setDescription('Añade monedas a un usuario')
     .addUserOption(option =>
       option.setName('usuario')
-        .setDescription('El usuario al que añadir créditos')
+        .setDescription('El usuario al que añadir monedas')
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName('cantidad')
-        .setDescription('La cantidad de créditos a añadir')
+        .setDescription('La cantidad de monedas a añadir')
         .setRequired(true)),
 
   async execute(interaction) {
@@ -40,8 +40,8 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setTitle(`${assets.emoji.check} Créditos añadidos`)
-            .setDescription(`Se han añadido ⏣**${amount.toLocaleString()}** a <@${user.id}>.`)
+            .setTitle(`${assets.emoji.check} monedas añadidas`)
+            .setDescription(`Se han añadido **${amount.toLocaleString()}** a <@${user.id}>.`)
         ],
       });
     } catch (error) {

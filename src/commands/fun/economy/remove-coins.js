@@ -6,14 +6,14 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents)
     .setName('remove-credits')
-    .setDescription('Remueve créditos de un usuario.')
+    .setDescription('Remueve monedas de un usuario.')
     .addUserOption(option =>
       option.setName('usuario')
-        .setDescription('El usuario al que remover créditos')
+        .setDescription('El usuario al que remover monedas')
         .setRequired(true))
     .addIntegerOption(option =>
       option.setName('cantidad')
-        .setDescription('La cantidad de créditos a remover')
+        .setDescription('La cantidad de monedas a remover')
         .setRequired(true)),
 
   async execute(interaction) {
@@ -40,12 +40,11 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setTitle(`${assets.emoji.check} Créditos removidos`)
-            .setDescription(`Se han removido ⏣ ${amount.toLocaleString()} de <@${user.id}>.`)
+            .setDescription(`Se han removido **${amount.toLocaleString()}** de <@${user.id}>.`)
         ],
       });
     } catch (error) {
-      console.error(`Error al remover créditos:`, error);
+      console.error(`Error al remover monedas:`, error);
       interaction.reply({
         content: '❌ Hubo un error al actualizar el balance.',
         flags: MessageFlags.Ephemeral,

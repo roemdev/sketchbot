@@ -47,7 +47,7 @@ module.exports = {
         .setColor(assets.color.base)
         .setTitle("🎒 Tu mochila")
         .setDescription(`${itemList}`)
-        .setFooter({ text: `Balance: ⏣${balance.toLocaleString()} créditos` })
+        .setFooter({ text: `Balance: ${balance.toLocaleString()} monedas` })
 
       // Responder con el embed
       return interaction.reply({

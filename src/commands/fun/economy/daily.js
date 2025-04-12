@@ -60,7 +60,7 @@ module.exports = {
       let rewardDetails = roleRewards
         .map(({ role_id, reward }) => {
           totalReward += Number(reward);
-          return `<@&${role_id}> ⏣**${Number(reward).toLocaleString()}**`;
+          return `<@&${role_id}> **${Number(reward).toLocaleString()}**`;
         })
         .join("\n");
 
@@ -82,8 +82,7 @@ module.exports = {
           new EmbedBuilder()
             .setAuthor(author)
             .setColor(assets.color.green)
-            .setTitle(`${assets.emoji.check} Créditos reclamados`)
-            .setDescription(`¡Aquí tienes tus créditos de hoy!\n> ${rewardDetails}`)
+            .setDescription(`¡Aquí tienes tus monedas de hoy!\n>>> ${rewardDetails}`)
         ],
       });
     } catch (error) {

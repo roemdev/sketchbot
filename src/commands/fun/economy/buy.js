@@ -76,7 +76,7 @@ module.exports = {
             new EmbedBuilder()
               .setColor(assets.color.red)
               .setDescription(
-                `${assets.emoji.deny} No tienes suficientes créditos para comprar ${quantity}x "${itemName}".`
+                `${assets.emoji.deny} No tienes suficientes monedas para comprar ${quantity}x "${itemName}".`
               ),
           ]
         });
@@ -112,7 +112,7 @@ module.exports = {
             .setTitle(`${assets.emoji.check} Compra realizada`)
             .setDescription(
               `> **[ ${quantity} ]** ${itemEmoji} ${item.name}\n` +
-              `> Gastaste **⏣${totalPrice.toLocaleString()}** créditos.`
+              `> Gastaste **⏣${totalPrice.toLocaleString()}** monedas.`
             ),
         ],
       });
