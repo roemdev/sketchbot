@@ -19,9 +19,8 @@ module.exports = {
     if (!addedRoleId) return;
 
     if (addedRoleId === BOOSTER_ROLE_ID) {
-      try {
-        // Asignar automáticamente el rol VIP
-        await newMember.roles.add(VIP_ROLE_ID);
+        // // Asignar automáticamente el rol VIP
+        // await newMember.roles.add(VIP_ROLE_ID);
 
         // Enviar embed agradeciendo por el rol Booster
         const boosterEmbed = new EmbedBuilder()
@@ -29,39 +28,33 @@ module.exports = {
           .setColor(assets.color.base)
           .setTitle(`${assets.emoji.boost} BOOST`)
           .setDescription(
-            `* ¡Obtuviste el rol <@&${VIP_ROLE_ID}>!\n` +
-            `* Usa \`/ayuda\` y ve tus beneficios.`
+            `* ¡Gracias por ese fantástico boost!\n` +
+            `* Disfruta de tus beneficios.`
           )
           .setThumbnail(newMember.user.displayAvatarURL());
 
         await systemChannel.send({
-          content: `<@${newMember.user.id}> ¡Gracias por el boost!`,
+          content: `<@${newMember.user.id}>`,
           embeds: [boosterEmbed]
         });
-      } catch (error) {
-        console.error(
-          `Error al asignar el rol VIP a ${newMember.user.tag}:`,
-          error
-        );
-      }
       return;
     }
 
-    if (addedRoleId === VIP_ROLE_ID && !newMember.roles.cache.has(BOOSTER_ROLE_ID)) {
+    if (addedRoleId === VIP_ROLE_ID) {
       // Enviar embed notificando que el rol VIP se asignó, solo si no se debe al rol Booster
       const vipEmbed = new EmbedBuilder()
         .setAuthor({ name: newMember.user.displayName, iconURL: newMember.user.displayAvatarURL({ dynamic: true }) })
         .setColor(assets.color.base)
         .setTitle("⭐VIP")
         .setDescription(
-          `* ¡Disfruta de tu exclusividad!\n` +
-          `* Usa \`/ayuda\` y ve tus beneficios.`
+          `* ¡Felicidades, ahora eres VIP!\n` +
+          `* Disfruta de tus beneficios.`
         )
         .setThumbnail(newMember.user.displayAvatarURL());
 
       try {
         await systemChannel.send({
-          content: `<@${newMember.user.id}> Ahora eres un miembro VIP`,
+          content: `<@${newMember.user.id}>`,
           embeds: [vipEmbed],
         });
       } catch (error) {
