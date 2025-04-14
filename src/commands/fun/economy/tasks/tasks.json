@@ -1,0 +1,42 @@
+[
+  {
+    "title": "🌱 ¡Riega la planta!",
+    "emoji": "💧",
+    "successTitle": "🪴 ¡La planta creció muchísimo!",
+    "successDescription": "🌿 ¡Has completado la tarea como todo un jardinero experto! Tu dedicación y tus clics constantes hicieron florecer esta planta.",
+    "introLines": [
+      "¡Riega la planta presionando `💧` hasta que crezca!",
+      "Cada clic cuenta, y solo tú puedes completar esta tarea con éxito."
+    ]
+  },
+  {
+    "title": "🛠️ ¡Repara el motor!",
+    "emoji": "🔩",
+    "successTitle": "🔧 ¡Motor reparado!",
+    "successDescription": "⚙️ ¡Tu destreza con las herramientas ha devuelto la vida a esta máquina! Trabajo bien hecho, ingeniero.",
+    "introLines": [
+      "¡Presiona `🔩` para ajustar las piezas y poner este motor en marcha!",
+      "Solo tú puedes dejar esto funcionando."
+    ]
+  },
+  {
+    "title": "📦 ¡Empaca los pedidos!",
+    "emoji": "📦",
+    "successTitle": "🚚 ¡Entrega en camino!",
+    "successDescription": "📦 ¡Empacaste todo justo a tiempo! El camión ya está en ruta gracias a ti.",
+    "introLines": [
+      "¡Presiona `📦` para empacar los pedidos antes de que el camión se vaya!",
+      "Velocidad y precisión es la clave."
+    ]
+  },
+  {
+    "title": "🔬 ¡Investiga en el laboratorio!",
+    "emoji": "🧪",
+    "successTitle": "🧠 ¡Descubrimiento logrado!",
+    "successDescription": "🔍 Tu esfuerzo dio fruto: la investigación ha sido todo un éxito. El conocimiento avanza.",
+    "introLines": [
+      "¡Presiona `🧪` para mezclar compuestos y avanzar tu investigación!",
+      "El futuro de la ciencia depende de ti."
+    ]
+  }
+]

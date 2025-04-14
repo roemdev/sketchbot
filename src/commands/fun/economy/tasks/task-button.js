@@ -1,5 +1,15 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+  MessageFlags
+} = require('discord.js');
+
 const assets = require('../../../../../config/assets.json');
+const tasks = require('./tasks.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,17 +18,24 @@ module.exports = {
 
   async execute(interaction) {
     let remainingClicks = 10;
-    const durationMs = 30 * 1000; // 30 segundos
-    const expirationTimestamp = Math.floor((Date.now() + durationMs) / 1000); // Unix timestamp en segundos
+    const durationMs = 60 * 1000; // 60 segundos
+    const expirationTimestamp = Math.floor((Date.now() + durationMs) / 1000);
+
+    // Selección aleatoria de tarea
+    const task = tasks[Math.floor(Math.random() * tasks.length)];
 
     const embed = new EmbedBuilder()
       .setColor(assets.color.base)
-      .setTitle('Despliegue')
-      .setDescription(`Presiona el botón repetidamente para culminar este trabajo.\n\n Expiración: <t:${expirationTimestamp}:t> (<t:${expirationTimestamp}:R>)`);
+      .setTitle(task.title)
+      .setDescription(
+        `${task.introLines.join('\n')}\n\n` +
+        `\`⏳\` **Tiempo límite:** <t:${expirationTimestamp}:t> (<t:${expirationTimestamp}:R>)\n` +
+        `\`🎯\` **Objetivo:** ¡Haz ${remainingClicks} clics antes de que se acabe el tiempo!`
+      );
 
     const button = new ButtonBuilder()
       .setCustomId('button')
-      .setEmoji('🚀')
+      .setEmoji(task.emoji)
       .setLabel(String(remainingClicks))
       .setStyle(ButtonStyle.Secondary);
 
@@ -61,7 +78,8 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.green)
-                .setTitle('Has realizado el trabajo con éxito')
+                .setTitle(task.successTitle)
+                .setDescription(task.successDescription)
                 .addFields({
                   name: '💰 Recompensa',
                   value: `**+${coins}**🪙 por tu gran trabajo.\n**+${xp}**✨ por tu esfuerzo.`
