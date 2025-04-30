@@ -1,5 +1,5 @@
 const { Events, MessageFlags } = require("discord.js");
-const handleButton = require("../commands/fun/giveaway/giveawayButtonHandler");
+//const handleButton = require("../commands/fun/giveaway/giveawayButtonHandler");
 const { handleVoiceMasterCommand } = require("../commands/management/voice-master/voiceMasterHandler");
 const { handleOpenTicket } = require("../commands/management/ticket-system/ticketHandler");
 const { handleButtonInteraction, handleModalInteraction } = require("../commands/fun/nobility/nobilityHandler");
@@ -42,7 +42,7 @@ module.exports = {
 
     // Botones
     if (interaction.isButton()) {
-      if (interaction.customId.startsWith("ga")) return await handleButton(interaction); // Giveaway
+      //if (interaction.customId.startsWith("ga")) return await handleButton(interaction); // Giveaway
       if (interaction.customId.startsWith("vm")) return await handleVoiceMasterCommand(interaction); // Voice Master
       if (interaction.customId.startsWith("tk")) return await handleOpenTicket(interaction); // Ticket System
       if (interaction.customId.startsWith("nb")) return await handleButtonInteraction(interaction); // Nobility
