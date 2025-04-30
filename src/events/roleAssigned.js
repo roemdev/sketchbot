@@ -2,7 +2,7 @@ const { Events, EmbedBuilder } = require("discord.js");
 const assets = require("../../config/assets.json");
 
 const BOOSTER_ROLE_ID = "1241182617504579594";
-const VIP_ROLE_ID = "1330908811946496103";
+const VIP_ROLE_ID = "1303816942326648884";
 const MONITORED_ROLES = [BOOSTER_ROLE_ID, VIP_ROLE_ID];
 
 module.exports = {
