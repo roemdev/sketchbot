@@ -11,6 +11,19 @@ const {
 const assets = require('../../../../../config/assets.json');
 const ms = require('ms');
 
+function buildGiveawayEmbed({ title, endUnix, organizerId, entries, winnersCount, final = false, winnersList = '' }) {
+  return new EmbedBuilder()
+    .setColor(assets.color.base)
+    .setTitle(title)
+    .setDescription(
+      `${final ? 'Finalizó' : 'Finaliza'}: <t:${endUnix}:R> | (<t:${endUnix}:f>)\n` +
+      `Organizador: <@${organizerId}>\n` +
+      `Entradas: **${entries}**\n` +
+      `Ganadores: ${final ? winnersList || ' ' : `**${winnersCount}**`}`
+    )
+    .setTimestamp(new Date(endUnix * 1000));
+}
+
 module.exports = {
   data: new SlashCommandSubcommandBuilder()
     .setName('crear')
@@ -26,144 +39,118 @@ module.exports = {
     .addStringOption(option =>
       option.setName('premio')
         .setDescription('Premio del sorteo')
-        .setRequired(true))
-    .addRoleOption(option =>
-      option.setName('rol-requerido')
-        .setDescription('Rol necesario para participar')
-        .setRequired(false))
-    .addRoleOption(option =>
-      option.setName('rol-doble-entrada')
-        .setDescription('Rol con doble entrada')
-        .setRequired(false)),
+        .setRequired(true)),
 
   async execute(interaction) {
-    const duration = ms(interaction.options.getString('duración'));
+    const durationRaw = interaction.options.getString('duración');
+    const duration = ms(durationRaw);
     const winnersCount = interaction.options.getInteger('ganadores');
     const prize = interaction.options.getString('premio');
-    const roleRequired = interaction.options.getRole('rol-requerido');
-    const roleDoubleEntry = interaction.options.getRole('rol-doble-entrada');
-    const endDate = Math.floor((Date.now() + duration) / 1000);
 
-    if (!duration || duration <= 0) {
+    if (!duration || isNaN(duration) || duration <= 0) {
       return interaction.reply({
-        content: 'Duración inválida',
+        content: '⏱️ Formato de duración inválido. Usa valores como `10m`, `1h`, `2d`.',
         flags: MessageFlags.Ephemeral
       });
     }
 
-    // Embed del sorteo
-    const giveawayEmbed = new EmbedBuilder()
-      .setColor(assets.color.base)
-      .setTitle(prize)
-      .setDescription(
-        `Finaliza: <t:${endDate}:R> | (<t:${endDate}:D>)\n` +
-        `Host: <@${interaction.user.id}>\n` +
-        `Entradas: 0\n` +
-        `Ganadores: ${winnersCount}\n` +
-        `${roleRequired ? `Rol requerido: <@&${roleRequired.id}>\n` : ''}`
-      )
-      .setTimestamp(Date.now() + duration)
-      .setFooter({ text: 'Sorteo en curso' });
+    const endDate = new Date(Date.now() + duration);
+    const endUnix = Math.floor(endDate.getTime() / 1000);
 
-    const actionRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('gaButton')
-        .setLabel('Participar')
-        .setEmoji('🎉')
-        .setStyle(ButtonStyle.Primary)
-    );
+    const giveawayEmbed = buildGiveawayEmbed({
+      title: prize,
+      endUnix,
+      organizerId: interaction.user.id,
+      entries: 0,
+      winnersCount
+    });
+
+    const activeButton = new ButtonBuilder()
+      .setCustomId('gaButton')
+      .setEmoji('🎉')
+      .setStyle(ButtonStyle.Primary);
+
+    const actionRow = new ActionRowBuilder().addComponents(activeButton);
 
     await interaction.reply({
+      content: 'Sorteo enviado',
+      flags: MessageFlags.Ephemeral
+    });
+
+    const sentMessage = await interaction.channel.send({
       embeds: [giveawayEmbed],
       components: [actionRow]
     });
 
-    const reply = await interaction.fetchReply();
+    const participants = new Collection(); // userId => { id }
 
-    const participants = new Collection(); // userId => { id, entries }
-
-    // Collector de botones
-    const collector = reply.createMessageComponentCollector({
+    const collector = sentMessage.createMessageComponentCollector({
       componentType: ComponentType.Button,
       time: duration
     });
 
-    collector.on('collect', async buttonInteraction => {
-      const user = buttonInteraction.user;
-      const member = await interaction.guild.members.fetch(user.id).catch(() => null);
-      if (!member) return;
+    collector.on('collect', async btn => {
+      const userId = btn.user.id;
 
-      // Verifica rol requerido
-      if (roleRequired && !member.roles.cache.has(roleRequired.id)) {
-        return buttonInteraction.reply({
-          content: `❌ Necesitas el rol <@&${roleRequired.id}> para participar.`,
-          flags: MessageFlags.Ephemeral
-        });
-      }
-
-      // Verifica si ya participó
-      if (participants.has(user.id)) {
-        return buttonInteraction.reply({
+      if (participants.has(userId)) {
+        return btn.reply({
           content: '❌ Ya estás participando en el sorteo.',
           flags: MessageFlags.Ephemeral
         });
       }
 
-      const entries = roleDoubleEntry && member.roles.cache.has(roleDoubleEntry.id) ? 2 : 1;
-      participants.set(user.id, { id: user.id, entries });
+      participants.set(userId, { id: userId });
 
-      // Actualiza mensaje
-      giveawayEmbed.setDescription(
-        `Finaliza: <t:${endDate}:R> | (<t:${endDate}:D>)\n` +
-        `Host: <@${interaction.user.id}>\n` +
-        `Entradas: ${[...participants.values()].reduce((a, p) => a + p.entries, 0)}\n` +
-        `Ganadores: ${winnersCount}\n` +
-        `${roleRequired ? `Rol requerido: <@&${roleRequired.id}>\n` : ''}`
-      );
-      await reply.edit({ embeds: [giveawayEmbed] });
+      const updatedEmbed = buildGiveawayEmbed({
+        title: prize,
+        endUnix,
+        organizerId: interaction.user.id,
+        entries: participants.size,
+        winnersCount
+      });
 
-      return buttonInteraction.reply({
+      await sentMessage.edit({ embeds: [updatedEmbed] });
+
+      return btn.reply({
         content: '✅ ¡Estás participando en el sorteo!',
         flags: MessageFlags.Ephemeral
       });
     });
 
     collector.on('end', async () => {
-      const pool = [];
+      const pool = Array.from(participants.keys());
+      const shuffled = pool.sort(() => Math.random() - 0.5);
+      const winners = shuffled.slice(0, winnersCount);
 
-      for (const participant of participants.values()) {
-        for (let i = 0; i < participant.entries; i++) {
-          pool.push(participant.id);
-        }
-      }
-
-      let winners = [];
-
-      if (pool.length === 0) {
-        giveawayEmbed.setDescription('❌ Nadie participó en el sorteo.');
-      } else {
-        // Escoge ganadores aleatorios
-        while (winners.length < winnersCount && pool.length > 0) {
-          const winnerId = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
-          if (!winners.includes(winnerId)) {
-            winners.push(winnerId);
-          }
-        }
-
-        giveawayEmbed.setDescription(
-          `🎉 ¡El sorteo ha finalizado!\n` +
-          `Ganadores (${winners.length}): ${winners.map(w => `<@${w}>`).join(', ')}\n` +
-          `Premio: **${prize}**\n` +
-          `Host: <@${interaction.user.id}>`
-        );
-      }
-
-      giveawayEmbed.setFooter({ text: 'Sorteo finalizado' });
-
-      await reply.edit({
-        embeds: [giveawayEmbed],
-        components: [] // Quita botones
+      const finalEmbed = buildGiveawayEmbed({
+        title: prize,
+        endUnix,
+        organizerId: interaction.user.id,
+        entries: participants.size,
+        winnersCount,
+        final: true,
+        winnersList: winners.length > 0 ? winners.map(w => `<@${w}>`).join(', ') : ''
       });
+
+      const finalButton = new ButtonBuilder()
+        .setLabel('Sorteo finalizado')
+        .setStyle(ButtonStyle.Link)
+        .setURL(`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}`);
+
+      const finalRow = new ActionRowBuilder().addComponents(finalButton);
+
+      await sentMessage.edit({
+        embeds: [finalEmbed],
+        components: [finalRow]
+      });
+
+      if (winners.length > 0) {
+        await interaction.channel.send(
+          `🎉 ¡Felicidades ${winners.map(w => `<@${w}>`).join(', ')}! Ganaron **${prize}**`
+        );
+      } else {
+        await interaction.channel.send('Nadie participó en el sorteo.');
+      }
     });
   }
 };
