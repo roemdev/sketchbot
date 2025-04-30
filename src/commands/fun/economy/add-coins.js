@@ -40,8 +40,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setTitle(`${assets.emoji.check} monedas añadidas`)
-            .setDescription(`Se han añadido **${amount.toLocaleString()}** a <@${user.id}>.`)
+            .setDescription(`Se han añadido **${amount.toLocaleString()}**🪙 a <@${user.id}>.`)
         ],
       });
     } catch (error) {

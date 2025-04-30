@@ -60,7 +60,7 @@ module.exports = {
       let rewardDetails = roleRewards
         .map(({ role_id, reward }) => {
           totalReward += Number(reward);
-          return `<@&${role_id}> **${Number(reward).toLocaleString()}**`;
+          return `<@&${role_id}> • **${Number(reward).toLocaleString()}**🪙`;
         })
         .join("\n");
 

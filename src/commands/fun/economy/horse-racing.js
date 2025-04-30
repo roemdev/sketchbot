@@ -65,7 +65,7 @@ module.exports = {
         const saldo = await getUserBalance(connection, userId);
         if (saldo < apuesta) {
           await interaction.followUp({
-            content: `❌ No tienes suficiente saldo para apostar ${apuesta}. Tu saldo actual es ${saldo}.`,
+            content: `❌ No tienes suficiente saldo para apostar ${apuesta}🪙. Tu saldo actual es ${saldo}🪙.`,
             ephemeral: true,
           });
           return false; // Indica que la apuesta no fue válida

@@ -40,7 +40,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(`Se han removido **${amount.toLocaleString()}** de <@${user.id}>.`)
+            .setDescription(`Se han removido **${amount.toLocaleString()}**🪙 de <@${user.id}>.`)
         ],
       });
     } catch (error) {

@@ -112,7 +112,7 @@ module.exports = {
             .setTitle(`${assets.emoji.check} Compra realizada`)
             .setDescription(
               `> **[ ${quantity} ]** ${itemEmoji} ${item.name}\n` +
-              `> Gastaste **⏣${totalPrice.toLocaleString()}** monedas.`
+              `> Gastaste **${totalPrice.toLocaleString()}**🪙.`
             ),
         ],
       });

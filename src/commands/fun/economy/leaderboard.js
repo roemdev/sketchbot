@@ -50,7 +50,7 @@ module.exports = {
             console.error(`Error al obtener usuario ${row.id}:`, error);
           }
 
-          return `\`${index + 1}.\` ${username} • 🪙${row.balance.toLocaleString()}`;
+          return `\`${index + 1}.\` ${username} • ${row.balance.toLocaleString()}🪙`;
         })
       );
 

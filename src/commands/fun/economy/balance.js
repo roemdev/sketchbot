@@ -25,7 +25,6 @@ module.exports = {
       if (balance === 0) {
         const embedNoData = new EmbedBuilder()
           .setColor(assets.color.red)
-          .setTitle(`${assets.emoji.deny} Sin balance`)
           .setDescription(
             `${targetUser} todavía no tiene monedas.`
           );
@@ -42,7 +41,7 @@ module.exports = {
         .setAuthor(author)
         .setColor(assets.color.base)
         .setDescription(
-          `${targetUser} tiene **${balance.toLocaleString()}** monedas.`
+          `${targetUser} tiene **${balance.toLocaleString()}**🪙.`
         );
 
       await interaction.reply({ embeds: [embed] });

@@ -27,7 +27,6 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.red)
-            .setTitle(`${assets.emoji.deny} Acción inválida`)
             .setDescription('No puedes transferirte monedas a ti mismo.')
         ],
       });
@@ -42,7 +41,6 @@ module.exports = {
           embeds: [
             new EmbedBuilder()
               .setColor(assets.color.red)
-              .setTitle(`${assets.emoji.deny} Fondos insuficientes`)
               .setDescription('No tienes suficientes monedas para esta transferencia.')
           ],
         });
@@ -55,8 +53,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setTitle(`${assets.emoji.check} Transferencia exitosa`)
-            .setDescription(`Has transferido **${amount.toLocaleString()}** a <@${recipient.id}>.`)
+            .setDescription(`Has transferido **${amount.toLocaleString()}**🪙 a <@${recipient.id}>.`)
         ]
       });
     } catch (error) {

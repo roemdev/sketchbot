@@ -116,7 +116,7 @@ module.exports = {
             .setTitle(`${assets.emoji.check} Venta realizada`)
             .setDescription(
               `> **[ ${quantity} ]** ${itemEmoji} ${item.name}\n` +
-              `> Recibiste **${totalSaleValue.toLocaleString()}** monedas por la venta.`
+              `> Recibiste **${totalSaleValue.toLocaleString()}**🪙 por la venta.`
             ),
         ],
       });

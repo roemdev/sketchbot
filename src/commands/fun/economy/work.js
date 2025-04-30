@@ -53,7 +53,7 @@ module.exports = {
         embeds: [
           new EmbedBuilder()
             .setColor(assets.color.green)
-            .setDescription(job.description.replace('{profit}', `${profit.toLocaleString()}`)),
+            .setDescription(job.description.replace('{profit}', `${profit.toLocaleString()}🪙`)),
         ],
       });
     } catch (error) {
