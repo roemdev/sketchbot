@@ -91,57 +91,6 @@ for (const file of eventFiles) {
   }
 }
 
-// Function to finalize expired giveaways
-async function checkAndEndGiveaways() {
-  try {
-    const connection = client.dbConnection;
-    const [giveaways] = await connection.query(
-      `SELECT id FROM giveaways WHERE status = 'active' AND end_date <= UNIX_TIMESTAMP()`
-    );
-
-    for (const giveaway of giveaways) {
-      await endGiveaway(giveaway.id, client);
-    }
-  } catch (error) {
-    console.error("Error al revisar y finalizar sorteos activos:", error);
-  }
-}
-
-// Function to end a giveaway
-async function endGiveaway(giveawayId, client) {
-  try {
-    const connection = client.dbConnection;
-    const [giveaway] = await connection.query(
-      `SELECT winners_count, channel_id, message_id FROM giveaways WHERE id = ?`,
-      [giveawayId]
-    );
-
-    if (giveaway.length === 0) return;
-    const { winners_count, channel_id, message_id } = giveaway[0];
-
-    const [entries] = await connection.query(
-      `SELECT user_id FROM giveaway_entries WHERE giveaway_id = ?`,
-      [giveawayId]
-    );
-
-    const winnersArray = entries
-      .sort(() => Math.random() - 0.5)
-      .slice(0, winners_count)
-      .map(entry => `<@${entry.user_id}>`);
-
-    const winnersMention = winnersArray.length > 0 ? winnersArray.join(", ") : "Nadie participó 😢";
-
-    await connection.query(`UPDATE giveaways SET status = 'ended' WHERE id = ?`, [giveawayId]);
-
-    const channel = await client.channels.fetch(channel_id);
-    const message = await channel.messages.fetch(message_id);
-
-    await message.reply(`🎉 ¡El sorteo ha terminado! Ganadores: ${winnersMention}`);
-  } catch (error) {
-    console.error("Error al finalizar el sorteo:", error);
-  }
-}
-
 // Detect and execute prefix commands
 client.on("messageCreate", async (message) => {
   if (message.author.bot || !message.content.startsWith("!")) return;
@@ -158,11 +107,6 @@ client.on("messageCreate", async (message) => {
   } catch (error) {
     console.error(`Error al ejecutar el comando ${commandName}:`, error);
   }
-});
-
-// Run giveaway check when bot is ready
-client.once("ready", async () => {
-  await checkAndEndGiveaways();
 });
 
 client.login(process.env.BOT_TOKEN);
