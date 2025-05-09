@@ -1,7 +1,7 @@
 const { PermissionsBitField } = require("discord.js");
 
-const ROLE_SUPPORT_ID = "1339053275563036745";
-const TICKET_CATEGORY_ID = "1338007081760063568";
+const ROLE_SUPPORT_ID = "1370375082492428490";
+const TICKET_CATEGORY_ID = "1370376649970815047";
 
 function getTicketPermissions(guild, user) {
   return [
