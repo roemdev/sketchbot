@@ -1,127 +1,233 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
-const { getUserBalance, updateUserBalance } = require('./utils/userBalanceUtils');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } = require('discord.js');
+  
 const assets = require('../../../../config/assets.json');
-
+  
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('crimenes')
-    .setDescription('Comete un crimen y prueba tu suerte')
-    .addStringOption((option) =>
-      option
-        .setName('crimen')
-        .setDescription('Elige el crimen que vas a cometer')
-        .setAutocomplete(true)
-        .setRequired(true)
-    )
-    .addUserOption((option) =>
-      option
-        .setName('usuario')
-        .setDescription('El usuario contra el que deseas cometer el crimen')
-        .setRequired(false)
-    ),
-
-  async autocomplete(interaction) {
-    if (!interaction.isAutocomplete()) return;
-    const connection = interaction.client.dbConnection;
-
-    try {
-      const [rows] = await connection.query(
-        'SELECT name, is_active, failrate FROM curr_crime_config WHERE is_active = 1 ORDER BY failrate'
-      );
-      const choices = rows.map((row) => ({ name: row.name, value: row.name }));
-      await interaction.respond(choices);
-    } catch (error) {
-      console.error('Error en el autocompletado de /crimenes:', error);
-      await interaction.respond([]);
-    }
-  },
+    .setName('crimen')
+    .setDescription('Arriesga y gana monedas con Hackeo o Robo.'),
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const crimeName = interaction.options.getString('crimen');
-    const target = interaction.options.getUser('usuario');
 
-    try {
-      const [crimes] = await connection.query(
-        'SELECT name, emoji, failrate, profit, fine, req_user, success_msg, fail_msg, is_active FROM curr_crime_config WHERE name = ?',
-        [crimeName]
-      );
+    // Verificar cooldown de crime
+    const [cooldownResult] = await connection.execute(
+      'SELECT crime FROM cooldowns WHERE user_id = ?',
+      [userId]
+    );
 
-      if (crimes.length === 0 || !crimes[0].is_active) {
-        return interaction.reply({ content: 'Crimen inválido o desactivado.', flags: MessageFlags.Ephemeral });
-      }
+    const lastCrimeTime = cooldownResult[0]?.crime;
+    const now = new Date();
 
-      const crime = crimes[0];
-      const userBalance = await getUserBalance(connection, userId);
-
-      if (userBalance <= 0) {
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.yellow)
-              .setTitle(`${assets.emoji.warn} Sin balance`)
-              .setDescription('Debes tener balance para cometer crímenes.')
-          ],
-          flags: MessageFlags.Ephemeral
-        });
-      }
-
-      if (!target && crime.req_user == 1) {
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.yellow)
-              .setTitle(`${assets.emoji.warn} Falta el usuario objetivo`)
-              .setDescription('Debes especificar un usuario objetivo para este crimen.')
-          ],
-          flags: MessageFlags.Ephemeral
-        });
-      }
-
-      // Determinar si el crimen es exitoso o falla
-      const success = Math.random() * 100 >= crime.failrate;
-      const profit = Math.floor((crime.profit / 100) * userBalance);
-      const fine = Math.floor((crime.fine / 100) * userBalance);
-
-      if (success) {
-        await updateUserBalance(connection, userId, profit);
-        if (target) await updateUserBalance(connection, target.id, -profit);
-
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.green)
-              .setTitle(`${crime.emoji} ${crimeName} exitoso`)
-              .setDescription(
-                target
-                  ? crime.success_msg.replace('{user}', `<@${target.id}>`).replace('{profit}', `**${profit.toLocaleString()}**🪙`)
-                  : crime.success_msg.replace('{profit}', `**${profit.toLocaleString()}**🪙`)
-              )
-          ]
-        });
-      } else {
-        await updateUserBalance(connection, userId, -fine);
-
-        return interaction.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor(assets.color.red)
-              .setTitle(`${crime.emoji} ${crimeName} fallado`)
-              .setDescription(
-                target
-                  ? crime.fail_msg.replace('{user}', `<@${target.id}>`).replace('{fine}', `**${fine.toLocaleString()}**🪙`)
-                  : crime.fail_msg.replace('{fine}', `**${fine.toLocaleString()}**🪙`)
-              )
-          ]
-        });
-      }
-    } catch (error) {
-      console.error('Error al ejecutar /crimenes:', error);
+    if (lastCrimeTime && new Date(lastCrimeTime) > now) {
       return interaction.reply({
-        content: 'Hubo un problema al realizar el crimen. Por favor, reporta este error.',
+        content: `⏳ Aún estás bajo vigilancia. Intenta de nuevo en <t:${Math.floor(new Date(lastCrimeTime).getTime() / 1000)}:R>.`,
         flags: MessageFlags.Ephemeral
       });
     }
+
+    // Obtener config task_config para crime
+    const [crimeConfigResult] = await connection.execute(
+      'SELECT cooldown, value1, value2 FROM task_config WHERE task = ?',
+      ['crime']
+    );
+
+    if (crimeConfigResult.length === 0) {
+      return interaction.reply({
+        content: '⚠️ No se encontró configuración para la tarea "crime" en la base de datos.',
+        flags: MessageFlags.Ephemeral
+      });
+    }
+
+    const { cooldown, value1: failRate, value2: percent } = crimeConfigResult[0];
+
+    // Crear botones Hackeo y Robo
+    const hackeoButton = new ButtonBuilder()
+      .setCustomId('hackeo')
+      .setLabel('🖥️ Hackeo')
+      .setStyle(ButtonStyle.Secondary);
+
+    const roboButton = new ButtonBuilder()
+      .setCustomId('robo')
+      .setLabel('🔫 Robo')
+      .setStyle(ButtonStyle.Secondary);
+
+    const row = new ActionRowBuilder().addComponents(hackeoButton, roboButton);
+
+    await interaction.reply({
+      content: 'Elige tu acción: **Hackeo** o **Robo**. Tienes 30 segundos.',
+      embeds: [
+        new EmbedBuilder()
+        .setColor(assets.color.base)
+        .setTitle('¿Qué crimen deseas cometer?')
+        .setDescription('Elige una de las opciones a continuación; podrás ganar :coin: si tu crimen tiene éxito, si no, tendrás que pagar una multa. Pero tranquilo, ¡el que no arrigas no gana!')
+      ],
+      components: [row]
+    });
+
+    const message = await interaction.fetchReply();
+
+    const collector = message.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: 30_000,
+      filter: i => i.user.id === userId
+    });
+
+    collector.on('collect', async i => {
+      collector.stop();
+
+      // Leer balance del usuario actual
+      const [userResult] = await connection.execute(
+        'SELECT balance FROM curr_users WHERE id = ?',
+        [userId]
+      );
+
+      if (userResult.length === 0 || userResult[0].balance <= 0) {
+        return i.update({
+          content: '❌ No tienes monedas para realizar esta acción.',
+          components: [],
+          embeds: []
+        });
+      }
+
+      const userBalance = userResult[0].balance;
+
+      // Probabilidad de fallo
+      const failChance = Math.random() * 100 < failRate;
+
+      // Cantidad a afectar en monedas (redondeado)
+      const amount = Math.max(1, Math.floor(userBalance * (percent / 100)));
+
+      // Desactivar botones y marcar el seleccionado
+      const selectedButtonId = i.customId;
+      const newHackeoButton = ButtonBuilder.from(hackeoButton)
+        .setDisabled(true)
+        .setStyle(selectedButtonId === 'hackeo' ? ButtonStyle.Success : ButtonStyle.Secondary);
+      
+      const newRoboButton = ButtonBuilder.from(roboButton)
+        .setDisabled(true)
+        .setStyle(selectedButtonId === 'robo' ? ButtonStyle.Success : ButtonStyle.Secondary);
+
+      const disabledRow = new ActionRowBuilder().addComponents(newHackeoButton, newRoboButton);
+
+      if (selectedButtonId === 'hackeo') {
+        if (failChance) {
+          // Falla: pierde amount
+          const lost = Math.min(amount, userBalance);
+          await connection.execute(
+            'UPDATE curr_users SET balance = balance - ? WHERE id = ?',
+            [lost, userId]
+          );
+
+          const embedFail = new EmbedBuilder()
+            .setColor(assets.color.red)
+            .setTitle('💰 Resultado')
+            .setDescription(`¡Oh no! Fuiste multado con **${lost.toLocaleString()}** 🪙.`)
+            .addFields(
+              { name: 'Crimen cometido', value: '🖥️ Hackeo', inline: true },
+              { name: 'Monedas perdidas', value: `${lost.toLocaleString()} 🪙`, inline: true }
+            )
+
+          await i.update({ content: '', components: [disabledRow], embeds: [embedFail] });
+        } else {
+          // Éxito: gana amount
+          await connection.execute(
+            'UPDATE curr_users SET balance = balance + ? WHERE id = ?',
+            [amount, userId]
+          );
+
+          const embedSuccess = new EmbedBuilder()
+            .setColor(assets.color.green)
+            .setTitle('💰 Resultado')
+            .setDescription(`¡Lograste burlar la ciberseguridad del banco de Arkania!`)
+            .addFields(
+              { name: 'Crimen cometido', value: '🖥️ Hackeo', inline: true },
+              { name: 'Monedas ganadas', value: `${amount.toLocaleString()} 🪙`, inline: true }
+            );
+
+          await i.update({ content: '', components: [disabledRow], embeds: [embedSuccess] });
+        }
+      } else if (selectedButtonId === 'robo') {
+        // Robo: roba a otro usuario aleatorio
+
+        // Obtener usuarios candidatos (excluyendo al actual, balance > 0)
+        const [victims] = await connection.execute(
+          'SELECT id, balance FROM curr_users WHERE id != ? AND balance > 0',
+          [userId]
+        );
+
+        if (victims.length === 0) {
+          return i.update({
+            content: '❌ No hay usuarios con monedas para robar.',
+            components: [disabledRow],
+            embeds: []
+          });
+        }
+
+        // Escoger víctima aleatoria
+        const victim = victims[Math.floor(Math.random() * victims.length)];
+        const victimBalance = victim.balance;
+
+        const victimAmount = Math.max(1, Math.floor(victimBalance * (percent / 100)));
+
+        if (failChance) {
+          // Falla: ladrón pierde amount (como hackeo)
+          const lost = Math.min(amount, userBalance);
+          await connection.execute(
+            'UPDATE curr_users SET balance = balance - ? WHERE id = ?',
+            [lost, userId]
+          );
+
+          const embedFail = new EmbedBuilder()
+            .setColor(assets.color.red)
+            .setTitle('💰 Resultado')
+            .setDescription(`¡Oh no! Te atraparon intentado robarle a <@${victim.id}>.`)
+            .addFields(
+              { name: 'Crimen cometido', value: '🔫 Robo', inline: true },
+              { name: 'Monedas perdidas', value: `${lost.toLocaleString()} 🪙`, inline: true }
+            )
+
+          await i.update({ content: '', components: [disabledRow], embeds: [embedFail] });
+        } else {
+          // Éxito: resta al victim y suma al ladrón
+          const stealAmount = Math.min(victimAmount, victimBalance);
+
+          await connection.execute(
+            'UPDATE curr_users SET balance = balance - ? WHERE id = ?',
+            [stealAmount, victim.id]
+          );
+          await connection.execute(
+            'UPDATE curr_users SET balance = balance + ? WHERE id = ?',
+            [stealAmount, userId]
+          );
+
+          const embedSuccess = new EmbedBuilder()
+            .setColor(assets.color.green)
+            .setTitle('💰 Resultado')
+            .setDescription(`¡Te saliste con la tuya robándole a <@${victim.id}>.`)
+            .addFields(
+              { name: 'Crimen cometido', value: '🔫 Robo', inline: true },
+              { name: 'Monedas robadas', value: `${stealAmount.toLocaleString()} 🪙`, inline: true }
+            );
+
+          await i.update({ content: '', components: [disabledRow], embeds: [embedSuccess] });
+        }
+      }
+
+      // Actualizar cooldown
+      const nextAvailable = new Date(Date.now() + cooldown * 1000);
+      await connection.execute(
+        `INSERT INTO cooldowns (user_id, crime)
+         VALUES (?, ?) ON DUPLICATE KEY UPDATE crime = VALUES(crime)`,
+        [userId, nextAvailable]
+      );
+    });
+
+    collector.on('end', async (_, reason) => {
+      if (reason === 'time') {
+        await interaction.editReply({ content: '⏰ Tiempo agotado. No realizaste ninguna acción.', components: [] });
+      }
+    });
   }
 };

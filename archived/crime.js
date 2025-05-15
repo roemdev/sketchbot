@@ -1,104 +1,125 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
-const assets = require('../assets.json');
-const { updateUserBalance } = require('../src/utilities/userBalanceUtils');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { getUserBalance, updateUserBalance } = require('./utils/userBalanceUtils');
+const assets = require('../../../../config/assets.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('crimen')
-    .setDescription('Comete un crimen y ve si tienes suerte'),
+    .setName('crimenes')
+    .setDescription('Comete un crimen y prueba tu suerte')
+    .addStringOption((option) =>
+      option
+        .setName('crimen')
+        .setDescription('Elige el crimen que vas a cometer')
+        .setAutocomplete(true)
+        .setRequired(true)
+    )
+    .addUserOption((option) =>
+      option
+        .setName('usuario')
+        .setDescription('El usuario contra el que deseas cometer el crimen')
+        .setRequired(false)
+    ),
+
+  async autocomplete(interaction) {
+    if (!interaction.isAutocomplete()) return;
+    const connection = interaction.client.dbConnection;
+
+    try {
+      const [rows] = await connection.query(
+        'SELECT name, is_active, failrate FROM curr_crime_config WHERE is_active = 1 ORDER BY failrate'
+      );
+      const choices = rows.map((row) => ({ name: row.name, value: row.name }));
+      await interaction.respond(choices);
+    } catch (error) {
+      console.error('Error en el autocompletado de /crimenes:', error);
+      await interaction.respond([]);
+    }
+  },
 
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
+    const crimeName = interaction.options.getString('crimen');
+    const target = interaction.options.getUser('usuario');
 
     try {
-      const [rows] = await connection.execute('SELECT crime_name, emoji, description, profit, fine, failrate FROM currency_crime_config WHERE is_active = TRUE');
+      const [crimes] = await connection.query(
+        'SELECT name, emoji, failrate, profit, fine, req_user, success_msg, fail_msg, is_active FROM curr_crime_config WHERE name = ?',
+        [crimeName]
+      );
 
-      if (rows.length < 3) {
+      if (crimes.length === 0 || !crimes[0].is_active) {
+        return interaction.reply({ content: 'Crimen inválido o desactivado.', flags: MessageFlags.Ephemeral });
+      }
+
+      const crime = crimes[0];
+      const userBalance = await getUserBalance(connection, userId);
+
+      if (userBalance <= 0) {
         return interaction.reply({
-          embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle(`${assets.emoji.deny} Error`).setDescription('No hay suficientes crímenes disponibles.')],
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.yellow)
+              .setTitle(`${assets.emoji.warn} Sin balance`)
+              .setDescription('Debes tener balance para cometer crímenes.')
+          ],
+          flags: MessageFlags.Ephemeral
         });
       }
 
-      const opcionesAleatorias = rows.sort(() => Math.random() - 0.5).slice(0, 3);
-      let botones = opcionesAleatorias.map((opcion, index) =>
-        new ButtonBuilder().setCustomId(`opcion_${index}`).setLabel(opcion.crime_name).setEmoji(opcion.emoji).setStyle(ButtonStyle.Secondary)
-      );
-
-      let row = new ActionRowBuilder().addComponents(botones);
-      let embed = new EmbedBuilder()
-        .setColor(assets.color.base)
-        .setTitle('¿Qué crimen vas a cometer?')
-        .setDescription('Selecciona una opción, si aciertas ganas créditos, si fallas... bueno, no hay que hablar de cosas que nos dan ansiedad.');
-
-      const message = await interaction.reply({ embeds: [embed], components: [row] });
-      const collector = message.createMessageComponentCollector({ time: 20000 });
-
-      let botonPresionado = false;
-
-      collector.on('collect', async (buttonInteraction) => {
-        if (buttonInteraction.user.id !== interaction.user.id) {
-          return buttonInteraction.reply({
-            embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle(`${assets.emoji.deny} Sin permiso`).setDescription('No puedes interactuar con estos botones.')],
-            flags: MessageFlags.Ephemeral
-          });
-        }
-
-        const indexElegido = parseInt(buttonInteraction.customId.split('_')[1]);
-        const { crime_name, profit, fine, failrate, description, emoji } = opcionesAleatorias[indexElegido];
-
-        const exito = Math.random() * 100 >= failrate;
-        let color, ganancia;
-
-        const [userData] = await connection.execute('SELECT balance FROM curr_users WHERE id = ?', [userId]);
-        let balanceActual = userData[0]?.balance || 0;
-
-        if (exito) {
-          ganancia = Math.floor((profit / 100) * balanceActual);
-          color = assets.color.green;
-        } else {
-          ganancia = -Math.floor((fine / 100) * balanceActual);
-          color = assets.color.red;
-        }
-
-        const newBalance = await updateUserBalance(connection, userId, ganancia);
-
-        botonPresionado = true;
-        botones = botones.map((btn, i) =>
-          btn.setDisabled(true).setStyle(i === indexElegido ? (exito ? ButtonStyle.Success : ButtonStyle.Danger) : ButtonStyle.Secondary)
-        );
-
-        embed
-          .setColor(color)
-          .setTitle(`${exito ? assets.emoji.check : assets.emoji.deny} Resultado`)
-          .setDescription(description)
-          .addFields(
-            { name: 'Crimen cometido', value: `${emoji} ${crime_name}`, inline: true },
-            { name: `Créditos ${exito ? 'ganados' : 'perdidos'}`, value: `**⏣${Math.abs(ganancia).toLocaleString()}**`, inline: true }
-          );
-
-        await buttonInteraction.update({
-          embeds: [embed],
-          components: [new ActionRowBuilder().addComponents(botones)]
+      if (!target && crime.req_user == 1) {
+        return interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.yellow)
+              .setTitle(`${assets.emoji.warn} Falta el usuario objetivo`)
+              .setDescription('Debes especificar un usuario objetivo para este crimen.')
+          ],
+          flags: MessageFlags.Ephemeral
         });
+      }
 
-        collector.stop();
-      });
+      // Determinar si el crimen es exitoso o falla
+      const success = Math.random() * 100 >= crime.failrate;
+      const profit = Math.floor((crime.profit / 100) * userBalance);
+      const fine = Math.floor((crime.fine / 100) * userBalance);
 
-      collector.on('end', async () => {
-        if (!botonPresionado) {
-          botones = botones.map((btn) => btn.setDisabled(true).setStyle(ButtonStyle.Secondary));
+      if (success) {
+        await updateUserBalance(connection, userId, profit);
+        if (target) await updateUserBalance(connection, target.id, -profit);
 
-          embed.setColor(assets.color.red).setTitle(`${assets.emoji.deny} Tiempo agotado`).setDescription('Parece que ninguna opción te convenció. Inténtalo de nuevo.');
+        return interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.green)
+              .setTitle(`${crime.emoji} ${crimeName} exitoso`)
+              .setDescription(
+                target
+                  ? crime.success_msg.replace('{user}', `<@${target.id}>`).replace('{profit}', `**${profit.toLocaleString()}**🪙`)
+                  : crime.success_msg.replace('{profit}', `**${profit.toLocaleString()}**🪙`)
+              )
+          ]
+        });
+      } else {
+        await updateUserBalance(connection, userId, -fine);
 
-          await message.edit({ embeds: [embed], components: [new ActionRowBuilder().addComponents(botones)] }).catch(() => { });
-        }
-      });
-
+        return interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.red)
+              .setTitle(`${crime.emoji} ${crimeName} fallado`)
+              .setDescription(
+                target
+                  ? crime.fail_msg.replace('{user}', `<@${target.id}>`).replace('{fine}', `**${fine.toLocaleString()}**🪙`)
+                  : crime.fail_msg.replace('{fine}', `**${fine.toLocaleString()}**🪙`)
+              )
+          ]
+        });
+      }
     } catch (error) {
-      console.error('Error en el comando /crimen:', error);
-      interaction.reply({
-        embeds: [new EmbedBuilder().setColor(assets.color.red).setTitle(`${assets.emoji.deny} Error`).setDescription('Hubo un problema. Inténtalo de nuevo.')],
+      console.error('Error al ejecutar /crimenes:', error);
+      return interaction.reply({
+        content: 'Hubo un problema al realizar el crimen. Por favor, reporta este error.',
         flags: MessageFlags.Ephemeral
       });
     }

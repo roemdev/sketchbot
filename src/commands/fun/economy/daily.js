@@ -17,10 +17,10 @@ module.exports = {
     };
 
     try {
-      // Obtener las recompensas y cooldown desde la base de datos
+      // Obtener las recompensas y cooldowns desde la base de datos
       const [roleRewards] = await connection.query(
         "SELECT id, role_id, reward, cooldown FROM curr_role_rewards WHERE role_id IN (?) ORDER BY reward DESC",
-        [roles.map((role) => role.id)]
+        [roles.map(role => role.id)]
       );
 
       if (!roleRewards.length) {
@@ -29,33 +29,31 @@ module.exports = {
         });
       }
 
-      // Obtener el cooldown en segundos
-      const cooldownSeconds = roleRewards[0].cooldown;
-      const cooldownDuration = cooldownSeconds * 1000; // Convertir a milisegundos
+      const COOLDOWN_SECONDS = 16 * 60 * 60;
+      const cooldownDuration = COOLDOWN_SECONDS * 1000;
 
-      // Verificar cooldown
-      const [cooldownData] = await connection.query(
-        "SELECT last_used FROM curr_cooldowns WHERE user_id = ? AND action_type = 'daily'",
+      // Verificar cooldown desde la tabla 'cooldowns'
+      const [cooldownResult] = await connection.execute(
+        "SELECT daily FROM cooldowns WHERE user_id = ?",
         [userId]
       );
 
+      const lastUsed = cooldownResult[0]?.daily;
       const now = new Date();
-      if (cooldownData.length && cooldownData[0].last_used) {
-        const lastUsedUTC = new Date(cooldownData[0].last_used);
-        if (now - lastUsedUTC < cooldownDuration) {
-          const nextClaim = new Date(lastUsedUTC.getTime() + cooldownDuration);
-          return interaction.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor(assets.color.red)
-                .setTitle(`${assets.emoji.deny} Recompensa reclamada`)
-                .setDescription(`Ya has reclamado tu recompensa diaria. La próxima estará lista <t:${Math.floor(nextClaim.getTime() / 1000)}:R>⏳.`),
-            ],
-          });
-        }
+
+      if (lastUsed && new Date(lastUsed) > now - cooldownDuration) {
+        const nextAvailable = new Date(new Date(lastUsed).getTime() + cooldownDuration);
+        return interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setColor(assets.color.red)
+              .setTitle(`${assets.emoji.deny} Recompensa reclamada`)
+              .setDescription(`Ya has reclamado tu recompensa diaria. La próxima estará disponible <t:${Math.floor(nextAvailable.getTime() / 1000)}:R>⏳.`),
+          ],
+        });
       }
 
-      // Calcular la recompensa total y generar detalles
+      // Calcular recompensa total
       let totalReward = 0;
       let rewardDetails = roleRewards
         .map(({ role_id, reward }) => {
@@ -64,19 +62,19 @@ module.exports = {
         })
         .join("\n");
 
-      // Actualizar el balance del usuario
+      // Actualizar el balance
       await updateUserBalance(connection, userId, totalReward);
 
-      // Registrar el cooldown en la tabla (con la fecha actual en formato compatible con MySQL)
-      const currentUTC = new Date();
-      const formattedUTC = currentUTC.toISOString().slice(0, 19).replace("T", " "); // Formato: 'YYYY-MM-DD HH:MM:SS'
-
-      await connection.query(
-        "INSERT INTO curr_cooldowns (user_id, action_id, action_type, last_used) VALUES (?, ?, 'daily', ?) ON DUPLICATE KEY UPDATE last_used = VALUES(last_used)",
-        [userId, roleRewards[0].id, formattedUTC]
+      // Registrar nuevo cooldown en tabla 'cooldowns'
+      const nextCooldown = new Date(now.getTime() + cooldownDuration);
+      await connection.execute(
+        `INSERT INTO cooldowns (user_id, daily)
+         VALUES (?, ?)
+         ON DUPLICATE KEY UPDATE daily = VALUES(daily)`,
+        [userId, nextCooldown]
       );
 
-      // Responder con el embed detallado
+      // Responder con éxito
       return interaction.reply({
         embeds: [
           new EmbedBuilder()
@@ -85,6 +83,7 @@ module.exports = {
             .setDescription(`¡Aquí tienes tus monedas de hoy!\n>>> ${rewardDetails}`)
         ],
       });
+
     } catch (error) {
       console.error(error);
       return interaction.reply({
