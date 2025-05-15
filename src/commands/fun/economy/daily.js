@@ -19,7 +19,7 @@ module.exports = {
     try {
       // Obtener las recompensas y cooldowns desde la base de datos
       const [roleRewards] = await connection.query(
-        "SELECT id, role_id, reward, cooldown FROM curr_role_rewards WHERE role_id IN (?) ORDER BY reward DESC",
+        "SELECT id, role_id, reward FROM curr_role_rewards WHERE role_id IN (?) ORDER BY reward DESC",
         [roles.map(role => role.id)]
       );
 
