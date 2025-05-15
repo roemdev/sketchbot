@@ -29,7 +29,7 @@ module.exports = {
         });
       }
 
-      const COOLDOWN_SECONDS = 16 * 60 * 60;
+      const COOLDOWN_SECONDS = 8 * 60 * 60;
       const cooldownDuration = COOLDOWN_SECONDS * 1000;
 
       // Verificar cooldown desde la tabla 'cooldowns'
