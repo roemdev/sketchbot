@@ -13,9 +13,10 @@
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "axios": "^1.9.0",
+    "axios": "^1.12.2",
     "discord.js": "^14.16.2",
     "dotenv": "^16.4.7",
+    "form-data": "^4.0.4",
     "fs": "^0.0.1-security",
     "google-tts-api": "^0.0.6",
     "ms": "^2.1.3",
