@@ -1,6 +1,12 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
-const googleTTS = require('google-tts-api');
+const {
+  joinVoiceChannel,
+  createAudioPlayer,
+  createAudioResource,
+  AudioPlayerStatus,
+  getVoiceConnection
+} = require('@discordjs/voice');
+const { getAudioUrl } = require('google-tts-api');
 const assets = require("../../../config/assets.json");
 const ffmpeg = require('@ffmpeg-installer/ffmpeg');
 process.env.FFMPEG_PATH = ffmpeg.path;
@@ -22,14 +28,22 @@ module.exports = {
     const message = interaction.options.getString('mensaje').trim();
     const voiceChannel = interaction.member.voice.channel;
 
-    if (!voiceChannel) return sendEmbed(interaction, 'error', 'Debes estar en un canal de voz para usar este comando.');
-    if (message.length > 200) return sendEmbed(interaction, 'error', 'El mensaje no puede tener más de 200 caracteres.');
+    if (!voiceChannel)
+      return sendEmbed(interaction, 'error', 'Debes estar en un canal de voz para usar este comando.');
+    if (message.length > 200)
+      return sendEmbed(interaction, 'error', 'El mensaje no puede tener más de 200 caracteres.');
 
     try {
-      const url = googleTTS.getAudioUrl(message, { lang: 'es', slow: false });
+      // Usar getAudioUrl en lugar de getAudio
+      const url = getAudioUrl(message, {
+        lang: 'es',
+        slow: false,
+        host: 'https://translate.google.com'
+      });
 
       let connection = getOrCreateConnection(interaction, voiceChannel);
-      if (!connection) return sendEmbed(interaction, 'error', 'No se pudo conectar al canal de voz.');
+      if (!connection)
+        return sendEmbed(interaction, 'error', 'No se pudo conectar al canal de voz.');
 
       const player = createAudioPlayer();
       const resource = createAudioResource(url);
