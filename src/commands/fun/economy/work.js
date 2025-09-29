@@ -52,14 +52,12 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(assets.color.base)
-      .setTitle('🌱 ¡Riega la planta!')
-      .setDescription(
-        '¡Riega la planta presionando el botón! Cada clic cuenta, y solo tú puedes completar esta tarea.'
-      );
+      .setTitle('¡Presiona el botón!')
+      .setDescription('🌱 ¡Riega la planta presionando el botón! Cada clic cuenta, y solo tú puedes completar esta tarea.'); // crear con db:task_desc_msg
 
     const button = new ButtonBuilder()
       .setCustomId('button')
-      .setEmoji('💦')
+      .setEmoji('💦') // crear con db:button_emoji
       .setLabel(String(remainingClicks))
       .setStyle(ButtonStyle.Secondary);
 
@@ -114,7 +112,7 @@ module.exports = {
                 .setColor(assets.color.green)
                 .setTitle('Trabajo completado con éxito')
                 .setDescription(
-                  '> ¡Maravilloso! Completaste la tarea como todo un jardinero experto y tu planta creció muchísimo 🪴.\n\n' +
+                  '> ¡Maravilloso! Completaste la tarea como todo un jardinero experto y tu planta creció muchísimo 🪴.\n\n' + // crear con db:task_succ_msg
                   `¡Aquí tienes tu recompensa: **+${coins.toLocaleString()}**🪙 | **+${xp.toLocaleString()}**✨`
                 )
             ]

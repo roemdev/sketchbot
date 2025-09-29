@@ -9,10 +9,10 @@ module.exports = {
   async execute(interaction) {
     const connection = interaction.client.dbConnection;
     const userId = interaction.user.id;
-    const rewardAmount = Math.floor(Math.random() * (250 - 100 + 1)) + 100; // Número aleatorio entre 10 y 25
+    const baseReward = Math.floor(Math.random() * (250 - 100 + 1)) + 100; // Número aleatorio entre 100 y 250
 
     try {
-      const [rows] = await connection.execute("SELECT * FROM trivia_questions ORDER BY RAND() LIMIT 1");
+      const [rows] = await connection.execute("SELECT * FROM trivia_questions WHERE status = 1 ORDER BY RAND() LIMIT 1");
       if (rows.length === 0) {
         return interaction.reply({ content: 'No hay preguntas disponibles.', flags: MessageFlags.Ephemeral });
       }
@@ -26,11 +26,21 @@ module.exports = {
 
       options.sort(() => Math.random() - 0.5); // Mezclar opciones
 
+      // --- Multiplicador según dificultad ---
+      let multiplier = 1;
+      switch (trivia.difficulty) {
+        case "Fácil": multiplier = 0.8; break;
+        case "Normal": multiplier = 1; break;
+        case "Difícil": multiplier = 1.25; break;
+        case "Muy difícil": multiplier = 1.5; break;
+      }
+      const rewardAmount = Math.round(baseReward * multiplier);
+
       const embed = new EmbedBuilder()
         .setTitle(trivia.question)
         .setColor(assets.color.base)
         .setImage(trivia.image_url)
-        .setFooter({ text: `ID: ${trivia.id}` });
+        .setFooter({ text: `ID: ${trivia.id} | Categoría: ${trivia.category ?? "N/A"} | Dificultad: ${trivia.difficulty}` });
 
       const buttons = new ActionRowBuilder();
       options.forEach((option, index) => {
@@ -44,7 +54,7 @@ module.exports = {
 
       await interaction.reply({ embeds: [embed], components: [buttons] });
       const message = await interaction.fetchReply();
-      const collector = message.createMessageComponentCollector({ time: 20000 }); // Tiempo aumentado a 20 segundos
+      const collector = message.createMessageComponentCollector({ time: 20000 });
 
       collector.on('collect', async i => {
         if (i.user.id !== interaction.user.id) {
@@ -75,11 +85,12 @@ module.exports = {
         });
 
         if (chosenOption.correct) {
-          embed.setTitle(`${assets.emoji.check} ¡Correcto!`)
+          embed.setTitle(trivia.question)
             .setColor(assets.color.green)
-            .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.
-
-            ¡Has ganado **${rewardAmount}** monedas!`);
+            .setDescription(
+              '¡Fantástico! Elegiste la respuesta correcta.\n'+
+              `> ¡Has ganado +**${rewardAmount}**🪙 monedas!`
+            );
 
           // Actualizar la base de datos
           await connection.execute(`
@@ -94,7 +105,7 @@ module.exports = {
             ON DUPLICATE KEY UPDATE balance = balance + ?
           `, [userId, rewardAmount, rewardAmount]);
         } else {
-          embed.setTitle(`${assets.emoji.deny} ¡Incorrecto!`)
+          embed.setTitle(trivia.question)
             .setColor(assets.color.red)
             .setDescription(`La respuesta correcta era: **${options[correctIndex].label}**.`);
         }
