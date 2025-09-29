@@ -115,7 +115,7 @@ module.exports = {
                 .setTitle('Trabajo completado con éxito')
                 .setDescription(
                   '> ¡Maravilloso! Completaste la tarea como todo un jardinero experto y tu planta creció muchísimo 🪴.\n\n' +
-                  `¡Aquí tienes tu recompensa: \n **+${coins.toLocaleString()}**🪙 | **+${xp.toLocaleString()}**✨`
+                  `¡Aquí tienes tu recompensa: **+${coins.toLocaleString()}**🪙 | **+${xp.toLocaleString()}**✨`
                 )
             ]
           });
