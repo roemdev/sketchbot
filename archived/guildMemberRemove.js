@@ -1,5 +1,5 @@
 const { Events, EmbedBuilder } = require("discord.js");
-const assets = require("../../config/assets.json");
+const assets = require("../config/assets.json");
 
 module.exports = {
   name: Events.GuildMemberRemove,

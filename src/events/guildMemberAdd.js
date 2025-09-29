@@ -18,7 +18,10 @@ module.exports = {
 
     // Enviar mensaje de bienvenida privado
     try {
-      const welcomeMessage = `¡Hola! 👋 Este es un breve mensaje para darte la bienvenida a la comunidad de Arkania. Nos emociona mucho tenerte aquí y que formes parte de nosotros.\n\nSi aun no lo has hecho, te invitamos a echarle un vistazo a <#1324197251882422327> para ponerte en marcha.\n\nPara ayudarnos a conocerte mejor, por favor tómate un momento de presentarte. Si gustas, puedes usar la siguiente plantilla:\n\nNombre: [Tu nombre]\nPaís: [El país donde estás o donde naciste]\nInvitado por: [Quien te invitó a la comunidad o cómo accediste a ella]\nJuegos favoritos: [Tus juegos favoritos desde siempre o los actuales]\nExpectativa: [¿Qué esperas de la comunidad?]\n\nSiéntete libre de añadir toda la información que desees. ¡Buscamos conocerte!\n\n¡Esperamos que disfrutes siendo parte de la comunidad Arkania! 🥳`;
+      const welcomeMessage = 
+        "¡Hola, bienvenido a Arkania! Nos alegra tenerte por aquí. Tenemos sitemas de economía, trivia, niveles y música para añadirle un extra de dinamismo a tu estancia. ¡Diviértete y pásalo bien!\n\n" +
+        "> -# No olvides leer <#1128136414379397200>."
+
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -42,19 +45,11 @@ module.exports = {
     const iconURL = guild.iconURL({ dynamic: true, size: 1024 });
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `${guild.name}`, iconURL: iconURL })
+      .setAuthor({ name: `¡Bievenido ${user.username}, contigo somos ${guild.memberCount} miembros!`, iconURL: user.displayAvatarURL({ dynamic: true }) })
       .setColor(assets.color.base)
-      .setTitle(`¡Damos la bienvenida a ${user.username}!`)
-      .setThumbnail(user.displayAvatarURL({ dynamic: true }))
-      .setDescription(
-        `**Usuario:** <@${user.id}> (${user.username})\n` +
-        `**ID:** \`${user.id}\`\n` +
-        `**En Discord:** ${discordJoinDate}\n`
-      )
-      .setFooter({ text: `¡Contigo somos ${guild.memberCount} miembros!` });
 
     member.guild.systemChannel.send({
-      content: `**${user.username}** se unió a nuestro servidor`,
+      content: `**${user.username}** (<@${user.id}>) se unió al servidor`,
       embeds: [embed],
     });
   },

@@ -42,7 +42,7 @@ module.exports = {
 
     const { cooldown, value1, value2 } = workConfigResult[0];
     const coins = Math.floor(Math.random() * (value2 - value1 + 1)) + value1;
-    const xp = Math.floor(coins * 0.4);
+    const xp = Math.floor(coins * 0.2);
     const cooldownMs = cooldown * 1000;
     const nextAvailable = new Date(now.getTime() + cooldownMs);
 
@@ -54,15 +54,12 @@ module.exports = {
       .setColor(assets.color.base)
       .setTitle('🌱 ¡Riega la planta!')
       .setDescription(
-        '¡Riega la planta presionando `💧` hasta que crezca!\n' +
-        'Cada clic cuenta, y solo tú puedes completar esta tarea con éxito.\n\n' +
-        `\`⏳\` **Tiempo límite:** <t:${expirationTimestamp}:t> (<t:${expirationTimestamp}:R>)\n` +
-        `\`🎯\` **Objetivo:** ¡Haz ${remainingClicks} clics antes de que se acabe el tiempo!`
+        '¡Riega la planta presionando el botón! Cada clic cuenta, y solo tú puedes completar esta tarea.'
       );
 
     const button = new ButtonBuilder()
       .setCustomId('button')
-      .setEmoji('💧')
+      .setEmoji('💦')
       .setLabel(String(remainingClicks))
       .setStyle(ButtonStyle.Secondary);
 
@@ -115,12 +112,11 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setColor(assets.color.green)
-                .setTitle('🪴 ¡La planta creció muchísimo!')
-                .setDescription('🌿 ¡Has completado la tarea como todo un jardinero experto! Tu dedicación y tus clics constantes hicieron florecer esta planta.')
-                .addFields({
-                  name: '💰 Recompensa',
-                  value: `**+${coins.toLocaleString()}** 🪙 por tu gran trabajo.\n**+${xp.toLocaleString()}** ✨ por tu esfuerzo.`
-                })
+                .setTitle('Trabajo completado con éxito')
+                .setDescription(
+                  '> ¡Maravilloso! Completaste la tarea como todo un jardinero experto y tu planta creció muchísimo 🪴.\n\n' +
+                  `¡Aquí tienes tu recompensa: \n **+${coins.toLocaleString()}**🪙 | **+${xp.toLocaleString()}**✨`
+                )
             ]
           });
         }
