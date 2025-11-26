@@ -1,0 +1,25 @@
+{
+  "economy": {
+    "currencySymbol": "⏣",
+    "xpSymbol": "★",
+    "startingBalance": 0,
+    "startingXP": 0
+  },
+  "embed": {
+    "colorBase": "#5873EB",
+    "colorSuccess": "#7BC47F",
+    "colorError": "#E56B6F",
+    "colorWarning": "#F2CD5C"
+  },
+  "bot": {
+    "developer": "roemdev",
+    "brandName": "Arkania",
+    "supportServer": "https://discord.gg/jA8tx5Vwe5",
+    "logLevel": "info"
+  },
+  "formatting": {
+    "timestampFormat": "R",
+    "bigNumberSeparator": ",",
+    "locale": "es-ES"
+  }
+}
