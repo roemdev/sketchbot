@@ -1,39 +1,18 @@
 const { SlashCommandBuilder } = require("discord.js");
+const userService = require("../../services/userService");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("balance")
-    .setDescription("Muestra tu balance o el de otro usuario.")
-    .addUserOption(opt =>
-      opt.setName("usuario")
-        .setDescription("Usuario a consultar")
-        .setRequired(false)
-    ),
+    .setDescription("Muestra tu balance de créditos"),
 
   async execute(interaction) {
-    const target = interaction.options.getUser("usuario") || interaction.user;
+    const discordId = interaction.user.id;
+    const username = interaction.user.username;
 
-    const conn = await interaction.client.dbConnection.getConnection();
+    // Crear usuario si no existe
+    const user = await userService.createUser(discordId, username);
 
-    try {
-      const [rows] = await conn.query(
-        "SELECT balance FROM user_stats WHERE user_id = ?",
-        [target.id]
-      );
-
-      const balance = rows.length > 0 ? rows[0].balance : 0;
-
-      await interaction.reply({
-        content: `💰 Balance de **${target.username}**: **${balance} créditos**`
-      });
-    } catch (err) {
-      console.error("Error en balance:", err);
-      await interaction.reply({
-        content: "Ocurrió un error al consultar el balance.",
-        ephemeral: true
-      });
-    } finally {
-      if (conn) conn.release();
-    }
+    await interaction.reply(`${username}, tu balance actual es: **${user.balance} créditos** 💰`);
   }
 };

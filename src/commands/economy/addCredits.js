@@ -1,51 +1,31 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
+const userService = require("../../services/userService");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("addcredits")
-    .setDescription("Añade créditos a un usuario.")
-    .addUserOption(opt =>
-      opt.setName("usuario")
-        .setDescription("Usuario al que se le agregarán créditos")
+    .setDescription("Añade créditos a un usuario")
+    .addUserOption(option =>
+      option.setName("usuario")
+        .setDescription("Usuario a quien añadir créditos")
         .setRequired(true))
-    .addIntegerOption(opt =>
-      opt.setName("cantidad")
+    .addIntegerOption(option =>
+      option.setName("cantidad")
         .setDescription("Cantidad de créditos a añadir")
-        .setRequired(true))
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setRequired(true)),
 
   async execute(interaction) {
-    const user = interaction.options.getUser("usuario");
+    // Verificar permisos de administrador
+    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+      return interaction.reply({ content: "No tienes permisos para usar este comando.", ephemeral: true });
+    }
+
+    const targetUser = interaction.options.getUser("usuario");
     const amount = interaction.options.getInteger("cantidad");
 
-    const conn = await interaction.client.dbConnection.getConnection();
+    const user = await userService.createUser(targetUser.id, targetUser.username);
+    await userService.addBalance(targetUser.id, amount);
 
-    try {
-      await conn.beginTransaction();
-
-      // Insertar o actualizar balance
-      await conn.query(
-        `INSERT INTO user_stats (user_id, username, balance)
-         VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance), username = VALUES(username);`,
-        [user.id, user.username, amount]
-      );
-
-      await conn.commit();
-
-      await interaction.reply({
-        content: `Se añadieron **${amount}** créditos a **${user.username}**.`,
-        ephemeral: true
-      });
-    } catch (err) {
-      if (conn) await conn.rollback();
-      console.error("Error en addCredits:", err);
-      await interaction.reply({
-        content: "Ocurrió un error al añadir los créditos.",
-        ephemeral: true
-      });
-    } finally {
-      if (conn) conn.release();
-    }
+    return interaction.reply(`${amount} créditos añadidos a ${targetUser.username}. Nuevo balance: **${user.balance + amount}** 💰`);
   }
 };

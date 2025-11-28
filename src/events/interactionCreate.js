@@ -1,19 +1,22 @@
 module.exports = {
   name: "interactionCreate",
   async execute(interaction, client) {
-    if (!interaction.isChatInputCommand()) return;
+    // ---------- Modal ----------
+    if (interaction.isModalSubmit()) {
+      await require("../commands/store/store").modalHandler(interaction);
+      return;
+    }
 
+    // ---------- Select Menu ----------
+    if (interaction.isStringSelectMenu()) {
+      await require("../commands/store/store").selectHandler(interaction);
+      return;
+    }
+
+    // ---------- Comando normal ----------
+    if (!interaction.isCommand()) return;
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
-
-    try {
-      await command.execute(interaction, client);
-    } catch (e) {
-      console.error(e);
-      await interaction.reply({
-        content: "Ha ocurrido un error ejecutando ese comando.",
-        ephemeral: true
-      });
-    }
+    command.execute(interaction, client);
   }
 };
