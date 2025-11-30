@@ -1,5 +1,7 @@
-const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const userService = require("../../services/userService");
+
+const COIN = "⏣";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,20 +14,20 @@ module.exports = {
     .addIntegerOption(option =>
       option.setName("cantidad")
         .setDescription("Cantidad de créditos a añadir")
-        .setRequired(true)),
+        .setRequired(true))
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
   async execute(interaction) {
-    // Verificar permisos de administrador
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-      return interaction.reply({ content: "No tienes permisos para usar este comando.", ephemeral: true });
-    }
-
     const targetUser = interaction.options.getUser("usuario");
     const amount = interaction.options.getInteger("cantidad");
 
     const user = await userService.createUser(targetUser.id, targetUser.username);
     await userService.addBalance(targetUser.id, amount);
 
-    return interaction.reply(`${amount} créditos añadidos a ${targetUser.username}. Nuevo balance: **${user.balance + amount}** 💰`);
+    const embed = new EmbedBuilder()
+      .setColor("Green")
+      .setDescription(`Se añadieron **${COIN}${amount}** a <@${targetUser.id}>.\n-# Nuevo balance: **${COIN}${user.balance + amount}**`)
+
+    return interaction.reply({ embeds: [embed] });
   }
 };
