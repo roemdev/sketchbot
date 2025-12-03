@@ -4,10 +4,13 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  MessageFlags
 } = require("discord.js");
 
 const storeService = require("../../services/storeService");
+
+const COIN = "⏣";
 
 module.exports = {
   // --------------------
@@ -52,10 +55,11 @@ module.exports = {
         .setDescription("Items disponibles para comprar:");
 
       items.forEach(item => {
-        embed.addFields({
-          name: `${item.name} - ${item.price} créditos`,
-          value: `${item.description}\nStock: ${item.stock ?? "Ilimitado"}`,
-        });
+        const line =
+          `${item.icon_id} ${item.name} | **${COIN}${item.price.toLocaleString()}**\n` +
+          `> ${item.description || "Sin descripción"}`;
+
+        embed.addFields({ name: "\u200B", value: line });
       });
 
       return interaction.reply({ embeds: [embed] });
@@ -67,7 +71,7 @@ module.exports = {
       const quantity = interaction.options.getInteger("cantidad") || 1;
 
       const item = await storeService.getItem(itemId);
-      if (!item) return interaction.reply({ content: "Item no disponible.", ephemeral: true });
+      if (!item) return interaction.reply({ content: "Item no disponible.", flags: MessageFlags.Ephemeral });
 
       // Si es tipo Minecraft, mostrar modal para nick
       if (item.type === "minecraft") {
@@ -111,7 +115,7 @@ module.exports.modalHandler = async (interaction) => {
       const result = await storeService.buyItemWithMCNick(interaction.user.id, itemId, quantity, mcNick);
       await interaction.reply(`✅ Compraste ${quantity}x ${result.item.name} y se enviaron a ${mcNick} en Minecraft.\nNuevo balance: ${result.user.balance}`);
     } catch (err) {
-      await interaction.reply({ content: `❌ ${err.message}`, ephemeral: true });
+      await interaction.reply({ content: `❌ ${err.message}`, flags: MessageFlags.Ephemeral });
     }
   }
 };
