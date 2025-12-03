@@ -1,7 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const userService = require("../../services/userService");
-
-const COIN = "⏣";
+const { makeEmbed } = require("../../utils/embedFactory");
+const config = require("../../../core.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,23 +10,34 @@ module.exports = {
     .addUserOption(option =>
       option.setName("usuario")
         .setDescription("Usuario a quien añadir créditos")
-        .setRequired(true))
+        .setRequired(true)
+    )
     .addIntegerOption(option =>
       option.setName("cantidad")
         .setDescription("Cantidad de créditos a añadir")
-        .setRequired(true))
+        .setRequired(true)
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
   async execute(interaction) {
     const targetUser = interaction.options.getUser("usuario");
     const amount = interaction.options.getInteger("cantidad");
 
-    const user = await userService.createUser(targetUser.id, targetUser.username);
-    await userService.addBalance(targetUser.id, amount);
+    // Asegurar registro
+    const userRecord = await userService.createUser(
+      targetUser.id,
+      targetUser.username
+    );
 
-    const embed = new EmbedBuilder()
-      .setColor("Green")
-      .setDescription(`Se añadieron **${COIN}${amount}** a <@${targetUser.id}>.\n-# Nuevo balance: **${COIN}${user.balance + amount}**`)
+    // Registrar balance actualizado
+    const updated = await userService.addBalance(targetUser.id, amount);
+
+    // Crear embed con factory
+    const embed = makeEmbed(
+      "success",
+      "¡Créditos añadidos!",
+      `Se añadieron **${config.emojis.coin}${amount.toLocaleString()}** a <@${targetUser.id}>.\n`
+    );
 
     return interaction.reply({ embeds: [embed] });
   }

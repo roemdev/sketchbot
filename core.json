@@ -1,0 +1,14 @@
+{
+  "economy": {
+    "exchangeRate": 15
+  },
+  "emojis": {
+    "coin": "⏣"
+  },
+  "embeds": {
+    "base": "DarkButNotBlack",
+    "info": "Yellow",
+    "success": "Green",
+    "error": "Red"
+  }
+}
