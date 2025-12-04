@@ -20,6 +20,7 @@ module.exports = {
       option.setName("item")
         .setDescription("Nombre del artículo que deseas comprar")
         .setRequired(true)
+        .setAutocomplete(true) // <- Autocomplete activado
     )
     .addStringOption(option =>
       option.setName("nick")
@@ -27,6 +28,9 @@ module.exports = {
         .setRequired(true)
     ),
 
+  // ---------------------
+  // Comando principal
+  // ---------------------
   async execute(interaction) {
     const itemName = interaction.options.getString("item");
     const mcNick = interaction.options.getString("nick");
@@ -62,7 +66,6 @@ module.exports = {
       ].join("\n")
     );
 
-    // Solo enviamos itemId y mcNick
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`buy_confirm_${item.id}_${mcNick}`)
@@ -79,82 +82,93 @@ module.exports = {
       components: [row],
       flags: MessageFlags.Ephemeral
     });
-  }
-};
+  },
 
-// ---------------------
-// Button Handler
-// ---------------------
-module.exports.buttonHandler = async interaction => {
-  if (!interaction.isButton()) return false;
+  // ---------------------
+  // Autocomplete
+  // ---------------------
+  autocompleteHandler: async (interaction) => {
+    if (!interaction.isAutocomplete()) return false;
 
-  const parts = interaction.customId.split("_");
+    const focusedValue = interaction.options.getFocused();
+    const allItems = await storeService.getItems("available");
 
-  const action = parts[1];
+    const filtered = allItems
+      .filter(item => item.name.toLowerCase().includes(focusedValue.toLowerCase()))
+      .slice(0, 25);
 
-  // itemId siempre es el tercer elemento
-  const itemId = parseInt(parts[2], 10);
+    const choices = filtered.map(item => ({
+      name: `${item.name}`,
+      value: item.name
+    }));
 
-  // Si es confirm, mcNick viene después del ID
-  const mcNick = action === "confirm" ? parts.slice(3).join("_") : null;
-
-  // -------- CANCELAR --------
-  if (action === "cancel") {
-    await interaction.update({
-      embeds: [
-        makeEmbed("info", "Compra cancelada", "No se ha procesado ninguna transacción.")
-      ],
-      components: []
-    });
+    await interaction.respond(choices);
     return true;
-  }
+  },
 
-  // -------- CONFIRMAR --------
-  if (action === "confirm") {
-    try {
-      // quantity = 1 (no existe en la tienda)
-      const quantity = 1;
+  // ---------------------
+  // Botones
+  // ---------------------
+  buttonHandler: async interaction => {
+    if (!interaction.isButton()) return false;
 
-      const result = await storeService.buyItem(
-        interaction.user.id,
-        itemId,
-        quantity,
-        mcNick
-      );
+    const parts = interaction.customId.split("_");
+    const action = parts[1];
+    const itemId = parseInt(parts[2], 10);
+    const mcNick = action === "confirm" ? parts.slice(3).join("_") : null;
 
+    // -------- CANCELAR --------
+    if (action === "cancel") {
       await interaction.update({
         embeds: [
-          makeEmbed(
-            "success",
-            "Compra realizada con éxito"
-          )
-        ],
-        components: []
-      });
-
-      await storeService.buyItem(interaction.user.id, itemId, quantity, mcNick);
-
-      await transactionService.logTransaction({
-        discordId: interaction.user.id,
-        type: "buy",
-        itemName: result.item.name,
-        mcNick,
-        amount: quantity,
-        totalPrice: result.totalPrice
-      });
-
-      return true;
-
-    } catch (err) {
-      await interaction.update({
-        embeds: [
-          makeEmbed("error", "Error en la compra", err.message)
+          makeEmbed("info", "Compra cancelada", "No se ha procesado ninguna transacción.")
         ],
         components: []
       });
       return true;
     }
-  }
 
-  return false;
+    // -------- CONFIRMAR --------
+    if (action === "confirm") {
+      try {
+        const quantity = 1;
+
+        const result = await storeService.buyItem(
+          interaction.user.id,
+          itemId,
+          quantity,
+          mcNick
+        );
+
+        await interaction.update({
+          embeds: [
+            makeEmbed("success", "Compra realizada con éxito")
+          ],
+          components: []
+        });
+
+        await transactionService.logTransaction({
+          discordId: interaction.user.id,
+          type: "buy",
+          itemName: result.item.name,
+          mcNick,
+          amount: quantity,
+          totalPrice: result.totalPrice
+        });
+
+        return true;
+
+      } catch (err) {
+        await interaction.update({
+          embeds: [
+            makeEmbed("error", "Error en la compra", err.message)
+          ],
+          components: []
+        });
+        return true;
+      }
+    }
+
+    return false;
+  }
 };

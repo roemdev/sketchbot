@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/roemdev/sketchbot#readme",
   "dependencies": {
+    "@discordjs/builders": "github:discordjs/builders",
     "discord.js": "^14.25.1",
     "mysql2": "^3.15.3",
     "rcon-client": "^4.2.5"

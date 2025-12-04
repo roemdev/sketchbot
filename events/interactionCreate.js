@@ -1,40 +1,43 @@
+const { Events } = require("discord.js");
+
 module.exports = {
-  name: "interactionCreate",
-  async execute(interaction, client) {
-
-    // ---------- Botones ----------
-    if (interaction.isButton()) {
-
-      // Botones del comando swap
-      const swapCmd = require("../commands/economy/swap");
-      if (swapCmd && typeof swapCmd.buttonHandler === "function") {
-        const handled = await swapCmd.buttonHandler(interaction);
-        if (handled) return;
-      }
-
-      // Botones del comando comprar
-      const buyCmd = require("../commands/store/buy");
-      if (buyCmd && typeof buyCmd.buttonHandler === "function") {
-        const handled = await buyCmd.buttonHandler(interaction);
-        if (handled) return;
-      }
-
-      // Botones del comando trabajo
-      const workCmd = require("../commands/economy/task");
-      if (workCmd && typeof workCmd.buttonHandler === "function") {
-        const handled = await workCmd.buttonHandler(interaction);
-        if (handled) return;
-      }
-
-      return;
-    }
+  name: Events.InteractionCreate,
+  async execute(interaction) {
+    const commandName = interaction.commandName;
 
     // ---------- Slash Commands ----------
-    if (!interaction.isChatInputCommand()) return;
+    if (interaction.isChatInputCommand()) {
+      const command = interaction.client.commands.get(commandName);
+      if (!command) {
+        console.error(`No se encontró el comando ${commandName}`);
+        return;
+      }
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(`Error ejecutando ${commandName}`);
+        console.error(error);
+      }
 
-    await command.execute(interaction, client);
+      // ---------- Buttons ----------
+    } else if (interaction.isButton()) {
+      const commandsWithButtons = ["comprar", "swap", "trabajo", "test"]; // agrega aquí los comandos que tengan botones
+
+      for (const cmdName of commandsWithButtons) {
+        const cmd = interaction.client.commands.get(cmdName);
+        if (cmd?.buttonHandler) {
+          const handled = await cmd.buttonHandler(interaction);
+          if (handled) return; // si un comando maneja el botón, no seguimos
+        }
+      }
+
+      // ---------- Autocomplete ----------
+    } else if (interaction.isAutocomplete()) {
+      const command = interaction.client.commands.get(commandName);
+      if (command?.autocompleteHandler) {
+        await command.autocompleteHandler(interaction);
+      }
+    }
   }
 };
