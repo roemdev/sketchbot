@@ -26,7 +26,7 @@ for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
 
 // Listo cuando el bot se conecta
 client.once(Events.ClientReady, readyClient => {
-  console.log(`Bot activo! Conectado como ${readyClient.user.tag}`);
+  console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
 client.login(token);
