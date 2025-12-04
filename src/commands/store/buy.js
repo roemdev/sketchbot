@@ -1,8 +1,16 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  MessageFlags
+} = require("discord.js");
+
 const { makeEmbed } = require("../../utils/embedFactory");
 const config = require("../../../core.json");
 const storeService = require("../../services/storeService");
 const userService = require("../../services/userService");
+const transactionService = require("../../services/transactionService");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,7 +23,7 @@ module.exports = {
     )
     .addStringOption(option =>
       option.setName("nick")
-        .setDescription("Nick de Minecraft donde se entregará")
+        .setDescription("Tu nick exacto de Minecraft")
         .setRequired(true)
     ),
 
@@ -27,12 +35,19 @@ module.exports = {
     const item = await storeService.getItemByName(itemName);
     if (!item || item.status !== "available") {
       return interaction.reply({
-        embeds: [makeEmbed("error", "Item no disponible", "El artículo solicitado no está disponible.")],
+        embeds: [
+          makeEmbed(
+            "error",
+            "Item no disponible",
+            "El artículo solicitado no está disponible."
+          )
+        ],
         flags: MessageFlags.Ephemeral
       });
     }
 
-    const userRecord = await userService.createUser(interaction.user.id, interaction.user.username);
+    // Verificar que el usuario exista; si no, crearlo
+    await userService.createUser(interaction.user.id, interaction.user.username);
 
     // Embed de confirmación
     const preview = makeEmbed(
@@ -47,6 +62,7 @@ module.exports = {
       ].join("\n")
     );
 
+    // Solo enviamos itemId y mcNick
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`buy_confirm_${item.id}_${mcNick}`)
@@ -73,11 +89,16 @@ module.exports.buttonHandler = async interaction => {
   if (!interaction.isButton()) return false;
 
   const parts = interaction.customId.split("_");
-  const action = parts[1];
-  const itemId = parseInt(parts[2], 10);
-  const quantity = parseInt(parts[3], 10);
-  const mcNick = parts.slice(4).join("_");
 
+  const action = parts[1];
+
+  // itemId siempre es el tercer elemento
+  const itemId = parseInt(parts[2], 10);
+
+  // Si es confirm, mcNick viene después del ID
+  const mcNick = action === "confirm" ? parts.slice(3).join("_") : null;
+
+  // -------- CANCELAR --------
   if (action === "cancel") {
     await interaction.update({
       embeds: [
@@ -88,8 +109,12 @@ module.exports.buttonHandler = async interaction => {
     return true;
   }
 
+  // -------- CONFIRMAR --------
   if (action === "confirm") {
     try {
+      // quantity = 1 (no existe en la tienda)
+      const quantity = 1;
+
       const result = await storeService.buyItem(
         interaction.user.id,
         itemId,
@@ -101,12 +126,21 @@ module.exports.buttonHandler = async interaction => {
         embeds: [
           makeEmbed(
             "success",
-            "Compra realizada",
-            `Has comprado **${quantity}x ${result.item.name}** por **${config.emojis.coin}${result.totalPrice.toLocaleString()}**.\n` +
-            `Entregado a: **${mcNick}**`
+            "Compra realizada con éxito"
           )
         ],
         components: []
+      });
+
+      await storeService.buyItem(interaction.user.id, itemId, quantity, mcNick);
+
+      await transactionService.logTransaction({
+        discordId: interaction.user.id,
+        type: "buy",
+        itemName: result.item.name,
+        mcNick,
+        amount: quantity,
+        totalPrice: result.totalPrice
       });
 
       return true;

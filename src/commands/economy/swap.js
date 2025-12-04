@@ -1,9 +1,11 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, EmbedBuilder } = require("discord.js");
 const userService = require("../../services/userService");
 const { sendCommand } = require("../../services/minecraftService");
+const transactionService = require("../../services/transactionService");
+const config = require("../../../core.json");
 
-const RATE = 15;
-const COIN = "⏣";
+const RATE = config.economy.exchangeRate;
+const COIN = config.emojis.coin;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -58,7 +60,7 @@ module.exports = {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`swap_confirm_${monedas}_${mcNick}`)
-        .setLabel("Confirmar transacción")
+        .setLabel("Confirmar")
         .setStyle(ButtonStyle.Success),
 
       new ButtonBuilder()
@@ -73,7 +75,8 @@ module.exports = {
       .setDescription(
         `Monedas a convertir: **${COIN}${monedas.toLocaleString()}**\n` +
         `Cobbledollars a recibir: **C$${cobble.toLocaleString()}**\n` +
-        `Jugador que recibe: **${mcNick}**`
+        `Jugador que recibe: **${mcNick}**\n\n` +
+        `¿Deseas continuar?`
       );
 
     return interaction.reply({
@@ -140,6 +143,14 @@ module.exports.buttonHandler = async (interaction) => {
         components: []
       });
     }
+
+    await transactionService.logTransaction({
+      discordId: interaction.user.id,
+      type: "swap",
+      mcNick,
+      amount: monedas,
+      totalPrice: cobble // aquí totalPrice son los C$ generados
+    });
 
     const successEmbed = new EmbedBuilder().setTitle("Transacción completada").setColor("Green")
     return interaction.update({ embeds: [successEmbed], components: [] });

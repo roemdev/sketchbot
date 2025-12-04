@@ -5,6 +5,12 @@
   "emojis": {
     "coin": "⏣"
   },
+  "tasks": {
+    "minEarn": 5000,
+    "maxEarn": 20000,
+    "taskDuration": 20,
+    "cooldown": 3600
+  },
   "embeds": {
     "base": "DarkButNotBlack",
     "info": "Yellow",
