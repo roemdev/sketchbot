@@ -6,10 +6,10 @@
     "coin": "⏣"
   },
   "tasks": {
-    "minEarn": 5000,
-    "maxEarn": 20000,
+    "minEarn": 3000,
+    "maxEarn": 10000,
     "taskDuration": 20,
-    "cooldown": 3600
+    "cooldown": 1200
   },
   "dailyClaim": {
     "cooldown": 86400
