@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");
 const { makeEmbed } = require("../../utils/embedFactory");
-const config = require("../../../core.json");
+const config = require("../../core.json");
 const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
 const { logTransaction } = require("../../services/transactionService");

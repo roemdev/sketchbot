@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
-const config = require("../../core.json");
+const config = require("../core.json");
 
 /**
  * Crea un embed estandarizado según el tipo definido en core.json

@@ -2,24 +2,6 @@ module.exports = {
   name: "interactionCreate",
   async execute(interaction, client) {
 
-    // ---------- Modal ----------
-    if (interaction.isModalSubmit()) {
-      const storeCmd = require("../commands/store/store");
-      if (typeof storeCmd.modalHandler === "function") {
-        await storeCmd.modalHandler(interaction);
-      }
-      return;
-    }
-
-    // ---------- Select Menu ----------
-    if (interaction.isStringSelectMenu()) {
-      const storeCmd = require("../commands/store/store");
-      if (typeof storeCmd.selectHandler === "function") {
-        await storeCmd.selectHandler(interaction);
-      }
-      return;
-    }
-
     // ---------- Botones ----------
     if (interaction.isButton()) {
 

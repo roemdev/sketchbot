@@ -1,4 +1,4 @@
-const config = require("../../core.json");
+const config = require("../core.json");
 
 module.exports = {
   name: "voiceStateUpdate",

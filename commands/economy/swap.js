@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Messa
 const userService = require("../../services/userService");
 const { sendCommand } = require("../../services/minecraftService");
 const transactionService = require("../../services/transactionService");
-const config = require("../../../core.json");
+const config = require("../../core.json");
 
 const RATE = config.economy.exchangeRate;
 const COIN = config.emojis.coin;
