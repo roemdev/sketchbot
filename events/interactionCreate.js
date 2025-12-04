@@ -9,7 +9,7 @@ module.exports = {
       const swapCmd = require("../commands/economy/swap");
       if (swapCmd && typeof swapCmd.buttonHandler === "function") {
         const handled = await swapCmd.buttonHandler(interaction);
-        if (handled) return; // <- si lo manejó swap, no sigas
+        if (handled) return;
       }
 
       // Botones del comando comprar
