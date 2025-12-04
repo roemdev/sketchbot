@@ -11,6 +11,9 @@
     "taskDuration": 20,
     "cooldown": 3600
   },
+  "dailyClaim": {
+    "cooldown": 86400
+  },
   "embeds": {
     "base": "DarkButNotBlack",
     "info": "Yellow",
@@ -18,7 +21,7 @@
     "error": "Red"
   },
   "voice": {
-    "vcJoinChannel": "942822378302500928",
+    "vcJoinChannel": "1312872660715175956",
     "vcNameTemplate": "{username}"
   }
 }
