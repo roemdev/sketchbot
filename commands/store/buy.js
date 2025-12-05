@@ -20,7 +20,7 @@ module.exports = {
       option.setName("item")
         .setDescription("Nombre del artículo que deseas comprar")
         .setRequired(true)
-        .setAutocomplete(true) // <- Autocomplete activado
+        .setAutocomplete(true)
     )
     .addStringOption(option =>
       option.setName("nick")
@@ -28,9 +28,9 @@ module.exports = {
         .setRequired(true)
     ),
 
-  // ---------------------
-  // Comando principal
-  // ---------------------
+  // -------------------------------------------------
+  // EJECUCIÓN DEL COMANDO
+  // -------------------------------------------------
   async execute(interaction) {
     const itemName = interaction.options.getString("item");
     const mcNick = interaction.options.getString("nick");
@@ -50,7 +50,7 @@ module.exports = {
       });
     }
 
-    // Verificar que el usuario exista; si no, crearlo
+    // Crear usuario si no existe
     await userService.createUser(interaction.user.id, interaction.user.username);
 
     // Embed de confirmación
@@ -84,9 +84,9 @@ module.exports = {
     });
   },
 
-  // ---------------------
-  // Autocomplete
-  // ---------------------
+  // -------------------------------------------------
+  // AUTOCOMPLETE
+  // -------------------------------------------------
   autocompleteHandler: async (interaction) => {
     if (!interaction.isAutocomplete()) return false;
 
@@ -98,7 +98,7 @@ module.exports = {
       .slice(0, 25);
 
     const choices = filtered.map(item => ({
-      name: `${item.name}`,
+      name: item.name,
       value: item.name
     }));
 
@@ -106,11 +106,14 @@ module.exports = {
     return true;
   },
 
-  // ---------------------
-  // Botones
-  // ---------------------
+  // -------------------------------------------------
+  // BOTONES (AHORA FILTRADOS)
+  // -------------------------------------------------
   buttonHandler: async interaction => {
     if (!interaction.isButton()) return false;
+
+    // Asegurar que SOLO maneje botones que empiecen con "buy_"
+    if (!interaction.customId.startsWith("buy_")) return false;
 
     const parts = interaction.customId.split("_");
     const action = parts[1];
