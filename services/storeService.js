@@ -74,7 +74,7 @@ async function buyItem(discordId, itemId, quantity = 1, mcNick = null) {
     if (!items.length) throw new Error("Item no disponible");
     const item = items[0];
 
-    const totalPrice = item.price * quantity;
+    const totalPrice = item.price // * quantity;
     if (user.balance < totalPrice)
       throw new Error("No tienes suficientes créditos");
 
@@ -85,7 +85,7 @@ async function buyItem(discordId, itemId, quantity = 1, mcNick = null) {
     user.balance -= totalPrice;
 
     if (item.minecraft_item && mcNick) {
-      const command = `give ${mcNick} ${item.minecraft_item} ${quantity}`;
+      const command = `give ${mcNick} ${item.minecraft_item}`;
       await sendCommand(command);
     }
 

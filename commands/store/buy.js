@@ -131,12 +131,9 @@ module.exports = {
     // -------- CONFIRMAR --------
     if (action === "confirm") {
       try {
-        const quantity = 1;
-
         const result = await storeService.buyItem(
           interaction.user.id,
           itemId,
-          quantity,
           mcNick
         );
 
@@ -152,7 +149,6 @@ module.exports = {
           type: "buy",
           itemName: result.item.name,
           mcNick,
-          amount: quantity,
           totalPrice: result.totalPrice
         });
 
