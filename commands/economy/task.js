@@ -5,7 +5,6 @@ const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
 const { logTransaction } = require("../../services/transactionService");
 
-// Leer valores desde core.json
 const { minEarn, maxEarn, taskDuration, cooldown } = config.tasks;
 
 module.exports = {
@@ -18,7 +17,6 @@ module.exports = {
     const username = interaction.user.username;
     const now = Math.floor(Date.now() / 1000);
 
-    // Revisar cooldown
     const cd = await cooldownService.checkCooldown(userId, "trabajo");
     if (cd) {
       const resetTimestamp = now + cd;
@@ -33,13 +31,12 @@ module.exports = {
       });
     }
 
-    // Crear usuario si no existe
     await userService.createUser(userId, username);
 
-    // Elegir tarea aleatoria
-    const taskType = Math.floor(Math.random() * 3); // 0,1,2
+    const taskType = Math.floor(Math.random() * 3);
+
     switch (taskType) {
-      case 0: { // Sin esfuerzo
+      case 0: {
         const earned = Math.floor(Math.random() * (maxEarn - minEarn + 1)) + minEarn;
         const formatted = earned.toLocaleString("es-DO");
         await userService.addBalance(userId, earned);
@@ -57,7 +54,7 @@ module.exports = {
         });
       }
 
-      case 1: { // Suma de 2 números
+      case 1: {
         const a = Math.floor(Math.random() * 90) + 10;
         const b = Math.floor(Math.random() * 90) + 10;
         const sum = a + b;
@@ -92,7 +89,7 @@ module.exports = {
         break;
       }
 
-      case 2: { // Botón 10 veces
+      case 2: {
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`task_click10_${userId}_10`)
@@ -117,19 +114,18 @@ module.exports = {
   }
 };
 
-// ---------------------
-// Manejo de botones
-// ---------------------
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return false;
+  if (!interaction.customId.startsWith("task_")) return false;
+
   const parts = interaction.customId.split("_");
   const type = parts[1];
 
-  // ---------------- SUMA ----------------
   if (type === "sum") {
     const clicked = parseInt(parts[2], 10);
     const correctSum = parseInt(parts[3], 10);
     const userId = parts[4];
+
     if (interaction.user.id !== userId) {
       return interaction.reply({ content: "Esto no es tu tarea.", flags: MessageFlags.Ephemeral });
     }
@@ -154,15 +150,16 @@ module.exports.buttonHandler = async (interaction) => {
     return true;
   }
 
-  // ---------------- CLICK 10 ----------------
   if (type === "click10") {
     const userId = parts[2];
     let remaining = parseInt(parts[3], 10);
+
     if (interaction.user.id !== userId) {
       return interaction.reply({ content: "Esto no es tu tarea.", flags: MessageFlags.Ephemeral });
     }
 
     remaining--;
+
     if (remaining <= 0) {
       const earned = Math.floor(Math.random() * (maxEarn - minEarn + 1)) + minEarn;
       const formatted = earned.toLocaleString("es-DO");

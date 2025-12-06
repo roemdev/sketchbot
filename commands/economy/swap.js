@@ -56,13 +56,11 @@ module.exports = {
       });
     }
 
-    // Botones
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`swap_confirm_${monedas}_${mcNick}`)
         .setLabel("Confirmar")
         .setStyle(ButtonStyle.Success),
-
       new ButtonBuilder()
         .setCustomId(`swap_cancel_${monedas}_${mcNick}`)
         .setLabel("Cancelar")
@@ -87,11 +85,9 @@ module.exports = {
   }
 };
 
-// ------------------------------------------------------------
-// BUTTON HANDLER (EDICIÓN DEL MISMO MENSAJE)
-// ------------------------------------------------------------
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return;
+  if (!interaction.customId.startsWith("swap_")) return false;
 
   const [prefix, action, monedasStr, ...nickParts] = interaction.customId.split("_");
 
@@ -101,31 +97,23 @@ module.exports.buttonHandler = async (interaction) => {
   const mcNick = nickParts.join("_");
   const cobble = Math.floor(monedas / RATE);
 
-  // Acción CANCELAR
   if (action === "cancel") {
-    const cancelEmbed = new EmbedBuilder().setTitle("Transacción cancelada").setColor("Red")
+    const cancelEmbed = new EmbedBuilder().setTitle("Transacción cancelada").setColor("Red");
     return interaction.update({ embeds: [cancelEmbed], components: [] });
   }
 
-  // Acción CONFIRMAR
   if (action === "confirm") {
     const user = await userService.getUser(interaction.user.id);
     if (!user) {
       return interaction.update({
-        embeds: [new EmbedBuilder()
-          .setColor("Red")
-          .setDescription("No tienes un perfil creado.")
-        ],
+        embeds: [new EmbedBuilder().setColor("Red").setDescription("No tienes un perfil creado.")],
         components: []
       });
     }
 
     if (user.balance < monedas) {
       return interaction.update({
-        embeds: [new EmbedBuilder()
-          .setColor("Red")
-          .setDescription("Ya no tienes suficientes monedas para completar esta transacción.")
-        ],
+        embeds: [new EmbedBuilder().setColor("Red").setDescription("Ya no tienes suficientes monedas para completar esta transacción.")],
         components: []
       });
     }
@@ -136,10 +124,7 @@ module.exports.buttonHandler = async (interaction) => {
       await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);
     } catch (err) {
       return interaction.update({
-        embeds: [new EmbedBuilder()
-          .setColor("Red")
-          .setDescription("Error enviando los C$ a Minecraft. Contacta a un administrador.")
-        ],
+        embeds: [new EmbedBuilder().setColor("Red").setDescription("Error enviando los C$ a Minecraft. Contacta a un administrador.")],
         components: []
       });
     }
@@ -149,10 +134,10 @@ module.exports.buttonHandler = async (interaction) => {
       type: "swap",
       mcNick,
       amount: monedas,
-      totalPrice: cobble // aquí totalPrice son los C$ generados
+      totalPrice: cobble
     });
 
-    const successEmbed = new EmbedBuilder().setTitle("Transacción completada").setColor("Green")
+    const successEmbed = new EmbedBuilder().setTitle("Transacción completada").setColor("Green");
     return interaction.update({ embeds: [successEmbed], components: [] });
   }
 };

@@ -5,7 +5,7 @@ module.exports = {
   async execute(interaction, client) {
 
     // -------------------------------------------------
-    // AUTOCOMPLETE (siempre debe ir primero)
+    // AUTOCOMPLETE
     // -------------------------------------------------
     if (interaction.isAutocomplete()) {
       const command = client.commands.get(interaction.commandName);
@@ -22,48 +22,51 @@ module.exports = {
       return;
     }
 
-
     // -------------------------------------------------
-    // BOTONES (versión compatible con tus handlers antiguos)
+    // BOTONES
     // -------------------------------------------------
     if (interaction.isButton()) {
+      const id = interaction.customId;
 
-      // Swap
-      try {
-        const swapCmd = require("../commands/economy/swap");
-        if (swapCmd.buttonHandler) {
-          const handled = await swapCmd.buttonHandler(interaction);
-          if (handled) return;
+      // 1. Prefix-based routing (CORREGIDO)
+      if (id.startsWith("swap_")) {
+        try {
+          const swapCmd = require("../commands/economy/swap");
+          if (swapCmd.buttonHandler) {
+            return await swapCmd.buttonHandler(interaction);
+          }
+        } catch (err) {
+          console.error("Error en buttonHandler SWAP:", err);
         }
-      } catch (err) {
-        console.error("Error en buttonHandler SWAP:", err);
+        return;
       }
 
-      // Comprar
-      try {
-        const buyCmd = require("../commands/store/buy");
-        if (buyCmd.buttonHandler) {
-          const handled = await buyCmd.buttonHandler(interaction);
-          if (handled) return;
+      if (id.startsWith("buy_")) {
+        try {
+          const buyCmd = require("../commands/store/buy");
+          if (buyCmd.buttonHandler) {
+            return await buyCmd.buttonHandler(interaction);
+          }
+        } catch (err) {
+          console.error("Error en buttonHandler BUY:", err);
         }
-      } catch (err) {
-        console.error("Error en buttonHandler BUY:", err);
+        return;
       }
 
-      // Task / trabajo
-      try {
-        const taskCmd = require("../commands/economy/task");
-        if (taskCmd.buttonHandler) {
-          const handled = await taskCmd.buttonHandler(interaction);
-          if (handled) return;
+      if (id.startsWith("task_")) {
+        try {
+          const taskCmd = require("../commands/economy/task");
+          if (taskCmd.buttonHandler) {
+            return await taskCmd.buttonHandler(interaction);
+          }
+        } catch (err) {
+          console.error("Error en buttonHandler TASK:", err);
         }
-      } catch (err) {
-        console.error("Error en buttonHandler TASK:", err);
+        return;
       }
 
       return;
     }
-
 
     // -------------------------------------------------
     // SLASH COMMANDS

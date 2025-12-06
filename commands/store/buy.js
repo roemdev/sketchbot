@@ -28,14 +28,10 @@ module.exports = {
         .setRequired(true)
     ),
 
-  // -------------------------------------------------
-  // EJECUCIÓN DEL COMANDO
-  // -------------------------------------------------
   async execute(interaction) {
     const itemName = interaction.options.getString("item");
     const mcNick = interaction.options.getString("nick");
 
-    // Buscar item
     const item = await storeService.getItemByName(itemName);
     if (!item || item.status !== "available") {
       return interaction.reply({
@@ -50,10 +46,8 @@ module.exports = {
       });
     }
 
-    // Crear usuario si no existe
     await userService.createUser(interaction.user.id, interaction.user.username);
 
-    // Embed de confirmación
     const preview = makeEmbed(
       "info",
       "Confirmar compra",
@@ -84,10 +78,7 @@ module.exports = {
     });
   },
 
-  // -------------------------------------------------
-  // AUTOCOMPLETE
-  // -------------------------------------------------
-  autocompleteHandler: async (interaction) => {
+  async autocompleteHandler(interaction) {
     if (!interaction.isAutocomplete()) return false;
 
     const focusedValue = interaction.options.getFocused();
@@ -98,7 +89,7 @@ module.exports = {
       .slice(0, 25);
 
     const choices = filtered.map(item => ({
-      name: item.name,
+      name: `${item.name} - ${config.emojis.coin}${item.price.toLocaleString()}`,
       value: item.name
     }));
 
@@ -106,23 +97,22 @@ module.exports = {
     return true;
   },
 
-  // -------------------------------------------------
-  // BOTONES (AHORA FILTRADOS)
-  // -------------------------------------------------
-  buttonHandler: async interaction => {
+  async buttonHandler(interaction) {
     if (!interaction.isButton()) return false;
-
-    // Asegurar que SOLO maneje botones que empiecen con "buy_"
     if (!interaction.customId.startsWith("buy_")) return false;
+
+    await interaction.deferUpdate({ flags: MessageFlags.Ephemeral });
 
     const parts = interaction.customId.split("_");
     const action = parts[1];
     const itemId = parseInt(parts[2], 10);
-    const mcNick = action === "confirm" ? parts.slice(3).join("_") : null;
 
-    // -------- CANCELAR --------
+    const mcNick = action === "confirm"
+      ? parts.slice(3).join("_")
+      : null;
+
     if (action === "cancel") {
-      await interaction.update({
+      await interaction.editReply({
         embeds: [
           makeEmbed("info", "Compra cancelada", "No se ha procesado ninguna transacción.")
         ],
@@ -131,7 +121,6 @@ module.exports = {
       return true;
     }
 
-    // -------- CONFIRMAR --------
     if (action === "confirm") {
       try {
         const result = await storeService.buyItem(
@@ -140,7 +129,7 @@ module.exports = {
           mcNick
         );
 
-        await interaction.update({
+        await interaction.editReply({
           embeds: [
             makeEmbed("success", "Compra realizada con éxito")
           ],
@@ -158,7 +147,7 @@ module.exports = {
         return true;
 
       } catch (err) {
-        await interaction.update({
+        await interaction.editReply({
           embeds: [
             makeEmbed("error", "Error en la compra", err.message)
           ],

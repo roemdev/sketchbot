@@ -57,7 +57,7 @@ async function getItems(status = "available") {
 // ---------------------------------------------------------------------
 //  BUY ITEM
 // ---------------------------------------------------------------------
-async function buyItem(discordId, itemId, quantity = 1, mcNick = null) {
+async function buyItem(discordId, itemId, mcNick = null) {
   const conn = await pool.getConnection();
   try {
     const [users] = await conn.query(
