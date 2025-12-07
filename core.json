@@ -9,10 +9,10 @@
     "minEarn": 3000,
     "maxEarn": 10000,
     "taskDuration": 20,
-    "cooldown": 1200
+    "cooldown": 600
   },
   "dailyClaim": {
-    "cooldown": 86400
+    "cooldown": 64800
   },
   "embeds": {
     "base": "DarkButNotBlack",
