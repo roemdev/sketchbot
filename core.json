@@ -1,15 +1,15 @@
 {
   "economy": {
-    "exchangeRate": 14
+    "exchangeRate": 1
   },
   "emojis": {
-    "coin": "⏣"
+    "coin": "`🪙`"
   },
   "tasks": {
     "minEarn": 3000,
     "maxEarn": 10000,
     "taskDuration": 20,
-    "cooldown": 600
+    "cooldown": 300
   },
   "dailyClaim": {
     "cooldown": 64800
