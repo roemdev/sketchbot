@@ -65,6 +65,42 @@ module.exports = {
         return;
       }
 
+      if (id.startsWith("giftbox_")) {
+        try {
+          const giftboxCmd = require("../commands/games/giftbox");
+          if (giftboxCmd.buttonHandler) {
+            return await giftboxCmd.buttonHandler(interaction);
+          }
+        } catch (err) {
+          console.error("Error en buttonHandler GIFTBOX:", err);
+        }
+        return;
+      }
+
+      if (id.startsWith("tower_")) {
+        try {
+          const towerCmd = require("../commands/games/riskTower");
+          if (towerCmd.buttonHandler) {
+            return await towerCmd.buttonHandler(interaction);
+          }
+        } catch (err) {
+          console.error("Error en buttonHandler TOWER:", err);
+        }
+        return;
+      }
+
+      if (id.startsWith("highroll_")) {
+        try {
+          const cmd = require("../commands/games/highroll");
+          if (cmd.buttonHandler) {
+            return await cmd.buttonHandler(interaction);
+          }
+        } catch (err) {
+          console.error("Error en buttonHandler HIGHROLL:", err);
+        }
+        return;
+      }
+
       return;
     }
 

@@ -14,6 +14,9 @@
   "dailyClaim": {
     "cooldown": 64800
   },
+  "game": {
+    "cooldown": 10
+  },
   "embeds": {
     "base": "DarkButNotBlack",
     "info": "Yellow",
