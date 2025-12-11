@@ -25,6 +25,6 @@
   },
   "voice": {
     "vcJoinChannel": "1312872660715175956",
-    "vcNameTemplate": "{username}"
+    "vcNameTemplate": "{username}'🎤"
   }
 }
