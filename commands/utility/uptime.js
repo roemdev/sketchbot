@@ -1,20 +1,21 @@
-const { SlashCommandBuilder } = require("discord.js");
-const { makeEmbed } = require("../../utils/embedFactory");
-const serverService = require("../../services/serversService");
-const fetch = require("node-fetch");
+const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = require('discord.js');
+const { pteroPanel } = require('../../config.json');
 
-const PANEL_URL = "https://arkania.ddns.net";
-const API_KEY = "ptlc_mgfiyoHiZgpnIFyp1Fm0zrEEMAyPjlAjU6cI9cbfRLS";
+const serverService = require('../../services/serversService');
+const fetch = require('node-fetch');
+
+const PANEL_URL = pteroPanel.url;
+const API_KEY = pteroPanel.apiKey;
 
 async function getServerStatus(serverId) {
   try {
     const res = await fetch(`${PANEL_URL}/api/client/servers/${serverId}/resources`, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-        "Accept": "Application/vnd.pterodactyl.v1+json",
-        "Content-Type": "application/json"
-      }
+        'Authorization': `Bearer ${API_KEY}`,
+        'Accept': 'Application/vnd.pterodactyl.v1+json',
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!res.ok) return null;
@@ -28,35 +29,56 @@ async function getServerStatus(serverId) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("uptime")
-    .setDescription("Muestra el estado de los servidores registrados."),
+    .setName('uptime')
+    .setDescription('Muestra el estado de los servidores registrados.'),
 
   async execute(interaction) {
     await interaction.deferReply();
+
     const servers = await serverService.getServers();
     if (!servers || servers.length === 0) {
-      return interaction.reply({
-        embeds: [makeEmbed("info", "Sin servidores", "No hay servidores registrados.")]
+      return interaction.editReply({
+        content: 'No hay servidores registrados para consultar.',
       });
     }
 
-    const nombres = [];
-    const estados = [];
+    // 1. Inicializar el ContainerBuilder
+    const statusContainer = new ContainerBuilder()
+      .setAccentColor(2895667)
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent('### Estado de los servidores | ArkaniaHost')
+      );
 
+    // 2. Itera sobre los servidores y construye secciones dinámicas
     for (const server of servers) {
       const status = await getServerStatus(server.server_id);
-      nombres.push(server.name);
-      estados.push(status === "running" ? "`✔️`" : "`❌`");
+      const isRunning = status === 'running';
+
+      // Define el estilo y la etiqueta del botón
+      const buttonStyle = isRunning ? ButtonStyle.Success : ButtonStyle.Secondary;
+      const buttonLabel = isRunning ? 'ONLINE' : 'OFFLINE';
+
+      statusContainer
+        .addSeparatorComponents((separator) => separator)
+        .addSectionComponents((section) =>
+          section
+            .addTextDisplayComponents((textDisplay) =>
+              textDisplay.setContent(`${server.name}`) // Muestra el nombre del servidor
+            )
+            .setButtonAccessory((button) =>
+              button
+                .setCustomId(`status_${server.server_id}`) // ID único para el botón
+                .setLabel(buttonLabel)
+                .setStyle(buttonStyle)
+                .setDisabled(true) // Desactivado, solo muestra el estado
+            )
+        );
     }
 
-    // Creamos el embed
-    const embed = makeEmbed("base", "Estado de los servidores | ArkaniaHost", ""); // descripción vacía
-    embed.addFields(
-      { name: "Servidor", value: nombres.join("\n"), inline: true },
-      { name: "Estado", value: estados.join("\n"), inline: true },
-      { name: " ", value: "-# **NOTA**: Si no respondo es una caída general." }
-    );
-
-    return interaction.editReply({ embeds: [embed] });
-  }
+    // 4. Enviar el Container en lugar del Embed
+    return interaction.editReply({
+      components: [statusContainer],
+      flags: MessageFlags.IsComponentsV2,
+    });
+  },
 };

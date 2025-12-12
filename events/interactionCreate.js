@@ -5,28 +5,43 @@ module.exports = {
   async execute(interaction) {
     let command = null;
 
-    // --- MANEJO DE INTERACCIONES ---
     if (interaction.isChatInputCommand()) {
       command = interaction.client.commands.get(interaction.commandName);
+
     } else if (interaction.isButton()) {
-      // Lógica para botones
+      const commandName = interaction.customId.split('_')[0];
+      const buttonModule = interaction.client.commands.get(commandName);
+
+      if (buttonModule && typeof buttonModule.buttonHandler === 'function') {
+        try {
+          const handled = await buttonModule.buttonHandler(interaction);
+          if (handled) return;
+        } catch (error) {
+          console.error(`Error executing buttonHandler for ${commandName}:`, error);
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+              content: 'Hubo un error al procesar este botón.',
+              flags: MessageFlags.Ephemeral
+            });
+          }
+        }
+      }
       return;
+
     } else if (interaction.isStringSelectMenu()) {
-      // Lógica para select menus
       return;
     }
 
-    // Si no se encontró ningún comando (solo aplica a isChatInputCommand)
     if (interaction.isChatInputCommand() && !command) {
       console.error(`No command matching ${interaction.commandName} was found.`);
       return;
     }
 
-    // --- LÓGICA DE COOLDOWN (Solo para comandos de barra) ---
+    // --- LÓGICA DE COOLDOWN ---
     if (command && command.cooldown) {
       const { cooldowns } = interaction.client;
       const now = Date.now();
-      const defaultCooldownDuration = 3;
+      const defaultCooldownDuration = 5;
       const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1_000;
 
       if (!cooldowns.has(command.data.name)) {
@@ -46,32 +61,22 @@ module.exports = {
           });
         }
       }
-      // Establecer el nuevo timestamp y el timeout para eliminarlo
       timestamps.set(interaction.user.id, now);
       setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
     }
 
-    // --- EJECUCIÓN DEL COMANDO Y MANEJO DE ERRORES CENTRALIZADO ---
+    // --- EJECUCIÓN DEL COMANDO ---
     try {
-      // Ejecutar si es un comando (ChatInputCommand)
       if (command) {
         await command.execute(interaction);
       }
     } catch (error) {
       console.error(error);
-      // Manejar la respuesta de error de forma segura
       const errorMessage = 'There was an error while executing this command!';
-
       if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: errorMessage,
-          flags: MessageFlags.Ephemeral,
-        });
+        await interaction.followUp({ content: errorMessage, flags: MessageFlags.Ephemeral });
       } else {
-        await interaction.reply({
-          content: errorMessage,
-          flags: MessageFlags.Ephemeral,
-        });
+        await interaction.reply({ content: errorMessage, flags: MessageFlags.Ephemeral });
       }
     }
   },
