@@ -1,128 +1,78 @@
-const { Events } = require("discord.js");
+const { Events, MessageFlags, Collection } = require('discord.js');
 
 module.exports = {
   name: Events.InteractionCreate,
-  async execute(interaction, client) {
+  async execute(interaction) {
+    let command = null;
 
-    // -------------------------------------------------
-    // AUTOCOMPLETE
-    // -------------------------------------------------
-    if (interaction.isAutocomplete()) {
-      const command = client.commands.get(interaction.commandName);
-      if (command?.autocompleteHandler) {
-        try {
-          await command.autocompleteHandler(interaction);
-        } catch (err) {
-          console.error(`Error en autocomplete de ${interaction.commandName}:`, err);
-          try {
-            await interaction.respond([]);
-          } catch { }
-        }
-      }
-      return;
-    }
-
-    // -------------------------------------------------
-    // BOTONES
-    // -------------------------------------------------
-    if (interaction.isButton()) {
-      const id = interaction.customId;
-
-      // 1. Prefix-based routing (CORREGIDO)
-      if (id.startsWith("swap_")) {
-        try {
-          const swapCmd = require("../commands/economy/swap");
-          if (swapCmd.buttonHandler) {
-            return await swapCmd.buttonHandler(interaction);
-          }
-        } catch (err) {
-          console.error("Error en buttonHandler SWAP:", err);
-        }
-        return;
-      }
-
-      if (id.startsWith("buy_")) {
-        try {
-          const buyCmd = require("../commands/store/buy");
-          if (buyCmd.buttonHandler) {
-            return await buyCmd.buttonHandler(interaction);
-          }
-        } catch (err) {
-          console.error("Error en buttonHandler BUY:", err);
-        }
-        return;
-      }
-
-      if (id.startsWith("task_")) {
-        try {
-          const taskCmd = require("../commands/economy/task");
-          if (taskCmd.buttonHandler) {
-            return await taskCmd.buttonHandler(interaction);
-          }
-        } catch (err) {
-          console.error("Error en buttonHandler TASK:", err);
-        }
-        return;
-      }
-
-      if (id.startsWith("giftbox_")) {
-        try {
-          const giftboxCmd = require("../commands/games/giftbox");
-          if (giftboxCmd.buttonHandler) {
-            return await giftboxCmd.buttonHandler(interaction);
-          }
-        } catch (err) {
-          console.error("Error en buttonHandler GIFTBOX:", err);
-        }
-        return;
-      }
-
-      if (id.startsWith("tower_")) {
-        try {
-          const towerCmd = require("../commands/games/riskTower");
-          if (towerCmd.buttonHandler) {
-            return await towerCmd.buttonHandler(interaction);
-          }
-        } catch (err) {
-          console.error("Error en buttonHandler TOWER:", err);
-        }
-        return;
-      }
-
-      if (id.startsWith("highroll_")) {
-        try {
-          const cmd = require("../commands/games/highroll");
-          if (cmd.buttonHandler) {
-            return await cmd.buttonHandler(interaction);
-          }
-        } catch (err) {
-          console.error("Error en buttonHandler HIGHROLL:", err);
-        }
-        return;
-      }
-
-      return;
-    }
-
-    // -------------------------------------------------
-    // SLASH COMMANDS
-    // -------------------------------------------------
+    // --- MANEJO DE INTERACCIONES ---
     if (interaction.isChatInputCommand()) {
-      const command = client.commands.get(interaction.commandName);
-      if (!command) return;
+      command = interaction.client.commands.get(interaction.commandName);
+    } else if (interaction.isButton()) {
+      // Lógica para botones
+      return;
+    } else if (interaction.isStringSelectMenu()) {
+      // Lógica para select menus
+      return;
+    }
 
-      try {
-        await command.execute(interaction, client);
-      } catch (error) {
-        console.error(`Error ejecutando ${interaction.commandName}:`, error);
+    // Si no se encontró ningún comando (solo aplica a isChatInputCommand)
+    if (interaction.isChatInputCommand() && !command) {
+      console.error(`No command matching ${interaction.commandName} was found.`);
+      return;
+    }
 
-        try {
-          await interaction.reply({
-            content: "Ocurrió un error interno al ejecutar el comando.",
-            ephemeral: true
+    // --- LÓGICA DE COOLDOWN (Solo para comandos de barra) ---
+    if (command && command.cooldown) {
+      const { cooldowns } = interaction.client;
+      const now = Date.now();
+      const defaultCooldownDuration = 3;
+      const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1_000;
+
+      if (!cooldowns.has(command.data.name)) {
+        cooldowns.set(command.data.name, new Collection());
+      }
+
+      const timestamps = cooldowns.get(command.data.name);
+
+      if (timestamps.has(interaction.user.id)) {
+        const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+
+        if (now < expirationTime) {
+          const expiredTimestamp = Math.round(expirationTime / 1_000);
+          return interaction.reply({
+            content: `Please wait, you are on a cooldown for \`${command.data.name}\`. You can use it again <t:${expiredTimestamp}:R>.`,
+            flags: MessageFlags.Ephemeral,
           });
-        } catch { }
+        }
+      }
+      // Establecer el nuevo timestamp y el timeout para eliminarlo
+      timestamps.set(interaction.user.id, now);
+      setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+    }
+
+    // --- EJECUCIÓN DEL COMANDO Y MANEJO DE ERRORES CENTRALIZADO ---
+    try {
+      // Ejecutar si es un comando (ChatInputCommand)
+      if (command) {
+        await command.execute(interaction);
+      }
+    } catch (error) {
+      console.error(error);
+      // Manejar la respuesta de error de forma segura
+      const errorMessage = 'There was an error while executing this command!';
+
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: errorMessage,
+          flags: MessageFlags.Ephemeral,
+        });
+      } else {
+        await interaction.reply({
+          content: errorMessage,
+          flags: MessageFlags.Ephemeral,
+        });
       }
     }
-  }
+  },
 };
