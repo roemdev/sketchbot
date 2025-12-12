@@ -102,7 +102,7 @@ module.exports.buttonHandler = async (interaction) => {
   }
 
   if (action === "risk") {
-    const win = Math.random() < 0.7;
+    const win = Math.random() < 0.9;
 
     if (win) {
       current = current * 2;
