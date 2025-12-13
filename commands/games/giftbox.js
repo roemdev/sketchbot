@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder, ButtonBuilder } = require("discord.js");
 const config = require("../../core.json");
 const userService = require("../../services/userService");
-const cooldownService = require("../../services/memoryCooldownService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;

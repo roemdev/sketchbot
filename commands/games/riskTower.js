@@ -65,11 +65,11 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`tower_risk_${userId}_${bet}_${bet}`)
+        .setCustomId(`torre_risk_${userId}_${bet}_${bet}`)
         .setLabel("⚡ Arriesgar")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
-        .setCustomId(`tower_cashout_${userId}_${bet}_${bet}`)
+        .setCustomId(`torre_cashout_${userId}_${bet}_${bet}`)
         .setLabel("💰 Cobrar")
         .setStyle(ButtonStyle.Success)
     );
@@ -89,7 +89,7 @@ module.exports = {
 
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return false;
-  if (!interaction.customId.startsWith("tower_")) return false;
+  if (!interaction.customId.startsWith("torre_")) return false;
 
   const parts = interaction.customId.split("_");
   const action = parts[1];
@@ -102,18 +102,18 @@ module.exports.buttonHandler = async (interaction) => {
   }
 
   if (action === "risk") {
-    const win = Math.random() < 0.9;
+    const win = Math.random() < 0.8;
 
     if (win) {
       current = current * 2;
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`tower_risk_${userId}_${bet}_${current}`)
+          .setCustomId(`torre_risk_${userId}_${bet}_${current}`)
           .setLabel("⚡ Arriesgar")
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
-          .setCustomId(`tower_cashout_${userId}_${bet}_${current}`)
+          .setCustomId(`torre_cashout_${userId}_${bet}_${current}`)
           .setLabel("💰 Cobrar")
           .setStyle(ButtonStyle.Success)
       );
