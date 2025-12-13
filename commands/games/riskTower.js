@@ -1,12 +1,11 @@
 const {
   SlashCommandBuilder,
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  MessageFlags
+  MessageFlags,
+  ContainerBuilder
 } = require("discord.js");
 
-const { makeEmbed } = require("../../utils/embedFactory");
 const config = require("../../core.json");
 const userService = require("../../services/userService");
 const cooldownService = require("../../services/memoryCooldownService");
@@ -34,20 +33,20 @@ module.exports = {
     const cd = await cooldownService.checkCooldown(userId, "tower");
     if (cd) {
       const resetTimestamp = now + cd;
+      const cdContainer = new ContainerBuilder()
+        .setAccentColor(0xf5a623)
+        .addTextDisplayComponents((textDisplay) =>
+          textDisplay.setContent(`### ⏱ Cooldown activo\nDebes esperar <t:${resetTimestamp}:R> para volver a jugar.`)
+        );
       return interaction.reply({
-        embeds: [
-          makeEmbed(
-            "info",
-            "Cooldown activo",
-            `⏱ Debes esperar <t:${resetTimestamp}:R> para volver a jugar.`
-          )
-        ]
+        components: [cdContainer],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
     if (bet <= 0) {
       return interaction.reply({
-        embeds: [makeEmbed("error", "Apuesta inválida", "La cantidad debe ser mayor que cero.")],
+        content: "La cantidad debe ser mayor que cero.",
         flags: MessageFlags.Ephemeral
       });
     }
@@ -56,40 +55,45 @@ module.exports = {
 
     try {
       await userService.addBalance(userId, -bet);
-    } catch {
+    } catch (err) {
       return interaction.reply({
-        embeds: [makeEmbed("error", "Créditos insuficientes", "No tienes suficientes créditos.")],
+        content: "No tienes suficientes créditos.",
         flags: MessageFlags.Ephemeral
       });
     }
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`tower_risk_${userId}_${bet}_${bet}`)
-        .setLabel("⚡ Arriesgar")
-        .setStyle(ButtonStyle.Danger),
-      new ButtonBuilder()
-        .setCustomId(`tower_cashout_${userId}_${bet}_${bet}`)
-        .setLabel("💰 Cobrar")
-        .setStyle(ButtonStyle.Success)
-    );
-
-    await interaction.reply({
-      embeds: [
-        makeEmbed(
-          "base",
-          "Torre de riesgo",
+    const towerContainer = new ContainerBuilder()
+      .setAccentColor(2895667)
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent(
+          `### 🗼 Torre de riesgo\n` +
           `Apuesta inicial: **${config.emojis.coin}${bet.toLocaleString("es-DO")}**\nSaldo en juego: **${config.emojis.coin}${bet.toLocaleString("es-DO")}**`
         )
-      ],
-      components: [row]
+      )
+      .addSeparatorComponents((separator) => separator)
+      .addActionRowComponents((actionRow) =>
+        actionRow.setComponents(
+          new ButtonBuilder()
+            .setCustomId(`torre_risk_${userId}_${bet}_${bet}`)
+            .setLabel("⚡ Arriesgar")
+            .setStyle(ButtonStyle.Danger),
+          new ButtonBuilder()
+            .setCustomId(`torre_cashout_${userId}_${bet}_${bet}`)
+            .setLabel("💰 Cobrar")
+            .setStyle(ButtonStyle.Success)
+        )
+      );
+
+    await interaction.reply({
+      components: [towerContainer],
+      flags: MessageFlags.IsComponentsV2,
     });
   }
 };
 
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return false;
-  if (!interaction.customId.startsWith("tower_")) return false;
+  if (!interaction.customId.startsWith("torre_")) return false;
 
   const parts = interaction.customId.split("_");
   const action = parts[1];
@@ -102,31 +106,36 @@ module.exports.buttonHandler = async (interaction) => {
   }
 
   if (action === "risk") {
-    const win = Math.random() < 0.9;
+    const win = Math.random() < 0.8;
 
     if (win) {
       current = current * 2;
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`tower_risk_${userId}_${bet}_${current}`)
-          .setLabel("⚡ Arriesgar")
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId(`tower_cashout_${userId}_${bet}_${current}`)
-          .setLabel("💰 Cobrar")
-          .setStyle(ButtonStyle.Success)
-      );
-
-      await interaction.update({
-        embeds: [
-          makeEmbed(
-            "success",
-            "¡Subiste un nivel! 🗼",
+      const winContainer = new ContainerBuilder()
+        .setAccentColor(0x32cd32)
+        .addTextDisplayComponents((textDisplay) =>
+          textDisplay.setContent(
+            `### 🚀 ¡Subiste un nivel!\n` +
             `Tu saldo en juego se ha duplicado. Total actual: **${config.emojis.coin}${current.toLocaleString("es-DO")}**`
           )
-        ],
-        components: [row]
+        )
+        .addSeparatorComponents((separator) => separator)
+        .addActionRowComponents((actionRow) =>
+          actionRow.setComponents(
+            new ButtonBuilder()
+              .setCustomId(`torre_risk_${userId}_${bet}_${current}`)
+              .setLabel("⚡ Arriesgar")
+              .setStyle(ButtonStyle.Danger),
+            new ButtonBuilder()
+              .setCustomId(`torre_cashout_${userId}_${bet}_${current}`)
+              .setLabel("💰 Cobrar")
+              .setStyle(ButtonStyle.Success)
+          )
+        );
+
+      await interaction.update({
+        components: [winContainer],
+        flags: MessageFlags.IsComponentsV2,
       });
 
     } else {
@@ -138,15 +147,18 @@ module.exports.buttonHandler = async (interaction) => {
 
       await cooldownService.setCooldown(userId, "tower", GAME_COOLDOWN);
 
-      await interaction.update({
-        embeds: [
-          makeEmbed(
-            "error",
-            "Todo perdido 💥",
+      const loseContainer = new ContainerBuilder()
+        .setAccentColor(0xff4500)
+        .addTextDisplayComponents((textDisplay) =>
+          textDisplay.setContent(
+            `### 💥 Todo perdido\n` +
             `La torre colapsó. Perdiste **${config.emojis.coin}${current.toLocaleString("es-DO")}** créditos.`
           )
-        ],
-        components: []
+        );
+
+      await interaction.update({
+        components: [loseContainer],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
     return true;
@@ -163,15 +175,18 @@ module.exports.buttonHandler = async (interaction) => {
 
     await cooldownService.setCooldown(userId, "tower", GAME_COOLDOWN);
 
-    await interaction.update({
-      embeds: [
-        makeEmbed(
-          "success",
-          "Cobro realizado 💰",
+    const cashoutContainer = new ContainerBuilder()
+      .setAccentColor(0x32cd32)
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent(
+          `### 💰 Cobro realizado\n` +
           `Decidiste retirarte a tiempo.\nHas conservado **${config.emojis.coin}${current.toLocaleString("es-DO")}** créditos.`
         )
-      ],
-      components: []
+      );
+
+    await interaction.update({
+      components: [cashoutContainer],
+      flags: MessageFlags.IsComponentsV2,
     });
 
     return true;

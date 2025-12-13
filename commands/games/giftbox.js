@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder, ButtonBuilder } = require("discord.js");
 const config = require("../../core.json");
 const userService = require("../../services/userService");
-const cooldownService = require("../../services/memoryCooldownService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
@@ -46,10 +45,9 @@ module.exports = {
       .setAccentColor(2895667)
       .addTextDisplayComponents((textDisplay) =>
         textDisplay.setContent(
-          `### ¡Prueba tu suerte!\n` +
-          `Apuesta: **${config.emojis.coin}${bet.toLocaleString("es-DO")}**. Si aciertas, ¡lo triplicas!\n` +
-          `¡Selecciona la caja correcta abajo!`
-        )
+          `### 🎁 ¡Prueba tu suerte!\n` +
+          `¡Pusiste en juego **${config.emojis.coin}${bet.toLocaleString("es-DO")}**!\n
+          ¡En una de estas cajas te espera el **TRIPLE** de tu apuesta! Escoge con sabiduría...`)
       )
       .addSeparatorComponents((separator) => separator)
 
@@ -58,15 +56,15 @@ module.exports = {
           new ButtonBuilder()
             .setCustomId(`giftbox_chest_1_${userId}_${bet}`)
             .setEmoji("🎁")
-            .setStyle(ButtonStyle.Primary),
+            .setStyle(ButtonStyle.Secondary),
           new ButtonBuilder()
             .setCustomId(`giftbox_chest_2_${userId}_${bet}`)
             .setEmoji("🎁")
-            .setStyle(ButtonStyle.Primary),
+            .setStyle(ButtonStyle.Secondary),
           new ButtonBuilder()
             .setCustomId(`giftbox_chest_3_${userId}_${bet}`)
             .setEmoji("🎁")
-            .setStyle(ButtonStyle.Primary)
+            .setStyle(ButtonStyle.Secondary)
         )
       );
 
@@ -96,8 +94,8 @@ module.exports.buttonHandler = async (interaction) => {
         .setAccentColor(0x32cd32) // Verde
         .addTextDisplayComponents((textDisplay) =>
           textDisplay.setContent(
-            `### ¡Ganaste!\n` +
-            `¡Elegiste la caja correcta! Has ganado **${config.emojis.coin}${formatted}**`
+            `### 🎉 ¡Ganaste!\n` +
+            `¡Muy bien! Elegiste la caja correcta y has ganado **${config.emojis.coin}${formatted}**. ¡Sigue jugando!`
           )
         )
 
@@ -110,8 +108,8 @@ module.exports.buttonHandler = async (interaction) => {
         .setAccentColor(0xff4500) // Rojo
         .addTextDisplayComponents((textDisplay) =>
           textDisplay.setContent(
-            `### ¡Perdiste!\n` +
-            `La ganadora era la caja **${winningChest}**. Has perdido **${config.emojis.coin}${bet.toLocaleString("es-DO")}**.`
+            `### ❌ ¡Perdiste!\n` +
+            `El premio estaba en la caja **${winningChest}**. Has perdido **${config.emojis.coin}${bet.toLocaleString("es-DO")}**. ¡Vuelve a intentarlo!`
           )
         );
 
