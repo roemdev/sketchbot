@@ -47,8 +47,8 @@ module.exports = {
       .addTextDisplayComponents((textDisplay) =>
         textDisplay.setContent(
           `### 🎁 ¡Prueba tu suerte!\n` +
-          `Apostaste: **${config.emojis.coin}${bet.toLocaleString("es-DO")}**. Si eliges la caja correcta te ganas el triple. ¡Buena suerte!`
-        )
+          `¡Pusiste en juego **${config.emojis.coin}${bet.toLocaleString("es-DO")}**!\n
+          ¡En una de estas cajas te espera el **TRIPLE** de tu apuesta! Escoge con sabiduría...`)
       )
       .addSeparatorComponents((separator) => separator)
 
