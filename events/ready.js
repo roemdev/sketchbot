@@ -45,10 +45,9 @@ module.exports = {
 
     console.log(`
 ${line}
-${chalk.green.bold('BOT INICIADO ✔')}
+${chalk.green.bold(`BOT INICIADO`)} | COMANDOS: ${commandCount}
 ${line}
-Usuario: ${chalk.bold.blue(client.user.tag)} | ID: ${chalk.dim(client.user.id)}
-Comandos: ${commandCount}
+Usuario: ${chalk.bold.blue(client.user.tag)} ${chalk.dim(`(${client.user.id})`)}
 DB: ${dbOk ? chalk.bold.green('OK') : chalk.bold.red('FAIL')} ${chalk.dim(`(${dbRoute})`)}
 RCON: ${rconOk ? chalk.bold.green('OK') : chalk.bold.red('FAIL')} ${chalk.dim(`(${rconRoute})`)}
 ${line}
