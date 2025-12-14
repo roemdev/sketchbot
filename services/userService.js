@@ -23,6 +23,11 @@ module.exports = {
     return await module.exports.getUser(discordId);
   },
 
+  getBalance: async (discordId) => {
+    const user = await module.exports.getUser(discordId);
+    return user ? user.balance : 0; // Devuelve el balance o 0 si el usuario no existe.
+  },
+
   removeBalance: async (discordId, amount) => {
     await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ? AND balance >= ?", [amount, discordId, amount]);
     return await module.exports.getUser(discordId);

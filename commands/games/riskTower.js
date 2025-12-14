@@ -94,10 +94,10 @@ module.exports.buttonHandler = async (interaction) => {
   }
 
   if (action === "risk") {
-    const win = Math.random() < 0.8;
+    const win = Math.random() < 0.7;
 
     if (win) {
-      current = current * 2;
+      current = current * 1.25;
 
       const winContainer = new ContainerBuilder()
         .setAccentColor(0x32cd32)
