@@ -3,41 +3,57 @@ const config = require("../core.json");
 module.exports = {
   name: "voiceStateUpdate",
   async execute(oldState, newState, client) {
+    // Asegura que el mapa de canales temporales exista
+    client.tempVCs = client.tempVCs || new Map();
+
     const joinChannelId = config.voice.vcJoinChannel;
+    const guild = newState.guild || oldState.guild;
 
-    // Usuario entra al canal de activación
+    // I. CREACIÓN: Usuario entra al canal de activación
     if ((!oldState.channelId || oldState.channelId !== newState.channelId) && newState.channelId === joinChannelId) {
-      const guild = newState.guild;
-
-      // Crear canal temporal en la misma categoría
       const parent = newState.channel.parent;
-      const channelName = config.voice.vcNameTemplate.replace("{username}", newState.member.user.username);
-      const tempChannel = await guild.channels.create({
-        name: channelName,
-        type: 2, // GuildVoice
-        parent: parent,
-        permissionOverwrites: [
-          {
-            id: guild.roles.everyone.id,
-            allow: ["Connect", "ViewChannel"]
-          }
-        ]
-      });
+      const channelName = config.voice.vcNameTemplate.replace("{username}", newState.member.user.displayName || newState.member.user.username);
 
-      // Mover al usuario al canal temporal
-      await newState.setChannel(tempChannel);
+      try {
+        const tempChannel = await guild.channels.create({
+          name: channelName,
+          type: 2, // GuildVoice
+          parent: parent,
+          permissionOverwrites: [
+            {
+              id: guild.roles.everyone.id,
+              allow: ["Connect", "ViewChannel"]
+            }
+          ]
+        });
 
-      // Guardar referencia para borrarlo luego
-      client.tempVCs = client.tempVCs || new Map();
-      client.tempVCs.set(tempChannel.id, { ownerId: newState.id });
+        await newState.setChannel(tempChannel);
+
+        client.tempVCs.set(tempChannel.id, { ownerId: newState.id });
+      } catch (error) {
+        console.error("Error al crear o mover al canal temporal:", error);
+      }
     }
 
-    // Usuario sale de un canal temporal
-    if (oldState.channelId && client.tempVCs?.has(oldState.channelId)) {
-      const tempInfo = client.tempVCs.get(oldState.channelId);
+    // II. LIMPIEZA: Usuario sale de un canal temporal
+    // Verifica si el canal que el usuario dejó es temporal
+    if (oldState.channelId && client.tempVCs.has(oldState.channelId)) {
+
       const channel = oldState.channel;
-      if (channel.members.size === 0) {
-        await channel.delete().catch(() => { });
+
+      if (channel) {
+        // Si el canal queda vacío, se elimina
+        if (channel.members.size === 0) {
+          try {
+            await channel.delete();
+            client.tempVCs.delete(oldState.channelId);
+          } catch (error) {
+            console.error(`Error al intentar eliminar el canal ${channel.id}:`, error.message);
+            client.tempVCs.delete(oldState.channelId);
+          }
+        }
+      } else {
+        // Limpiar referencia si el canal no se pudo obtener
         client.tempVCs.delete(oldState.channelId);
       }
     }
