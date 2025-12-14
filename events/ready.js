@@ -1,4 +1,4 @@
-const { Events } = require('discord.js');
+const { Events, ActivityType } = require('discord.js');
 const chalk = require('chalk');
 
 const dbService = require('../services/dbService');
@@ -16,7 +16,7 @@ async function testDbConnection() {
 
 async function testRconConnection() {
   try {
-    const response = await rconService.sendCommand('list');
+    await rconService.sendCommand('list');
     return true;
   } catch (error) {
     console.error(chalk.red('Error RCON:'), error.message);
@@ -24,12 +24,26 @@ async function testRconConnection() {
   }
 }
 
+// 🔁 Función para actualizar el estado con miembros
+function updatePresence(client) {
+  const guild = client.guilds.cache.first();
+  const memberCount = guild?.memberCount ?? 0;
+
+  client.user.setPresence({
+    activities: [{
+      type: ActivityType.Custom,
+      name: 'Custom Status',
+      state: `¡👥 Somos ${memberCount} miembros!`,
+    }],
+    status: 'online',
+  });
+}
+
 module.exports = {
   name: Events.ClientReady,
   once: true,
   async execute(client) {
     const line = chalk.gray('─'.repeat(50));
-
     const commandCount = client.commands ? client.commands.size : 'No disponible';
 
     const [dbSuccess, rconSuccess] = await Promise.all([
@@ -40,6 +54,24 @@ module.exports = {
     const dbStatus = dbSuccess ? '✅ Éxito' : '❌ Fallida';
     const rconStatus = rconSuccess ? '✅ Éxito' : '❌ Fallida';
 
+    // Estado inicial
+    try {
+      updatePresence(client);
+    } catch (error) {
+      console.error(chalk.red('Error al establecer la presencia:'), error);
+    }
+
+    // 🔔 Cuando entra alguien
+    client.on(Events.GuildMemberAdd, () => {
+      updatePresence(client);
+    });
+
+    // 🔕 Cuando sale alguien
+    client.on(Events.GuildMemberRemove, () => {
+      updatePresence(client);
+    });
+
+    // Logs de inicio
     console.log(
       '\n' +
       line + '\n' +
@@ -50,6 +82,9 @@ module.exports = {
 
       chalk.cyan('🆔 ID: ') +
       chalk.white(client.user.id) + '\n' +
+
+      chalk.cyan('📡 Servidores: ') +
+      chalk.white(client.guilds.cache.size) + '\n' +
 
       chalk.cyan('💻 Comandos: ') +
       chalk.white(commandCount) + '\n' +
