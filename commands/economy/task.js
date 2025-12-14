@@ -70,7 +70,7 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(
           choices.map(val =>
             new ButtonBuilder()
-              .setCustomId(`task_sum_${val}_${sum}_${userId}`)
+              .setCustomId(`trabajo_sum_${val}_${sum}_${userId}`)
               .setLabel(val.toString())
               .setStyle(ButtonStyle.Primary)
           )
@@ -92,7 +92,7 @@ module.exports = {
       case 2: {
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-            .setCustomId(`task_click10_${userId}_10`)
+            .setCustomId(`trabajo_click10_${userId}_10`)
             .setLabel("10")
             .setStyle(ButtonStyle.Primary)
         );
@@ -116,7 +116,7 @@ module.exports = {
 
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return false;
-  if (!interaction.customId.startsWith("task_")) return false;
+  if (!interaction.customId.startsWith("trabajo_")) return false;
 
   const parts = interaction.customId.split("_");
   const type = parts[1];
@@ -176,7 +176,7 @@ module.exports.buttonHandler = async (interaction) => {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`task_click10_${userId}_${remaining}`)
+        .setCustomId(`trabajo_click10_${userId}_${remaining}`)
         .setLabel(remaining.toString())
         .setStyle(ButtonStyle.Primary)
     );

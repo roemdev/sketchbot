@@ -62,11 +62,11 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`buy_confirm_${item.id}_${mcNick}`)
+        .setCustomId(`comprar_confirm_${item.id}_${mcNick}`)
         .setLabel("Confirmar")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`buy_cancel_${item.id}`)
+        .setCustomId(`comprar_cancel_${item.id}`)
         .setLabel("Cancelar")
         .setStyle(ButtonStyle.Danger)
     );
@@ -99,7 +99,7 @@ module.exports = {
 
   async buttonHandler(interaction) {
     if (!interaction.isButton()) return false;
-    if (!interaction.customId.startsWith("buy_")) return false;
+    if (!interaction.customId.startsWith("comprar_")) return false;
 
     await interaction.deferUpdate({ flags: MessageFlags.Ephemeral });
 
