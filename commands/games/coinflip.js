@@ -2,7 +2,6 @@ const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 
 const config = require("../../core.json");
 const userService = require("../../services/userService");
-const cooldownService = require("../../services/memoryCooldownService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
@@ -12,6 +11,8 @@ function sleep(ms) {
 }
 
 module.exports = {
+  // Cooldown simple para que lo maneje interactionCreate.js
+  cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
     .setName("cara-cruz")
     .setDescription("Cara o cruz con apuesta.")
@@ -36,17 +37,6 @@ module.exports = {
     const userId = interaction.user.id;
     const username = interaction.user.username;
     const bet = interaction.options.getInteger("cantidad");
-    const choice = interaction.options.getString("eleccion");
-    const now = Math.floor(Date.now() / 1000);
-
-    const cd = await cooldownService.checkCooldown(userId, "coinflip");
-    if (cd) {
-      const resetTimestamp = now + cd;
-      return interaction.reply({
-        content: `⏱ Debes esperar <t:${resetTimestamp}:R> para volver a jugar.`,
-        flags: MessageFlags.Ephemeral
-      });
-    }
 
     if (bet <= 0) {
       return interaction.reply({
@@ -60,12 +50,15 @@ module.exports = {
     try {
       await userService.addBalance(userId, -bet);
     } catch {
+      // Si falla por balance, eliminamos el cooldown que se aplicó en interactionCreate.js
+      interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
       return interaction.reply({
         content: "No tienes suficientes créditos.",
         flags: MessageFlags.Ephemeral
       });
     }
 
+    const choice = interaction.options.getString("eleccion");
     const choiceText = choice === "heads" ? "`CARA`" : "`CRUZ`";
 
     // Mensaje inicial
@@ -77,8 +70,6 @@ module.exports = {
 
     const result = Math.random() < 0.5 ? "heads" : "tails";
     const resultText = result === "heads" ? "`CARA`" : "`CRUZ`";
-
-    await cooldownService.setCooldown(userId, "coinflip", GAME_COOLDOWN);
 
     if (result === choice) {
       const reward = bet * 2;

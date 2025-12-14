@@ -8,12 +8,13 @@ const {
 
 const config = require("../../core.json");
 const userService = require("../../services/userService");
-const cooldownService = require("../../services/memoryCooldownService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
 
 module.exports = {
+  // Cooldown simple para que lo maneje interactionCreate.js
+  cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
     .setName("torre")
     .setDescription("Juego de torre con riesgo progresivo.")
@@ -28,21 +29,6 @@ module.exports = {
     const userId = interaction.user.id;
     const username = interaction.user.username;
     const bet = interaction.options.getInteger("cantidad");
-    const now = Math.floor(Date.now() / 1000);
-
-    const cd = await cooldownService.checkCooldown(userId, "tower");
-    if (cd) {
-      const resetTimestamp = now + cd;
-      const cdContainer = new ContainerBuilder()
-        .setAccentColor(0xf5a623)
-        .addTextDisplayComponents((textDisplay) =>
-          textDisplay.setContent(`### ⏱ Cooldown activo\nDebes esperar <t:${resetTimestamp}:R> para volver a jugar.`)
-        );
-      return interaction.reply({
-        components: [cdContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
-    }
 
     if (bet <= 0) {
       return interaction.reply({
@@ -56,6 +42,8 @@ module.exports = {
     try {
       await userService.addBalance(userId, -bet);
     } catch (err) {
+      // Si falla por balance, eliminamos el cooldown que se aplicó en interactionCreate.js
+      interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
       return interaction.reply({
         content: "No tienes suficientes créditos.",
         flags: MessageFlags.Ephemeral
@@ -145,7 +133,7 @@ module.exports.buttonHandler = async (interaction) => {
         amount: 0
       });
 
-      await cooldownService.setCooldown(userId, "tower", GAME_COOLDOWN);
+      // El cooldown se aplicó al inicio en interactionCreate.js
 
       const loseContainer = new ContainerBuilder()
         .setAccentColor(0xff4500)
@@ -173,7 +161,7 @@ module.exports.buttonHandler = async (interaction) => {
       amount: current
     });
 
-    await cooldownService.setCooldown(userId, "tower", GAME_COOLDOWN);
+    // El cooldown se aplicó al inicio en interactionCreate.js
 
     const cashoutContainer = new ContainerBuilder()
       .setAccentColor(0x32cd32)

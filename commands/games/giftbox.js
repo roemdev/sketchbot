@@ -33,6 +33,7 @@ module.exports = {
     await userService.createUser(userId, username);
 
     try {
+      // Se debita la apuesta inicial
       await userService.addBalance(userId, -bet);
     } catch (err) {
       return interaction.reply({
@@ -46,8 +47,8 @@ module.exports = {
       .addTextDisplayComponents((textDisplay) =>
         textDisplay.setContent(
           `### 🎁 ¡Prueba tu suerte!\n` +
-          `¡Pusiste en juego **${config.emojis.coin}${bet.toLocaleString("es-DO")}**!\n
-          ¡En una de estas cajas te espera el **TRIPLE** de tu apuesta! Escoge con sabiduría...`)
+          `¡Pusiste en juego **${config.emojis.coin}${bet.toLocaleString("es-DO")}**!\n` +
+          `¡En una de estas cajas te espera el **TRIPLE** de tu apuesta! Escoge con sabiduría...`)
       )
       .addSeparatorComponents((separator) => separator)
 
@@ -64,7 +65,7 @@ module.exports = {
           new ButtonBuilder()
             .setCustomId(`giftbox_chest_3_${userId}_${bet}`)
             .setEmoji("🎁")
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Secondary),
         )
       );
 
@@ -90,6 +91,11 @@ module.exports.buttonHandler = async (interaction) => {
       const reward = bet * 3;
       const formatted = reward.toLocaleString("es-DO");
 
+      // FIX CRÍTICO: Sumar la recompensa al balance del usuario y registrar la transacción.
+      await userService.addBalance(userId, reward);
+      await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
+      // FIN DEL FIX
+
       const winContainer = new ContainerBuilder()
         .setAccentColor(0x32cd32) // Verde
         .addTextDisplayComponents((textDisplay) =>
@@ -104,6 +110,10 @@ module.exports.buttonHandler = async (interaction) => {
         flags: MessageFlags.IsComponentsV2,
       });
     } else {
+      // FIX: Registrar transacción por pérdida (monto 0) para consistencia con otros juegos
+      await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
+      // FIN DEL FIX
+
       const loseContainer = new ContainerBuilder()
         .setAccentColor(0xff4500) // Rojo
         .addTextDisplayComponents((textDisplay) =>
