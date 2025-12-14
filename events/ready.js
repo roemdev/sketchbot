@@ -49,8 +49,8 @@ ${chalk.green.bold('BOT INICIADO ✔')}
 ${line}
 Usuario: ${chalk.bold.blue(client.user.tag)} | ID: ${chalk.dim(client.user.id)}
 Comandos: ${commandCount}
-DB: ${dbOk ? chalk.bold.green('OK') : chalk.bold.red('FAIL')} (${chalk.dim(dbRoute)})
-RCON: ${rconOk ? chalk.bold.green('OK') : chalk.bold.red('FAIL')} (${chalk.dim(rconRoute)})
+DB: ${dbOk ? chalk.bold.green('OK') : chalk.bold.red('FAIL')} ${chalk.dim(`(${dbRoute})`)}
+RCON: ${rconOk ? chalk.bold.green('OK') : chalk.bold.red('FAIL')} ${chalk.dim(`(${rconRoute})`)}
 ${line}
 `);
   },
