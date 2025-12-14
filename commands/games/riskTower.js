@@ -39,6 +39,19 @@ module.exports = {
 
     await userService.createUser(userId, username);
 
+    // ✅ CORRECCIÓN DE VALIDACIÓN DE SALDO (ÚNICA MODIFICACIÓN NECESARIA)
+    const currentBalance = await userService.getBalance(userId);
+
+    if (currentBalance < bet) {
+      // Asumiendo que esta es la lógica correcta para remover el cooldown en tu setup:
+      interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
+      return interaction.reply({
+        content: "❌ ¡No tienes suficientes créditos!",
+        flags: MessageFlags.Ephemeral
+      });
+    }
+    // -------------------------------------------------------------
+
     try {
       await userService.addBalance(userId, -bet);
     } catch (err) {
