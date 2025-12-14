@@ -104,7 +104,7 @@ module.exports.buttonHandler = async (interaction) => {
         .addTextDisplayComponents((textDisplay) =>
           textDisplay.setContent(
             `### 🚀 ¡Subiste un nivel!\n` +
-            `Tu saldo en juego se ha duplicado. Total actual: **${config.emojis.coin}${current.toLocaleString("es-DO")}**`
+            `Tu saldo en juego se ha multiplicado. Total actual: **${config.emojis.coin}${current.toLocaleString("es-DO")}**`
           )
         )
         .addSeparatorComponents((separator) => separator)
