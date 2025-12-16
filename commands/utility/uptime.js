@@ -46,7 +46,7 @@ module.exports = {
     const statusContainer = new ContainerBuilder()
       .setAccentColor(2895667)
       .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent('### Estado de los servidores | [ArkaniaHost](http://172.93.110.38:25585/)')
+        textDisplay.setContent('### Estado de los servidores | ArkaniaHost')
       );
 
     // 2. Itera sobre los servidores y construye secciones dinámicas
