@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = req
 const { pteroPanel } = require('../../config.json');
 
 const serverService = require('../../services/serversService');
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 
 const PANEL_URL = pteroPanel.url;
 const API_KEY = pteroPanel.apiKey;
@@ -46,7 +46,7 @@ module.exports = {
     const statusContainer = new ContainerBuilder()
       .setAccentColor(2895667)
       .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent('### Estado de los servidores | ArkaniaHost')
+        textDisplay.setContent('### Estado de los servidores | [ArkaniaHost](http://172.93.110.38:25585/)')
       );
 
     // 2. Itera sobre los servidores y construye secciones dinámicas
