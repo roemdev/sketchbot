@@ -41,8 +41,7 @@ client.cooldowns = new Collection();
 // Enviar señal de vida cada 60 segundos
 setInterval(() => {
     axios.get('https://uptime.betterstack.com/api/v1/heartbeat/U5TzYBCq2eLnYvgJcxYfiFQK')
-        .then(() => console.log('Ping enviado a BetterUptime'))
         .catch(err => console.error('Error enviando ping', err));
-}, 60000);
+}, 300000);
 
 client.login(token);
