@@ -16,6 +16,7 @@ module.exports = {
     if (!rows.length) return null;
 
     const now = new Date();
+    // SQLite almacena fechas generalmente como texto o números, new Date() lo parsea bien
     const expires = new Date(rows[0].expires_at);
 
     if (now >= expires) {
@@ -39,8 +40,14 @@ module.exports = {
    */
   setCooldown: async (discordId, command, seconds) => {
     const expires = new Date(Date.now() + seconds * 1000);
+    
+    // SQLite: Usamos ON CONFLICT en lugar de ON DUPLICATE KEY
+    // Nota: Requiere que (discord_id, command) sea PRIMARY KEY o UNIQUE en la tabla
     await db.execute(
-      "INSERT INTO cooldowns (discord_id, command, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE expires_at = ?",
+      `INSERT INTO cooldowns (discord_id, command, expires_at) 
+       VALUES (?, ?, ?) 
+       ON CONFLICT(discord_id, command) 
+       DO UPDATE SET expires_at = ?`,
       [discordId, command, expires, expires]
     );
   }

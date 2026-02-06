@@ -1,4 +1,4 @@
-const pool = require("./dbService");
+const db = require("./dbService");
 
 /**
  * Registra una transacción en la tabla transactions
@@ -8,17 +8,14 @@ const pool = require("./dbService");
  * @param {number} options.amount - Cantidad de coins
  */
 async function logTransaction({ discordId, type, itemName = null, mcNick = null, amount, totalPrice = 0 }) {
-  const conn = await pool.getConnection();
-  try {
-    await conn.query(
-      `INSERT INTO transactions
+  // En SQLite ya no necesitamos getConnection() ni release()
+  // Usamos db.execute directamente para inserciones
+  await db.execute(
+    `INSERT INTO transactions
             (discord_id, type, item_name, mc_nick, amount, total_price)
             VALUES (?, ?, ?, ?, ?, ?)`,
-      [discordId, type, itemName, mcNick, amount, totalPrice]
-    );
-  } finally {
-    conn.release();
-  }
+    [discordId, type, itemName, mcNick, amount, totalPrice]
+  );
 }
 
 module.exports = { logTransaction };

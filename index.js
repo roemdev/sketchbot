@@ -2,9 +2,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
-const axios = require('axios');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
+// Eliminamos axios y el intervalo de heartbeat que pediste quitar
+const client = new Client({ 
+    intents: [
+        GatewayIntentBits.Guilds, 
+        GatewayIntentBits.GuildVoiceStates
+    ] 
+});
 
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
@@ -37,11 +42,5 @@ for (const file of eventFiles) {
 }
 
 client.cooldowns = new Collection();
-
-// Enviar señal de vida cada 60 segundos
-setInterval(() => {
-    axios.get('https://uptime.betterstack.com/api/v1/heartbeat/U5TzYBCq2eLnYvgJcxYfiFQK')
-        .catch(err => console.error('Error enviando ping', err));
-}, 300000);
 
 client.login(token);
