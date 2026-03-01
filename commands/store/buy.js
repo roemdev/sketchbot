@@ -10,6 +10,7 @@ const { makeEmbed } = require("../../utils/embedFactory");
 const config = require("../../core.json");
 const storeService = require("../../services/storeService");
 const userService = require("../../services/userService");
+const { isValidMinecraftNick } = require("../../utils/validation");
 const transactionService = require("../../services/transactionService");
 
 module.exports = {
@@ -30,7 +31,20 @@ module.exports = {
 
   async execute(interaction) {
     const itemName = interaction.options.getString("item");
-    const mcNick = interaction.options.getString("nick");
+    const mcNick = (interaction.options.getString("nick") || "").trim();
+
+    if (!isValidMinecraftNick(mcNick)) {
+      return interaction.reply({
+        embeds: [
+          makeEmbed(
+            "error",
+            "Nickname inválido",
+            "El nickname de Minecraft proporcionado no es válido."
+          )
+        ],
+        flags: MessageFlags.Ephemeral
+      });
+    }
 
     const item = await storeService.getItemByName(itemName);
     if (!item || item.status !== "available") {
