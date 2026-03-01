@@ -128,7 +128,7 @@ module.exports = {
 
       const result = await storeService.buyItem(
         interaction.user.id,
-        itemId,
+        item,
         mcNick
       );
 

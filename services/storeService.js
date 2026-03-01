@@ -44,7 +44,7 @@ async function getItems(status = "available") {
 // ---------------------------------------------------------------------
 //  BUY ITEM
 // ---------------------------------------------------------------------
-async function buyItem(discordId, itemId, mcNick = null) {
+async function buyItem(discordId, itemIdOrItem, mcNick = null) {
   // 1. Obtener usuario
   const users = await db.query(
     "SELECT * FROM user_stats WHERE discord_id = ?",
@@ -54,12 +54,18 @@ async function buyItem(discordId, itemId, mcNick = null) {
   const user = users[0];
 
   // 2. Obtener item
-  const items = await db.query(
-    "SELECT * FROM store WHERE id = ? AND status = 'available'",
-    [itemId]
-  );
-  if (!items.length) throw new Error("Item no disponible");
-  const item = items[0];
+  let item;
+  if (typeof itemIdOrItem === 'object' && itemIdOrItem !== null) {
+    item = itemIdOrItem;
+    if (item.status !== 'available') throw new Error("Item no disponible");
+  } else {
+    const items = await db.query(
+      "SELECT * FROM store WHERE id = ? AND status = 'available'",
+      [itemIdOrItem]
+    );
+    if (!items.length) throw new Error("Item no disponible");
+    item = items[0];
+  }
 
   // 3. Verificar saldo
   const totalPrice = item.price; // * quantity;
