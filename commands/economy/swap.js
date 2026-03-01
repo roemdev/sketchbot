@@ -3,6 +3,7 @@ const userService = require("../../services/userService");
 const { sendCommand } = require("../../services/minecraftService");
 const transactionService = require("../../services/transactionService");
 const config = require("../../core.json");
+const { isValidMinecraftNick } = require("../../utils/validation");
 
 const RATE = config.economy.exchangeRate;
 const COIN = config.emojis.coin;
@@ -24,7 +25,14 @@ module.exports = {
 
   async execute(interaction) {
     const monedas = interaction.options.getInteger("monedas");
-    const mcNick = interaction.options.getString("nick").trim();
+    const mcNick = (interaction.options.getString("nick") || "").trim();
+
+    if (!isValidMinecraftNick(mcNick)) {
+      return interaction.reply({
+        content: "El nickname de Minecraft proporcionado no es válido.",
+        flags: MessageFlags.Ephemeral
+      });
+    }
 
     if (monedas <= 0) {
       return interaction.reply({
@@ -121,6 +129,9 @@ module.exports.buttonHandler = async (interaction) => {
     await userService.removeBalance(interaction.user.id, monedas);
 
     try {
+      if (!isValidMinecraftNick(mcNick)) {
+        throw new Error("Invalid nickname");
+      }
       await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);
     } catch (err) {
       return interaction.update({

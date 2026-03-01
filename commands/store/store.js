@@ -14,6 +14,7 @@ const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 const { makeEmbed } = require("../../utils/embedFactory");
 const config = require("../../core.json");
+const { isValidMinecraftNick } = require("../../utils/validation");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -28,7 +29,21 @@ module.exports = {
   async execute(interaction) {
     await userService.createUser(interaction.user.id, interaction.user.username);
 
-    const mcNick = interaction.options.getString("nick");
+    const mcNick = (interaction.options.getString("nick") || "").trim();
+
+    if (!isValidMinecraftNick(mcNick)) {
+      return interaction.reply({
+        embeds: [
+          makeEmbed(
+            "error",
+            "Nickname inválido",
+            "El nickname de Minecraft proporcionado no es válido."
+          )
+        ],
+        flags: MessageFlags.Ephemeral
+      });
+    }
+
     await interaction.deferReply();
 
     const items = await storeService.getItems("available");

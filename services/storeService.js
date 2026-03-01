@@ -1,5 +1,6 @@
 const { sendCommand } = require("./minecraftService");
 const db = require("./dbService");
+const { isValidMinecraftNick } = require("../utils/validation");
 
 // ---------------------------------------------------------------------
 //  GET ITEM BY NAME (exacto o aproximado)
@@ -74,6 +75,9 @@ async function buyItem(discordId, itemId, mcNick = null) {
 
   // 5. Entregar item en Minecraft si aplica
   if (item.minecraft_item && mcNick) {
+    if (!isValidMinecraftNick(mcNick)) {
+      throw new Error("El nickname de Minecraft proporcionado no es válido.");
+    }
     const command = `give ${mcNick} ${item.minecraft_item}`;
     await sendCommand(command);
   }
