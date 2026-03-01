@@ -13,6 +13,10 @@ const userService = require("../../services/userService");
 const { isValidMinecraftNick } = require("../../utils/validation");
 const transactionService = require("../../services/transactionService");
 
+let cachedItems = null;
+let lastCacheUpdate = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("comprar")
@@ -96,9 +100,14 @@ module.exports = {
     if (!interaction.isAutocomplete()) return false;
 
     const focusedValue = interaction.options.getFocused();
-    const allItems = await storeService.getItems("available");
 
-    const filtered = allItems
+    const now = Date.now();
+    if (!cachedItems || now - lastCacheUpdate > CACHE_TTL) {
+      cachedItems = await storeService.getItems("available");
+      lastCacheUpdate = now;
+    }
+
+    const filtered = cachedItems
       .filter(item => item.name.toLowerCase().includes(focusedValue.toLowerCase()))
       .slice(0, 25);
 
