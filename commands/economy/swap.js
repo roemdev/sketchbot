@@ -111,6 +111,13 @@ module.exports.buttonHandler = async (interaction) => {
   }
 
   if (action === "confirm") {
+    if (!isValidMinecraftNick(mcNick)) {
+      return interaction.update({
+        embeds: [new EmbedBuilder().setColor("Red").setDescription("El nickname de Minecraft proporcionado no es válido.")],
+        components: []
+      });
+    }
+
     const user = await userService.getUser(interaction.user.id);
     if (!user) {
       return interaction.update({
@@ -129,9 +136,6 @@ module.exports.buttonHandler = async (interaction) => {
     await userService.removeBalance(interaction.user.id, monedas);
 
     try {
-      if (!isValidMinecraftNick(mcNick)) {
-        throw new Error("Invalid nickname");
-      }
       await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);
     } catch (err) {
       return interaction.update({
