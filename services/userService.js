@@ -26,7 +26,10 @@ module.exports = {
   },
 
   removeBalance: async (discordId, amount) => {
-    await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ? AND balance >= ?", [amount, discordId, amount]);
+    const result = await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ? AND balance >= ?", [amount, discordId, amount]);
+    if (result.changes === 0) {
+      throw new Error("Saldo insuficiente o usuario no encontrado");
+    }
     return await module.exports.getUser(discordId);
   },
 

@@ -34,7 +34,7 @@ module.exports = {
 
     try {
       // Se debita la apuesta inicial
-      await userService.addBalance(userId, -bet);
+      await userService.removeBalance(userId, bet);
     } catch (err) {
       return interaction.reply({
         content: "No tienes suficientes créditos.",
