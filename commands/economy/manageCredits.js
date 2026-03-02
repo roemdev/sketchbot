@@ -25,6 +25,7 @@ module.exports = {
       option.setName("amount")
         .setDescription("Cantidad de créditos")
         .setRequired(true)
+        .setMinValue(1) // Prevent negative values that could bypass restrictions
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
@@ -36,18 +37,17 @@ module.exports = {
     // Asegurar registro
     await userService.createUser(targetUser.id, targetUser.username);
 
-    let updated;
     let embed;
 
     if (action === "add") {
-      updated = await userService.addBalance(targetUser.id, amount);
+      await userService.addBalance(targetUser.id, amount, false);
       embed = makeEmbed(
         "success",
         "¡Créditos añadidos!",
         `Se añadieron **${config.emojis.coin}${amount.toLocaleString()}** a <@${targetUser.id}>.`
       );
     } else if (action === "remove") {
-      updated = await userService.removeBalance(targetUser.id, amount);
+      await userService.removeBalance(targetUser.id, amount, false);
       embed = makeEmbed(
         "success",
         "¡Créditos eliminados!",

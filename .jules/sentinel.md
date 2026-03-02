@@ -1,0 +1,5 @@
+## 2024-05-18 - [Missing Input Boundaries on Admin Commands]
+**Vulnerability:** Admin commands that manage balances (`manageCredits.js`) lacked minimum value constraints on the amount integer parameter.
+**Learning:** Even administrative interfaces need strict boundary checking at the Discord slash command level (`.setMinValue(1)`). Otherwise, a negative input on a "remove" operation becomes addition (`balance - (-100)`), allowing an admin account to accidentally or maliciously bypass restrictions.
+**Prevention:** Always add `.setMinValue(1)` (or appropriate bounds) to numeric options in Discord.js `SlashCommandBuilder` configs, especially for economy/balance modifying endpoints.
+
