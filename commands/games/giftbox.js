@@ -34,7 +34,7 @@ module.exports = {
 
     try {
       // Se debita la apuesta inicial
-      await userService.removeBalance(userId, bet);
+      await userService.addBalance(userId, -bet, false);
     } catch (err) {
       return interaction.reply({
         content: "No tienes suficientes créditos.",
@@ -92,7 +92,7 @@ module.exports.buttonHandler = async (interaction) => {
       const formatted = reward.toLocaleString("es-DO");
 
       // FIX CRÍTICO: Sumar la recompensa al balance del usuario y registrar la transacción.
-      await userService.addBalance(userId, reward);
+      await userService.addBalance(userId, reward, false);
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
       // FIN DEL FIX
 

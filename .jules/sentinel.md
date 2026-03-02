@@ -1,4 +1,5 @@
-## 2024-05-24 - [Critical] Race condition and negative balance on gamble
-**Vulnerability:** Gambling commands (`coinflip.js`, `giftbox.js`, `riskTower.js`) used `addBalance(userId, -bet)` to deduct user balance without enforcing a lower bound. Because the `addBalance` query didn't check if the balance was `>= amount`, users could go into negative balance, or use a race condition to bet more credits than they actually had by bypassing the preliminary `getBalance()` check.
-**Learning:** `addBalance` does not perform atomic lower-bound checks. When taking away user currency, the application must use `removeBalance` since its query contains `WHERE balance >= ?` logic. Also, `removeBalance` didn't originally throw an error when `changes === 0`, meaning it silently failed to deduct the balance. Both the commands needed to be updated to use `removeBalance` and the service needed to throw if `changes === 0`.
-**Prevention:** Always use `removeBalance` for deductions. Ensure `removeBalance` checks the returned DB result to confirm `changes > 0`, throwing an error otherwise to halt further logic.
+## 2024-05-18 - [Missing Input Boundaries on Admin Commands]
+**Vulnerability:** Admin commands that manage balances (`manageCredits.js`) lacked minimum value constraints on the amount integer parameter.
+**Learning:** Even administrative interfaces need strict boundary checking at the Discord slash command level (`.setMinValue(1)`). Otherwise, a negative input on a "remove" operation becomes addition (`balance - (-100)`), allowing an admin account to accidentally or maliciously bypass restrictions.
+**Prevention:** Always add `.setMinValue(1)` (or appropriate bounds) to numeric options in Discord.js `SlashCommandBuilder` configs, especially for economy/balance modifying endpoints.
+
