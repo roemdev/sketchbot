@@ -48,7 +48,7 @@ module.exports = {
     await userService.createUser(userId, username);
 
     try {
-      await userService.addBalance(userId, -bet);
+      await userService.addBalance(userId, -bet, false);
     } catch {
       // Si falla por balance, eliminamos el cooldown que se aplicó en interactionCreate.js
       interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
@@ -73,7 +73,7 @@ module.exports = {
 
     if (result === choice) {
       const reward = bet * 2;
-      await userService.addBalance(userId, reward);
+      await userService.addBalance(userId, reward, false);
 
       await transactionService.logTransaction({
         discordId: userId,

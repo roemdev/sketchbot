@@ -53,7 +53,7 @@ module.exports = {
     // -------------------------------------------------------------
 
     try {
-      await userService.addBalance(userId, -bet);
+      await userService.addBalance(userId, -bet, false);
     } catch (err) {
       // Si falla por balance, eliminamos el cooldown que se aplicó en interactionCreate.js
       interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
@@ -166,7 +166,7 @@ module.exports.buttonHandler = async (interaction) => {
   }
 
   if (action === "cashout") {
-    await userService.addBalance(userId, current);
+    await userService.addBalance(userId, current, false);
 
     await transactionService.logTransaction({
       discordId: userId,

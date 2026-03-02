@@ -55,8 +55,8 @@ module.exports = {
       }
 
       // 5. Ejecutar la transferencia: Remover del remitente y añadir al destinatario
-      await userService.removeBalance(senderId, amount);
-      await userService.addBalance(recipientUser.id, amount);
+      await userService.removeBalance(senderId, amount, false);
+      await userService.addBalance(recipientUser.id, amount, false);
 
       // (Opcional) 6. Registrar la transacción
       /* 
