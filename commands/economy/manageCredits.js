@@ -25,6 +25,7 @@ module.exports = {
       option.setName("amount")
         .setDescription("Cantidad de créditos")
         .setRequired(true)
+        .setMinValue(1) // Prevent negative values that could bypass restrictions
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
