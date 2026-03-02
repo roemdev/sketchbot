@@ -12,7 +12,7 @@ async function grantReward(userId) {
   const earned = Math.floor(Math.random() * (maxEarn - minEarn + 1)) + minEarn;
   const formatted = earned.toLocaleString("es-DO");
   
-  await userService.addBalance(userId, earned);
+  await userService.addBalance(userId, earned, false);
   await logTransaction({ discordId: userId, type: "task", amount: earned });
   await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
   

@@ -133,7 +133,7 @@ module.exports.buttonHandler = async (interaction) => {
       });
     }
 
-    await userService.removeBalance(interaction.user.id, monedas);
+    await userService.removeBalance(interaction.user.id, monedas, false);
 
     try {
       await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);

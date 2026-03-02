@@ -15,9 +15,12 @@ module.exports = {
     return rows[0] || null;
   },
 
-  addBalance: async (discordId, amount) => {
+  addBalance: async (discordId, amount, returnUser = true) => {
     await db.execute("UPDATE user_stats SET balance = balance + ? WHERE discord_id = ?", [amount, discordId]);
-    return await module.exports.getUser(discordId);
+    if (returnUser) {
+      return await module.exports.getUser(discordId);
+    }
+    return null;
   },
 
   getBalance: async (discordId) => {
@@ -25,9 +28,12 @@ module.exports = {
     return user ? user.balance : 0; // Devuelve el balance o 0 si el usuario no existe.
   },
 
-  removeBalance: async (discordId, amount) => {
+  removeBalance: async (discordId, amount, returnUser = true) => {
     await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ? AND balance >= ?", [amount, discordId, amount]);
-    return await module.exports.getUser(discordId);
+    if (returnUser) {
+      return await module.exports.getUser(discordId);
+    }
+    return null;
   },
 
   updateUsername: async (discordId, newUsername) => {
