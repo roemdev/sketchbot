@@ -45,7 +45,7 @@ module.exports = {
       });
     }
 
-    await userService.createUser(userId, username);
+    await userService.createUser(userId, username, false);
 
     try {
       await userService.addBalance(userId, -bet, false);

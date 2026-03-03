@@ -1,13 +1,16 @@
 const db = require("./dbService");
 
 module.exports = {
-  createUser: async (discordId, username) => {
+  createUser: async (discordId, username, returnUser = true) => {
     // SQLite: INSERT OR IGNORE evita errores si el ID ya existe
     await db.execute(
       "INSERT OR IGNORE INTO user_stats (discord_id, username) VALUES (?, ?)",
       [discordId, username]
     );
-    return await module.exports.getUser(discordId);
+    if (returnUser) {
+      return await module.exports.getUser(discordId);
+    }
+    return null;
   },
 
   getUser: async (discordId) => {

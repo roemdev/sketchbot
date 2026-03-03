@@ -64,7 +64,7 @@ module.exports = {
       });
     }
 
-    await userService.createUser(interaction.user.id, interaction.user.username);
+    await userService.createUser(interaction.user.id, interaction.user.username, false);
 
     const preview = makeEmbed(
       "info",

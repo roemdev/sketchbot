@@ -45,7 +45,7 @@ module.exports = {
         });
       }
 
-      await userService.createUser(userId, username);
+      await userService.createUser(userId, username, false);
 
       // Total de tareas disponibles
       const TOTAL_TASKS = 4;

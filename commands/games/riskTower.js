@@ -37,7 +37,7 @@ module.exports = {
       });
     }
 
-    await userService.createUser(userId, username);
+    await userService.createUser(userId, username, false);
 
     // ✅ CORRECCIÓN DE VALIDACIÓN DE SALDO (ÚNICA MODIFICACIÓN NECESARIA)
     const currentBalance = await userService.getBalance(userId);
