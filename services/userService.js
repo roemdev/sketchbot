@@ -16,6 +16,11 @@ module.exports = {
   },
 
   addBalance: async (discordId, amount, returnUser = true) => {
+    // 🛡️ SECURITY ENFORCEMENT: If amount is negative, route to removeBalance
+    // This prevents SQLite from blindly updating balances to negative values and bypassing game limits
+    if (amount < 0) {
+      return await module.exports.removeBalance(discordId, Math.abs(amount), returnUser);
+    }
     await db.execute("UPDATE user_stats SET balance = balance + ? WHERE discord_id = ?", [amount, discordId]);
     if (returnUser) {
       return await module.exports.getUser(discordId);
@@ -29,7 +34,14 @@ module.exports = {
   },
 
   removeBalance: async (discordId, amount, returnUser = true) => {
-    await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ? AND balance >= ?", [amount, discordId, amount]);
+    const result = await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ? AND balance >= ?", [amount, discordId, amount]);
+
+    // 🛡️ SECURITY ENFORCEMENT: SQLite's execute does not throw an error if no rows match the WHERE clause.
+    // We must manually throw an error when changes === 0 so that try-catch blocks in games correctly fail.
+    if (result.changes === 0) {
+      throw new Error("Insufficient balance");
+    }
+
     if (returnUser) {
       return await module.exports.getUser(discordId);
     }
