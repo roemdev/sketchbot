@@ -23,6 +23,7 @@ module.exports = {
         .setName("cantidad")
         .setDescription("Cantidad de créditos a apostar")
         .setRequired(true)
+        .setMinValue(1)
     ),
 
   async execute(interaction) {

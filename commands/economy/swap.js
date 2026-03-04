@@ -16,6 +16,7 @@ module.exports = {
       option.setName("monedas")
         .setDescription("Cantidad de monedas a convertir")
         .setRequired(true)
+        .setMinValue(1)
     )
     .addStringOption(option =>
       option.setName("nick")
