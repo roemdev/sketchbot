@@ -35,7 +35,7 @@ module.exports = {
     const amount = interaction.options.getInteger("amount");
 
     // Asegurar registro
-    await userService.createUser(targetUser.id, targetUser.username);
+    await userService.createUser(targetUser.id, targetUser.username, false);
 
     let embed;
 

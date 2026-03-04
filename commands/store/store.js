@@ -27,7 +27,7 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    await userService.createUser(interaction.user.id, interaction.user.username);
+    await userService.createUser(interaction.user.id, interaction.user.username, false);
 
     const mcNick = (interaction.options.getString("nick") || "").trim();
 

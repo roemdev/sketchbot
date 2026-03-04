@@ -30,7 +30,7 @@ module.exports = {
       });
     }
 
-    await userService.createUser(userId, username);
+    await userService.createUser(userId, username, false);
 
     try {
       // Se debita la apuesta inicial

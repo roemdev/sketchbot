@@ -38,8 +38,8 @@ module.exports = {
     await interaction.deferReply(); // Deferir la respuesta
 
     // 2. Asegurar que ambos usuarios existan en el sistema
-    await userService.createUser(senderId, interaction.user.username);
-    await userService.createUser(recipientUser.id, recipientUser.username);
+    await userService.createUser(senderId, interaction.user.username, false);
+    await userService.createUser(recipientUser.id, recipientUser.username, false);
 
     try {
       // 3. Obtener el balance del remitente
