@@ -1,22 +1,26 @@
-const Database = require('better-sqlite3');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
 const { database } = require('../config.json');
 
 let dbConnection = null;
 
-function getDb() {
+async function getDb() {
     if (dbConnection) return dbConnection;
 
-    dbConnection = new Database(database.filename);
+    dbConnection = await open({
+        filename: database.filename,
+        driver: sqlite3.Database
+    });
 
     // Crear las tablas si el archivo es nuevo
-    initDb(dbConnection);
+    await initDb(dbConnection);
     
     return dbConnection;
 }
 
-function initDb(db) {
+async function initDb(db) {
     // Tabla de usuarios
-    db.exec(`
+    await db.exec(`
         CREATE TABLE IF NOT EXISTS user_stats (
             discord_id TEXT PRIMARY KEY,
             username TEXT,
@@ -25,7 +29,7 @@ function initDb(db) {
     `);
 
     // Tabla de recompensas por rol
-    db.exec(`
+    await db.exec(`
         CREATE TABLE IF NOT EXISTS role_rewards (
             role_id TEXT PRIMARY KEY,
             ammount INTEGER,
@@ -34,7 +38,7 @@ function initDb(db) {
     `);
 
     // Tabla de la tienda
-    db.exec(`
+    await db.exec(`
         CREATE TABLE IF NOT EXISTS store (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
@@ -46,7 +50,7 @@ function initDb(db) {
     `);
 
     // Tabla de transacciones
-    db.exec(`
+    await db.exec(`
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             discord_id TEXT,
@@ -60,7 +64,7 @@ function initDb(db) {
     `);
 
     // Tabla de cooldowns
-    db.exec(`
+    await db.exec(`
         CREATE TABLE IF NOT EXISTS cooldowns (
             discord_id TEXT,
             command TEXT,
@@ -72,18 +76,18 @@ function initDb(db) {
 
 module.exports = {
     query: async (sql, params = []) => {
-        const db = getDb();
-        return db.prepare(sql).all(params);
+        const db = await getDb();
+        return await db.all(sql, params);
     },
     execute: async (sql, params = []) => {
-        const db = getDb();
-        return db.prepare(sql).run(params);
+        const db = await getDb();
+        return await db.run(sql, params);
     },
     // Mock de getConnection para mantener compatibilidad con tus servicios actuales
     getConnection: async () => {
-        const db = getDb();
+        const db = await getDb();
         return {
-            query: async (sql, params = []) => db.prepare(sql).all(params),
+            query: (sql, params) => db.all(sql, params),
             release: () => {} 
         };
     }
