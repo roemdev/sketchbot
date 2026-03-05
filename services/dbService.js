@@ -28,6 +28,14 @@ async function initDb(db) {
         )
     `);
 
+    // ⚡ Bolt: Optimización de rendimiento
+    // Crear índice en la columna 'balance' para optimizar la consulta getTopUsers
+    // en userService.js, que ordena la tabla completa por balance en cada solicitud.
+    // Impacto: Reduce la complejidad temporal de O(N log N) a O(1) al leer el índice B-Tree.
+    await db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_user_stats_balance ON user_stats(balance DESC);
+    `);
+
     // Tabla de recompensas por rol
     await db.exec(`
         CREATE TABLE IF NOT EXISTS role_rewards (
