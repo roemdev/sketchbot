@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { makeEmbed } = require('../../utils/embedFactory');
 
 module.exports = {
   cooldown: 5,
@@ -11,11 +12,16 @@ module.exports = {
     const latency = interaction.client.ws.ping; // Latencia de Web Socket (heartbeat)
     const responseTime = Date.now() - interaction.createdTimestamp; // Latencia de la interacción
 
+    const embed = makeEmbed(
+      'info',
+      '🏓 Pong!',
+      `**Latencia del Bot (API Ping):** ${latency}ms\n**Latencia de la Interacción:** ${responseTime}ms`
+    );
+
     // Editar la respuesta inicial con los resultados
     await interaction.editReply({
-      content: `Pong! 🏓
-            **Latencia del Bot (API Ping):** ${latency}ms
-            **Latencia de la Interacción:** ${responseTime}ms`,
+      content: '',
+      embeds: [embed],
     });
   },
 };
