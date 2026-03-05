@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { makeEmbed } = require('../../utils/embedFactory');
 
 module.exports = {
@@ -6,7 +6,7 @@ module.exports = {
   data: new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!'),
   async execute(interaction) {
     // Responder inmediatamente para medir la latencia
-    await interaction.reply({ content: 'Pinging...', ephemeral: true });
+    await interaction.reply({ content: 'Pinging...', flags: MessageFlags.Ephemeral });
 
     // Calcula el tiempo que tardó Discord en reconocer la interacción
     const latency = interaction.client.ws.ping; // Latencia de Web Socket (heartbeat)
