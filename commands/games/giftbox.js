@@ -84,6 +84,10 @@ module.exports.buttonHandler = async (interaction) => {
   const userId = parts[3];
   const bet = parseInt(parts[4], 10);
 
+  if (interaction.user.id !== userId) {
+    return interaction.reply({ content: "Esto no es tu juego.", ephemeral: true });
+  }
+
   if (type === "chest") {
     const winningChest = Math.floor(Math.random() * 3) + 1;
 
