@@ -31,7 +31,6 @@ Sketchbot está diseñado para fomentar la actividad y la interacción en tu ser
 Para instalar y ejecutar este bot, necesitarás:
 
 *   [Node.js](https://nodejs.org/) (v16.9.0 o superior).
-*   Una base de datos [MySQL](https://www.mysql.com/).
 *   Un servidor de Minecraft (opcional, si deseas usar la integración de la tienda).
 
 ## 🛠️ Instalación
@@ -58,10 +57,7 @@ Debes crear un archivo llamado `config.json` en la raíz del proyecto. Este arch
   "clientId": "TU_CLIENT_ID_DE_LA_APLICACION",
   "guildId": "TU_ID_DEL_SERVIDOR_(GUILD)",
   "database": {
-    "host": "localhost",
-    "user": "root",
-    "password": "tu_password_mysql",
-    "name": "nombre_base_de_datos"
+    "filename": "database.sqlite"
   },
   "rcon": {
     "host": "ip_servidor_minecraft",
@@ -82,47 +78,7 @@ Este archivo ya existe en el repositorio y controla la lógica del juego y la ec
 *   **voice:** ID del canal de voz "Join to Create" y plantilla para el nombre de los canales temporales.
 
 ### 3. Configuración de la Base de Datos
-Debes crear una base de datos MySQL y las tablas necesarias. A continuación se muestra un esquema sugerido basado en el código:
-
-```sql
-CREATE TABLE IF NOT EXISTS user_stats (
-    discord_id VARCHAR(20) PRIMARY KEY,
-    username VARCHAR(100),
-    balance INT DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS servers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    server_id VARCHAR(20)
-);
-
-CREATE TABLE IF NOT EXISTS store (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    price INT,
-    status VARCHAR(20) DEFAULT 'available', -- 'available', 'out_of_stock'
-    minecraft_item VARCHAR(100) -- Comando o ID del ítem para Minecraft
-);
-
-CREATE TABLE IF NOT EXISTS transactions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    discord_id VARCHAR(20),
-    type VARCHAR(20), -- 'buy', 'swap', 'task'
-    item_name VARCHAR(100),
-    mc_nick VARCHAR(50),
-    amount INT,
-    total_price INT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS cooldowns (
-    discord_id VARCHAR(20),
-    command VARCHAR(50),
-    expires_at DATETIME,
-    PRIMARY KEY (discord_id, command)
-);
-```
+El bot utiliza **SQLite** para el almacenamiento de datos. El archivo de la base de datos (por defecto `database.sqlite`) y todas las tablas necesarias se crearán automáticamente al ejecutar el bot por primera vez.
 
 ## ▶️ Ejecución y Uso
 
