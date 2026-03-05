@@ -40,6 +40,7 @@ module.exports = {
    */
   setCooldown: async (discordId, command, seconds) => {
     const expires = new Date(Date.now() + seconds * 1000);
+    const expiresISO = expires.toISOString();
     
     // SQLite: Usamos ON CONFLICT en lugar de ON DUPLICATE KEY
     // Nota: Requiere que (discord_id, command) sea PRIMARY KEY o UNIQUE en la tabla
@@ -48,7 +49,7 @@ module.exports = {
        VALUES (?, ?, ?) 
        ON CONFLICT(discord_id, command) 
        DO UPDATE SET expires_at = ?`,
-      [discordId, command, expires, expires]
+      [discordId, command, expiresISO, expiresISO]
     );
   }
 };
