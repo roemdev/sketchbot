@@ -12,14 +12,13 @@ async function getDb() {
         driver: sqlite3.Database
     });
 
-    // Crear las tablas si el archivo es nuevo
     await initDb(dbConnection);
     
     return dbConnection;
 }
 
 async function initDb(db) {
-    // Tabla de usuarios
+    // Tablas existentes
     await db.exec(`
         CREATE TABLE IF NOT EXISTS user_stats (
             discord_id TEXT PRIMARY KEY,
@@ -28,7 +27,6 @@ async function initDb(db) {
         )
     `);
 
-    // Tabla de recompensas por rol
     await db.exec(`
         CREATE TABLE IF NOT EXISTS role_rewards (
             role_id TEXT PRIMARY KEY,
@@ -37,7 +35,6 @@ async function initDb(db) {
         )
     `);
 
-    // Tabla de la tienda
     await db.exec(`
         CREATE TABLE IF NOT EXISTS store (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +46,6 @@ async function initDb(db) {
         )
     `);
 
-    // Tabla de transacciones
     await db.exec(`
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,13 +59,20 @@ async function initDb(db) {
         )
     `);
 
-    // Tabla de cooldowns
     await db.exec(`
         CREATE TABLE IF NOT EXISTS cooldowns (
             discord_id TEXT,
             command TEXT,
             expires_at DATETIME,
             PRIMARY KEY (discord_id, command)
+        )
+    `);
+
+    // NUEVA TABLA: Canales temporales
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS temp_channels (
+            channel_id TEXT PRIMARY KEY,
+            owner_id TEXT
         )
     `);
 }
@@ -83,7 +86,6 @@ module.exports = {
         const db = await getDb();
         return await db.run(sql, params);
     },
-    // Mock de getConnection para mantener compatibilidad con tus servicios actuales
     getConnection: async () => {
         const db = await getDb();
         return {

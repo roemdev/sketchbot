@@ -1,10 +1,18 @@
 const { Events, MessageFlags, Collection } = require('discord.js');
+const voiceController = require('../utils/voiceController');
 
 module.exports = {
   name: Events.InteractionCreate,
   async execute(interaction) {
+    
+    // --- 1. INTERCEPTAMOS LOS CONTROLES DE VOZ ---
+    if ((interaction.isButton() || interaction.isUserSelectMenu()) && interaction.customId.startsWith('vc_')) {
+      return voiceController.handleInteraction(interaction);
+    }
+
     let command = null;
 
+    // --- 2. MANEJO DE COMANDOS Y OTROS BOTONES ---
     if (interaction.isChatInputCommand()) {
       command = interaction.client.commands.get(interaction.commandName);
 
@@ -37,7 +45,7 @@ module.exports = {
       return;
     }
 
-    // --- LÓGICA DE COOLDOWN ---
+    // --- 3. LÓGICA DE COOLDOWN ---
     if (command && command.cooldown) {
       const { cooldowns } = interaction.client;
       const now = Date.now();
@@ -65,7 +73,7 @@ module.exports = {
       setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
     }
 
-    // --- EJECUCIÓN DEL COMANDO ---
+    // --- 4. EJECUCIÓN DEL COMANDO ---
     try {
       if (command) {
         await command.execute(interaction);
