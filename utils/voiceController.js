@@ -56,12 +56,15 @@ async function handleInteraction(interaction) {
     }
 
     const everyoneRole = interaction.guild.roles.everyone;
+    const botId = interaction.client.user.id;
 
     try {
         switch (action) {
             case 'vc_lock':
                 await voiceChannel.permissionOverwrites.edit(everyoneRole, { Connect: false });
-                await voiceChannel.permissionOverwrites.edit(member.id, { Connect: true }); // Asegura que el dueño siempre pueda entrar
+                await voiceChannel.permissionOverwrites.edit(member.id, { Connect: true }); 
+                await voiceChannel.permissionOverwrites.edit(botId, { Connect: true, ViewChannel: true, ManageChannels: true });
+                
                 await interaction.reply({ content: '🔐 Tu canal ha sido **bloqueado**. Nadie más puede entrar.', flags: MessageFlags.Ephemeral });
                 break;
 
@@ -73,6 +76,8 @@ async function handleInteraction(interaction) {
             case 'vc_hide':
                 await voiceChannel.permissionOverwrites.edit(everyoneRole, { ViewChannel: false });
                 await voiceChannel.permissionOverwrites.edit(member.id, { ViewChannel: true });
+                await voiceChannel.permissionOverwrites.edit(botId, { Connect: true, ViewChannel: true, ManageChannels: true });
+
                 await interaction.reply({ content: '🙈 Tu canal ahora es **invisible** en la lista del servidor.', flags: MessageFlags.Ephemeral });
                 break;
 
