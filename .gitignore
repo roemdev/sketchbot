@@ -3,3 +3,4 @@ config.json
 config-copy.json
 .env
 .eslint.config.js
+database.sqlite
