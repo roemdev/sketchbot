@@ -10,9 +10,30 @@ module.exports = {
       return voiceController.handleInteraction(interaction);
     }
 
+    // --- 2. MANEJO DE MODALES ---
+    if (interaction.isModalSubmit()) {
+      const commandName = interaction.customId.replace('_modal', '').replaceAll('_', '-');
+      const modalModule = interaction.client.commands.get(commandName);
+
+      if (modalModule && typeof modalModule.handleModal === 'function') {
+        try {
+          await modalModule.handleModal(interaction);
+        } catch (error) {
+          console.error(`Error executing handleModal for ${commandName}:`, error);
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+              content: 'Hubo un error al procesar el formulario.',
+              flags: MessageFlags.Ephemeral
+            });
+          }
+        }
+      }
+      return;
+    }
+
     let command = null;
 
-    // --- 2. MANEJO DE COMANDOS Y OTROS BOTONES ---
+    // --- 3. MANEJO DE COMANDOS Y OTROS BOTONES ---
     if (interaction.isChatInputCommand()) {
       command = interaction.client.commands.get(interaction.commandName);
 
@@ -45,7 +66,7 @@ module.exports = {
       return;
     }
 
-    // --- 3. LÓGICA DE COOLDOWN ---
+    // --- 4. LÓGICA DE COOLDOWN ---
     if (command && command.cooldown) {
       const { cooldowns } = interaction.client;
       const now = Date.now();
@@ -73,7 +94,7 @@ module.exports = {
       setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
     }
 
-    // --- 4. EJECUCIÓN DEL COMANDO ---
+    // --- 5. EJECUCIÓN DEL COMANDO ---
     try {
       if (command) {
         await command.execute(interaction);

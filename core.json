@@ -1,6 +1,7 @@
 {
   "economy": {
-    "exchangeRate": 1
+    "exchangeRate": 500000,
+    "currency": "USD"
   },
   "emojis": {
     "coin": "`🪙`"
