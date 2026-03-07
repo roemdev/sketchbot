@@ -13,7 +13,7 @@ module.exports = {
   async execute(interaction) {
     // ── Mostrar modal ───────────────────────────────────────────────────────
     const modal = new ModalBuilder()
-      .setCustomId('exchange_paymenter_modal')
+      .setCustomId('monedas_a_creditos_modal')
       .setTitle('Canjear monedas por créditos');
 
     const emailInput = new TextInputBuilder()
