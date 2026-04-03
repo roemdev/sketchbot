@@ -14,7 +14,7 @@ async function getItemByName(name) {
     ORDER BY id
     LIMIT 1
     `,
-    [`%${name}%`]
+    [`%${name}%`],
   );
   return rows[0] || null;
 }
@@ -25,7 +25,7 @@ async function getItemByName(name) {
 async function getItem(itemId) {
   const rows = await db.query(
     "SELECT * FROM store WHERE id = ? AND status = 'available'",
-    [itemId]
+    [itemId],
   );
   return rows[0] || null;
 }
@@ -34,10 +34,7 @@ async function getItem(itemId) {
 //  GET ALL ITEMS
 // ---------------------------------------------------------------------
 async function getItems(status = "available") {
-  const rows = await db.query(
-    "SELECT * FROM store WHERE status = ?",
-    [status]
-  );
+  const rows = await db.query("SELECT * FROM store WHERE status = ?", [status]);
   return rows;
 }
 
@@ -48,20 +45,20 @@ async function buyItem(discordId, itemIdOrItem, mcNick = null) {
   // 1. Obtener usuario
   const users = await db.query(
     "SELECT * FROM user_stats WHERE discord_id = ?",
-    [discordId]
+    [discordId],
   );
   if (!users.length) throw new Error("Usuario no encontrado");
   const user = users[0];
 
   // 2. Obtener item
   let item;
-  if (typeof itemIdOrItem === 'object' && itemIdOrItem !== null) {
+  if (typeof itemIdOrItem === "object" && itemIdOrItem !== null) {
     item = itemIdOrItem;
-    if (item.status !== 'available') throw new Error("Item no disponible");
+    if (item.status !== "available") throw new Error("Item no disponible");
   } else {
     const items = await db.query(
       "SELECT * FROM store WHERE id = ? AND status = 'available'",
-      [itemIdOrItem]
+      [itemIdOrItem],
     );
     if (!items.length) throw new Error("Item no disponible");
     item = items[0];
@@ -75,7 +72,7 @@ async function buyItem(discordId, itemIdOrItem, mcNick = null) {
   // 4. Descontar saldo (Usamos execute para UPDATE)
   await db.execute(
     "UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?",
-    [totalPrice, discordId]
+    [totalPrice, discordId],
   );
   user.balance -= totalPrice;
 
@@ -92,10 +89,23 @@ async function buyItem(discordId, itemIdOrItem, mcNick = null) {
 }
 
 // ---------------------------------------------------------------------
+//  ADD ITEM (NUEVO)
+// ---------------------------------------------------------------------
+async function addItem({ name, description, price, iconId, minecraftItem }) {
+  // Usamos db.execute para hacer el INSERT en SQLite
+  await db.execute(
+    `INSERT INTO store (name, description, price, icon_id, minecraft_item, status)
+     VALUES (?, ?, ?, ?, ?, 'available')`,
+    [name, description, price, iconId, minecraftItem],
+  );
+}
+
+// ---------------------------------------------------------------------
 
 module.exports = {
   getItem,
   getItems,
   buyItem,
-  getItemByName
+  getItemByName,
+  addItem,
 };
