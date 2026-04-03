@@ -10,7 +10,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("añadir_item")
     .setDescription("Añade un nuevo artículo a la tienda (Solo Admins)")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Bloquea el uso a usuarios sin permisos de admin
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents) // Bloquea el uso a usuarios sin permisos de admin
     .addStringOption((option) =>
       option
         .setName("nombre")
