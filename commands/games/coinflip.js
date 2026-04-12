@@ -47,7 +47,7 @@ module.exports = {
     const choiceText = choice === "heads" ? "CARA" : "CRUZ";
 
     const pendingContainer = new ContainerBuilder()
-        .setAccentColor(0xf0c040)
+        .setAccentColor(0x6C3483)
         .addTextDisplayComponents(t =>
             t.setContent(`### 🪙 Cara o Cruz\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}**.\nLanzando moneda...`)
         );
@@ -65,7 +65,7 @@ module.exports = {
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
 
       const winContainer = new ContainerBuilder()
-          .setAccentColor(0x32cd32)
+          .setAccentColor(0xF4C542)
           .addTextDisplayComponents(t =>
               t.setContent(`### 🎉 ¡Ganaste!\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}** — salió **${resultText}**.\nGanaste ${COIN}**${reward.toLocaleString()}**.`)
           );
@@ -75,7 +75,7 @@ module.exports = {
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
       const loseContainer = new ContainerBuilder()
-          .setAccentColor(0xff4500)
+          .setAccentColor(0xC0392B)
           .addTextDisplayComponents(t =>
               t.setContent(`### 💸 Perdiste\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}** — salió **${resultText}**.\nMás suerte la próxima vez.`)
           );

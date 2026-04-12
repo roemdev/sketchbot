@@ -26,7 +26,7 @@ module.exports = {
 
       await interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0x32cd32)
+          new ContainerBuilder().setAccentColor(0xF4C542)
               .addTextDisplayComponents(t => t.setContent(
                   `### ✅ Artículo añadido\n**${icono} ${nombre}** agregado a la tienda por **${precio}** monedas.\nComando MC: \`give <jugador> ${mcItem}\``
               ))
@@ -37,7 +37,7 @@ module.exports = {
       console.error("Error al añadir item:", error);
       await interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent("### ❌ Error al guardar\nOcurrió un problema al guardar el artículo en la base de datos."))
         ],
         flags: MessageFlags.IsComponentsV2,

@@ -22,7 +22,7 @@ module.exports = {
     if (!isValidMinecraftNick(mcNick)) {
       return interaction.reply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent("### ❌ Nickname inválido\nEl nickname de Minecraft proporcionado no es válido."))
         ],
         flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
@@ -35,7 +35,7 @@ module.exports = {
     if (!items || items.length === 0) {
       return interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0xf0c040)
+          new ContainerBuilder().setAccentColor(0x1E8449)
               .addTextDisplayComponents(t => t.setContent("### 🛒 Tienda vacía\nNo hay items disponibles actualmente."))
         ],
         flags: MessageFlags.IsComponentsV2,
@@ -43,7 +43,7 @@ module.exports = {
     }
 
     const storeContainer = new ContainerBuilder()
-        .setAccentColor(0x3498db)
+        .setAccentColor(0x1E8449)
         .addTextDisplayComponents(t => t.setContent(`### 🛒 Tienda | Nick: \`${mcNick}\`\nSelecciona el artículo que deseas comprar.`))
         .addSeparatorComponents(s => s);
 
@@ -88,7 +88,7 @@ module.exports = {
       if (!item || item.status !== "available") {
         return interaction.editReply({
           components: [
-            new ContainerBuilder().setAccentColor(0xff4500)
+            new ContainerBuilder().setAccentColor(0xC0392B)
                 .addTextDisplayComponents(t => t.setContent("### ❌ No disponible\nEl artículo ya no está disponible."))
           ],
           flags: MessageFlags.IsComponentsV2,
@@ -107,7 +107,7 @@ module.exports = {
 
       return interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0x32cd32)
+          new ContainerBuilder().setAccentColor(0xF4C542)
               .addTextDisplayComponents(t => t.setContent(
                   `### ✅ ¡Compra realizada!\nHas comprado **${result.item.icon_id} ${result.item.name}** para **${mcNick}** por ${COIN}${result.totalPrice.toLocaleString()}.`
               ))
@@ -117,7 +117,7 @@ module.exports = {
     } catch (err) {
       return interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent(`### ❌ Error en la compra\n${err.message}`))
         ],
         flags: MessageFlags.IsComponentsV2,

@@ -24,7 +24,7 @@ module.exports = {
     if (!isValidMinecraftNick(mcNick)) {
       return interaction.reply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent("### ❌ Nickname inválido\nEl nickname de Minecraft proporcionado no es válido."))
         ],
         flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
@@ -35,7 +35,7 @@ module.exports = {
     if (!item || item.status !== "available") {
       return interaction.reply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent("### ❌ No disponible\nEl artículo solicitado no está disponible."))
         ],
         flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
@@ -50,7 +50,7 @@ module.exports = {
     );
 
     const preview = new ContainerBuilder()
-        .setAccentColor(0x3498db)
+        .setAccentColor(0x1E8449)
         .addTextDisplayComponents(t => t.setContent(
             `### 🛒 Confirmar compra\n` +
             `Artículo: **${item.icon_id} ${item.name}**\n` +
@@ -66,7 +66,7 @@ module.exports = {
     return interaction.reply({
       components: [
         new ContainerBuilder()
-            .setAccentColor(0x3498db)
+            .setAccentColor(0x1E8449)
             .addTextDisplayComponents(t => t.setContent(
                 `### 🛒 Confirmar compra\n` +
                 `Artículo: **${item.icon_id} ${item.name}**\n` +
@@ -118,7 +118,7 @@ module.exports = {
     if (action === "cancel") {
       return interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0xf0c040)
+          new ContainerBuilder().setAccentColor(0x1E8449)
               .addTextDisplayComponents(t => t.setContent("### ℹ️ Compra cancelada\nNo se procesó ninguna transacción."))
         ],
         flags: MessageFlags.IsComponentsV2,
@@ -140,7 +140,7 @@ module.exports = {
 
         return interaction.editReply({
           components: [
-            new ContainerBuilder().setAccentColor(0x32cd32)
+            new ContainerBuilder().setAccentColor(0xF4C542)
                 .addTextDisplayComponents(t => t.setContent("### ✅ Compra realizada con éxito\nEl artículo ha sido entregado en Minecraft."))
           ],
           flags: MessageFlags.IsComponentsV2,
@@ -148,7 +148,7 @@ module.exports = {
       } catch (err) {
         return interaction.editReply({
           components: [
-            new ContainerBuilder().setAccentColor(0xff4500)
+            new ContainerBuilder().setAccentColor(0xC0392B)
                 .addTextDisplayComponents(t => t.setContent(`### ❌ Error en la compra\n${err.message}`))
           ],
           flags: MessageFlags.IsComponentsV2,

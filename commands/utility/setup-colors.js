@@ -21,7 +21,7 @@ const BUTTON_STYLES = {
 
 function buildColorsPanel() {
   const container = new ContainerBuilder()
-      .setAccentColor(0x9b59b6)
+      .setAccentColor(0x5B7FA6)
       .addTextDisplayComponents(t =>
           t.setContent(
               "### 🎨 Roles de Color\n" +
