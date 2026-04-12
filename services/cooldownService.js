@@ -39,14 +39,14 @@ module.exports = {
    * @param {number} seconds 
    */
   setCooldown: async (discordId, command, seconds) => {
-    const expires = new Date(Date.now() + seconds * 1000);
-    
+    const expires = new Date(Date.now() + seconds * 1000).toISOString();
+
     // SQLite: Usamos ON CONFLICT en lugar de ON DUPLICATE KEY
     // Nota: Requiere que (discord_id, command) sea PRIMARY KEY o UNIQUE en la tabla
     await db.execute(
-      `INSERT INTO cooldowns (discord_id, command, expires_at) 
-       VALUES (?, ?, ?) 
-       ON CONFLICT(discord_id, command) 
+      `INSERT INTO cooldowns (discord_id, command, expires_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(discord_id, command)
        DO UPDATE SET expires_at = ?`,
       [discordId, command, expires, expires]
     );

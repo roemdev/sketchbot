@@ -73,7 +73,8 @@ function initDb(db) {
 module.exports = {
     query: (sql, params = []) => {
         const db = getDb();
-        return db.prepare(sql).all(...params);
+        const stmt = db.prepare(sql);
+        return stmt.reader ? stmt.all(...params) : stmt.run(...params);
     },
     execute: (sql, params = []) => {
         const db = getDb();
