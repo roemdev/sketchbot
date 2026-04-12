@@ -1,0 +1,17 @@
+--- setup-colors.js
++++ setup-colors.js
+@@ -22,7 +22,7 @@
+
+   async execute(interaction) {
+     const container = new ContainerBuilder()
+-      .setAccentColor(0x3498db)
++      .setAccentColor(0x5B7FA6)
+       .addTextDisplayComponents(t =>
+         t.setContent(
+           "### 🎨 Selector de Colores\n" +
+@@ -62,6 +62,6 @@
+     await interaction.channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
+-    return interaction.reply({ content: "Panel de colores enviado correctamente.", flags: MessageFlags.Ephemeral });
++    return interaction.reply({ content: "¡Pum! Panel de colores estacionado aquí mismo.", flags: MessageFlags.Ephemeral });
+   }
+ };

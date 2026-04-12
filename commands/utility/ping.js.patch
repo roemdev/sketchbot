@@ -1,0 +1,29 @@
+--- commands/utility/ping.js
++++ commands/utility/ping.js
+@@ -1,4 +1,4 @@
+-const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord.js");
++const { SlashCommandBuilder, MessageFlags } = require("discord.js");
+
+ module.exports = {
+   cooldown: 5,
+@@ -7,18 +7,12 @@
+   async execute(interaction) {
+     await interaction.reply({ content: "Midiendo...", flags: MessageFlags.Ephemeral });
+
+     const wsPing = interaction.client.ws.ping;
+     const interactionPing = Date.now() - interaction.createdTimestamp;
+
+     await interaction.editReply({
+-      content: "",
+-      components: [
+-        new ContainerBuilder().setAccentColor(0x3498db)
+-            .addTextDisplayComponents(t => t.setContent(
+-                `### 🏓 Pong!\n**Latencia WebSocket:** ${wsPing}ms\n**Latencia de interacción:** ${interactionPing}ms`
+-            ))
+-      ],
+-      flags: MessageFlags.IsComponentsV2,
++      content: `🏓 **¡Pong!**\nEl WebSocket tardó **${wsPing}ms** y mi cerebro tardó **${interactionPing}ms** en responder. ¡No está mal!`,
++      components: []
+     });
+   },
+ };

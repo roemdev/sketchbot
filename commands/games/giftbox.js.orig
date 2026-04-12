@@ -20,7 +20,7 @@ module.exports = {
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
-      return interaction.reply({ content: "❌ Ehh... tienes que meter algo en la caja, ¿no? Apuesta al menos 1.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
     }
 
     await userService.createUser(userId, interaction.user.username);
@@ -32,7 +32,7 @@ module.exports = {
     }
 
     const container = new ContainerBuilder()
-        .setAccentColor(0x6C3483)
+        .setAccentColor(0x9b59b6)
         .addTextDisplayComponents(t =>
             t.setContent(
                 `### 🎁 ¡Prueba tu suerte!\n` +
@@ -69,9 +69,9 @@ module.exports.buttonHandler = async (interaction) => {
     await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
 
     const winContainer = new ContainerBuilder()
-        .setAccentColor(0xF4C542)
+        .setAccentColor(0x32cd32)
         .addTextDisplayComponents(t =>
-            t.setContent(`### 🎉 ¡El Ojo que Todo lo Ve!\nAbriste la caja premiada y te llevas **${reward.toLocaleString()}** ${COIN}. ¡Eres un monstruo!`)
+            t.setContent(`### 🎉 ¡Ganaste!\nElegiste la caja correcta y ganaste ${COIN}**${reward.toLocaleString()}**. ¡Sigue jugando!`)
         );
 
     return interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
@@ -79,7 +79,7 @@ module.exports.buttonHandler = async (interaction) => {
     await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
     const loseContainer = new ContainerBuilder()
-        .setAccentColor(0xC0392B)
+        .setAccentColor(0xff4500)
         .addTextDisplayComponents(t =>
             t.setContent(`### ❌ ¡Perdiste!\nEl premio estaba en la caja **${winningChest}**. Perdiste ${COIN}**${bet.toLocaleString()}**. ¡Vuelve a intentarlo!`)
         );

@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const db = require("../../services/dbService");
-const { makeContainer, CV2, CV2_EPHEMERAL } = require("../../utils/ui");
 const config = require("../../core.json");
 const { logTransaction } = require("../../services/transactionService");
 const cooldownService = require("../../services/cooldownService");
@@ -23,16 +22,16 @@ module.exports = {
     if (cd) {
       const resetTimestamp = Math.floor(Date.now() / 1000 + cd);
       return interaction.reply({
-        components: [makeContainer("info", "Cooldown activo", `Debes esperar <t:${resetTimestamp}:R> antes de volver a usar /diario.`)],
-        flags: CV2_EPHEMERAL,
+        content: `¡Tranquilo vaquero! Ya pediste tu sueldo. Puedes volver a reclamar tu recompensa <t:${resetTimestamp}:R>. 🤠`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
     const memberRoles = interaction.member.roles.cache.map((r) => r.id);
     if (!memberRoles.length) {
       return interaction.reply({
-        components: [makeContainer("error", "Sin roles", "No tienes roles que otorguen recompensa diaria.")],
-        flags: CV2_EPHEMERAL,
+        content: `Vaya, no tienes roles para recibir monedas. Consigue un buen rango y vuelve luego. 🤷`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -44,8 +43,8 @@ module.exports = {
 
     if (!rows || rows.length === 0) {
       return interaction.reply({
-        components: [makeContainer("info", "Sin recompensa", "Tus roles no otorgan monedas diarias.")],
-        flags: CV2_EPHEMERAL,
+        content: `Mala suerte, ninguno de tus roles actuales da recompensa. Pobre de ti. 🥺`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -53,7 +52,7 @@ module.exports = {
     const breakdown = rows
       .map((r) => {
         total += r.ammount;
-        return `> <@&${r.role_id}> — **${config.emojis.coin}${r.ammount.toLocaleString()}**`;
+        return `> <@&${r.role_id}> — **${r.ammount.toLocaleString()}** ${config.emojis.coin}`;
       })
       .join("\n");
 
@@ -71,14 +70,7 @@ module.exports = {
     }
 
     return interaction.reply({
-      components: [
-        makeContainer(
-          "success",
-          "Recompensa diaria",
-          `${breakdown}\n\nTotal recibido: **${config.emojis.coin}${total.toLocaleString()}**`
-        ),
-      ],
-      flags: CV2,
+      content: `¡Día de pago! 🤑 Aquí tienes lo tuyo:\n${breakdown}\n\n**Total recibido:** **${total.toLocaleString()}** ${config.emojis.coin} monedas fresquitas para el bolsillo.`,
     });
   },
 };

@@ -77,8 +77,8 @@ module.exports = {
         components: [
           new ContainerBuilder().setAccentColor(0x5B7FA6)
               .addTextDisplayComponents(t => t.setContent(
-                  `### ${winnerChar.emoji} ${winnerChar.name} ganó — sin apostadores\n` +
-                  `Nadie apostó por **${winnerChar.name}**. El bote de ${COIN}${totalPot.toLocaleString()} fue al hoster.`
+                  `### ${winnerChar.emoji} ¡${winnerChar.name} se llevó la victoria!\n` +
+                  `Pero, ¡ay! Nadie confió en **${winnerChar.name}**. El pozo completito de **${totalPot.toLocaleString()}** ${COIN} se lo queda el Hoster.`
               ))
         ],
         flags: MessageFlags.IsComponentsV2,
@@ -92,7 +92,7 @@ module.exports = {
       const payout = Math.floor(prizePool * (winner.amount / winnersTotalBet));
       await userService.addBalance(winner.userId, payout, false);
       await logTransaction({ discordId: winner.userId, type: "smash_win", amount: payout });
-      payoutLines.push(`<@${winner.userId}> apostó ${COIN}${winner.amount.toLocaleString()} → recibe ${COIN}${payout.toLocaleString()}`);
+      payoutLines.push(`<@${winner.userId}> apostó **${winner.amount.toLocaleString()}** ${COIN} y se lleva **${payout.toLocaleString()}** ${COIN} a casa 💸`);
     }
 
     sessions.delete(sessionKey);
@@ -101,11 +101,11 @@ module.exports = {
       components: [
         new ContainerBuilder().setAccentColor(0xF4C542)
             .addTextDisplayComponents(t => t.setContent(
-                `### ${winnerChar.emoji} ${winnerChar.name} ganó\n\n` +
-                `**Bote total:** ${COIN}${totalPot.toLocaleString()}\n` +
-                `**Comisión del hoster (${HOST_CUT * 100}%):** ${COIN}${hostEarnings.toLocaleString()}\n` +
-                `**Premio repartido:** ${COIN}${prizePool.toLocaleString()}\n\n` +
-                `**Ganadores:**\n${payoutLines.join("\n")}`
+                `### ${winnerChar.emoji} ¡${winnerChar.name} arrasó con todo!\n\n` +
+                `**Pozo total en juego:** **${totalPot.toLocaleString()}** ${COIN}\n` +
+                `**Corte del Hoster (${HOST_CUT * 100}%):** **${hostEarnings.toLocaleString()}** ${COIN}\n` +
+                `**Botín a repartir:** **${prizePool.toLocaleString()}** ${COIN}\n\n` +
+                `**Vencedores con buen ojo:**\n${payoutLines.join("\n")}`
             ))
       ],
       flags: MessageFlags.IsComponentsV2,

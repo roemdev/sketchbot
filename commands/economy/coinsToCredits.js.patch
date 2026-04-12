@@ -1,0 +1,101 @@
+--- commands/economy/coinsToCredits.js
++++ commands/economy/coinsToCredits.js
+@@ -3,6 +3,7 @@
+ const { coin } = require('../../core.json').emojis;
+ const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+ const db = require('../../services/dbService');
++const { logTransaction } = require("../../services/transactionService");
+
+
+ module.exports = {
+@@ -43,7 +44,7 @@
+
+     // Validar que la cantidad sea un número entero positivo
+     if (isNaN(paymenterCredits) || paymenterCredits < 1) {
+-      return interaction.editReply('❌ La cantidad de créditos debe ser un número entero mayor a 0.');
++      return interaction.editReply('❌ ¡Ojo! La cantidad de créditos tiene que ser un número mayor a 0.');
+     }
+
+     try {
+@@ -56,7 +57,7 @@
+
+       if (currentBalance < costInCoins) {
+         return interaction.editReply(
+-          `❌ No tienes suficientes monedas. Balance actual: **${currentBalance.toLocaleString()}** ${coin} | Necesitas: **${costInCoins.toLocaleString()}** ${coin}.`
++          `❌ Te faltan monedas, amigo. Tienes **${currentBalance.toLocaleString()}** ${coin} y necesitas **${costInCoins.toLocaleString()}** ${coin}. ¡A trabajar se ha dicho!`
+         );
+       }
+
+@@ -69,7 +70,7 @@
+       });
+
+       if (!getResponse.ok) {
+-        return interaction.editReply(`❌ No se pudo conectar con Paymenter (Código: ${getResponse.status}).`);
++        return interaction.editReply(`❌ Ups, Paymenter me cerró la puerta en la cara (Código: ${getResponse.status}). Intenta de nuevo más tarde.`);
+       }
+
+       const usersData = await getResponse.json();
+@@ -82,7 +83,7 @@
+       });
+
+       if (!targetPaymenterUser) {
+-        return interaction.editReply(`❌ No se encontró ninguna cuenta con el correo **${paymenterEmail}**.`);
++        return interaction.editReply(`❌ Mmm, no encuentro a nadie en Paymenter con el correo **${paymenterEmail}**. ¿Seguro que es ese?`);
+       }
+
+       const paymenterId = targetPaymenterUser.attributes?.id ?? targetPaymenterUser.id;
+@@ -107,7 +108,7 @@
+
+         if (!alreadyExists) {
+           console.error(`[exchange-paymenter] Error credits POST ${creditResponse.status}:`, errBody);
+-          return interaction.editReply(`❌ Falló la entrega de créditos en Paymenter (Código: ${creditResponse.status}).`);
++          return interaction.editReply(`❌ Algo salió mal al entregar los créditos en Paymenter (Código: ${creditResponse.status}).`);
+         }
+
+         // Buscar registro existente y sumar
+@@ -122,7 +123,7 @@
+         );
+
+         if (!listRes.ok) {
+-          return interaction.editReply('❌ No se pudo obtener el registro de créditos existente.');
++          return interaction.editReply('❌ No pude ver cuántos créditos ya tenías. Qué misterio...');
+         }
+
+         const creditsList  = await listRes.json();
+@@ -133,7 +134,7 @@
+         });
+
+         if (!existingCredit) {
+-          return interaction.editReply('❌ No se encontró el registro de créditos del usuario.');
++          return interaction.editReply('❌ No encontré el registro de tus créditos en Paymenter. Raro.');
+         }
+
+         const creditId  = existingCredit.id;
+@@ -157,7 +158,7 @@
+         if (!creditResponse.ok) {
+           const putErr = await creditResponse.text();
+           console.error(`[exchange-paymenter] Error credits PUT ${creditResponse.status}:`, putErr);
+-          return interaction.editReply(`❌ Falló la actualización de créditos en Paymenter (Código: ${creditResponse.status}).`);
++          return interaction.editReply(`❌ Ay, falló la actualización de créditos en Paymenter (Código: ${creditResponse.status}).`);
+         }
+       }
+
+@@ -166,13 +167,15 @@
+         'UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?',
+         [costInCoins, targetUser.id]
+       );
++
++      await logTransaction({ discordId: targetUser.id, type: "paymenter_exchange", amount: costInCoins });
+
+       return interaction.editReply(
+-        `✅ ¡Canje exitoso! Se descontaron **${costInCoins.toLocaleString()}** ${coin} monedas y se añadieron **${paymenterCredits}** crédito(s) a la cuenta **${paymenterEmail}** en Paymenter.`
++        `✅ ¡Hecho! Te quité **${costInCoins.toLocaleString()}** ${coin} monedas y le metí **${paymenterCredits}** crédito(s) a la cuenta **${paymenterEmail}** en Paymenter. ¡A disfrutar!`
+       );
+
+     } catch (error) {
+       console.error('[exchange-paymenter] Error general:', error);
+-      return interaction.editReply('❌ Ocurrió un error interno al procesar la operación.');
++      return interaction.editReply('❌ Algo explotó por dentro mientras procesaba esto. Avisa a un administrador.');
+     }
+   }
+ };

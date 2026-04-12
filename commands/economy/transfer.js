@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 const { CV2, CV2_EPHEMERAL } = require("../../utils/ui");

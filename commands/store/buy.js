@@ -70,7 +70,7 @@ module.exports = {
             .addTextDisplayComponents(t => t.setContent(
                 `### 🛒 Confirmar compra\n` +
                 `Artículo: **${item.icon_id} ${item.name}**\n` +
-                `Precio: **${COIN}${item.price.toLocaleString()}**\n` +
+                `Precio: **${item.price.toLocaleString()}** ${COIN}\n` +
                 `Destino: **${mcNick}**\n\n¿Deseas continuar?`
             ))
             .addSeparatorComponents(s => s)
@@ -99,7 +99,7 @@ module.exports = {
     const choices = cachedItems
         .filter(item => item.name.toLowerCase().includes(focusedValue.toLowerCase()))
         .slice(0, 25)
-        .map(item => ({ name: `${item.name} - ${COIN}${item.price.toLocaleString()}`, value: item.name }));
+        .map(item => ({ name: `${item.name} - ${item.price.toLocaleString()} ${COIN}`, value: item.name }));
 
     await interaction.respond(choices);
     return true;

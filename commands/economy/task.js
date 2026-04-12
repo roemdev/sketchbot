@@ -3,8 +3,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
   MessageFlags,
+  ContainerBuilder
 } = require("discord.js");
-const { makeContainer, CV2, CV2_EPHEMERAL } = require("../../utils/ui");
 const config = require("../../core.json");
 const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
@@ -33,14 +33,8 @@ module.exports = {
       const cd = await cooldownService.checkCooldown(userId, "trabajo");
       if (cd) {
         return interaction.reply({
-          components: [
-            makeContainer(
-              "info",
-              "Cooldown activo",
-              `Todavía no tienes tareas disponibles. Habrá más <t:${now + cd}:R>.`
-            ),
-          ],
-          flags: CV2,
+          content: `¡Afloja un poco! Todavía no es hora de tu turno. Te tocará en <t:${now + cd}:R>. 🤫`,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -53,14 +47,7 @@ module.exports = {
         case 0: {
           const { formatted } = await grantReward(userId);
           return interaction.reply({
-            components: [
-              makeContainer(
-                "success",
-                "Trabajo completado",
-                `Hoy tocó trabajar como funcionario. Ganaste **${config.emojis.coin}${formatted}** sin hacer nada.`
-              ),
-            ],
-            flags: CV2,
+            content: `### 💼 ¡Jornada de funcionario público!\nHoy viniste a sentarte, tomar café y ver la hora. Aún así te pagaron **${formatted}** ${config.emojis.coin}. ¡Qué suerte la tuya!`,
           });
         }
 
@@ -78,10 +65,10 @@ module.exports = {
 
           return interaction.reply({
             components: [
-              makeContainer(
-                "info",
-                "Tarea: Suma rápida",
-                `Suma los números: **${a} + ${b} = ?**\nTienes hasta <t:${deadline}:R> para responder.`
+              new ContainerBuilder()
+                .setAccentColor(0x6C3483)
+                .addTextDisplayComponents(t =>
+                    t.setContent(`### 🧠 Matemática Flash\nRápido, el jefe pregunta cuánto es: **${a} + ${b}**.\nSe le acaba la paciencia <t:${deadline}:R>.`)
               )
                 .addSeparatorComponents((s) => s)
                 .addActionRowComponents((row) =>
@@ -95,17 +82,17 @@ module.exports = {
                   )
                 ),
             ],
-            flags: CV2,
+            flags: MessageFlags.IsComponentsV2,
           });
         }
 
         case 2: {
           return interaction.reply({
             components: [
-              makeContainer(
-                "info",
-                "Tarea: Presiona el botón",
-                `Debes presionar el botón **10** veces antes de <t:${deadline}:R>.`
+              new ContainerBuilder()
+                .setAccentColor(0x6C3483)
+                .addTextDisplayComponents(t =>
+                    t.setContent(`### 👆 Clickeador frenético\n¡Dale duro al botón **10 veces** antes de <t:${deadline}:R> o estás despedido!`)
               )
                 .addSeparatorComponents((s) => s)
                 .addActionRowComponents((row) =>
@@ -117,7 +104,7 @@ module.exports = {
                   )
                 ),
             ],
-            flags: CV2,
+            flags: MessageFlags.IsComponentsV2,
           });
         }
 
@@ -133,10 +120,10 @@ module.exports = {
 
           return interaction.reply({
             components: [
-              makeContainer(
-                "info",
-                "Tarea: Identifica la figura",
-                `Selecciona el **${correct.name}** antes de <t:${deadline}:R>.`
+              new ContainerBuilder()
+                .setAccentColor(0x6C3483)
+                .addTextDisplayComponents(t =>
+                    t.setContent(`### 🕵️‍♂️ Juego de vista\nEncuentra el emoji de **${correct.name}** y púlsalo. Si dudas más allá de <t:${deadline}:R>, pierdes.`)
               )
                 .addSeparatorComponents((s) => s)
                 .addActionRowComponents((row) =>
@@ -150,15 +137,15 @@ module.exports = {
                   )
                 ),
             ],
-            flags: CV2,
+            flags: MessageFlags.IsComponentsV2,
           });
         }
       }
     } catch (error) {
       console.error("Error en comando trabajo:", error);
       await interaction.reply({
-        components: [makeContainer("error", "Error", "Ocurrió un error al iniciar el trabajo. Intenta de nuevo.")],
-        flags: CV2_EPHEMERAL,
+        content: `❌ Uy... hubo un bajón de luz y la máquina de tareas no arranca. Dile a un admin que la arregle.`,
+        flags: MessageFlags.Ephemeral,
       }).catch(console.error);
     }
   },
@@ -177,19 +164,19 @@ module.exports = {
         const userId = parts[4];
 
         if (interaction.user.id !== userId) {
-          return interaction.reply({ content: "Esto no es tu tarea.", flags: MessageFlags.Ephemeral });
+          return interaction.reply({ content: "¡Ey! Busca tu propio trabajo, no me andes robando.", flags: MessageFlags.Ephemeral });
         }
 
         if (clicked === correct) {
           const { formatted } = await grantReward(userId);
           await interaction.update({
-            components: [makeContainer("success", "¡Respuesta correcta!", `¡Pitágoras sería orgulloso! Ganaste **${config.emojis.coin}${formatted}**.`)],
-            flags: CV2,
+            content: `🎉 ¡Bien ahí Einstein! Sumaste bien y el jefe te recompensó con **${formatted}** ${config.emojis.coin}.`,
+            components: [],
           });
         } else {
           await interaction.update({
-            components: [makeContainer("error", "Incorrecto", "No obtuviste recompensa.")],
-            flags: CV2,
+            content: `❌ ¡¿Pero qué estabas pensando?! Calculaste mal y no te pagaron nada hoy. Estudia pa' la próxima.`,
+            components: [],
           });
         }
         return true;
@@ -200,21 +187,25 @@ module.exports = {
         let remaining = parseInt(parts[3], 10) - 1;
 
         if (interaction.user.id !== userId) {
-          return interaction.reply({ content: "Esto no es tu tarea.", flags: MessageFlags.Ephemeral });
+          return interaction.reply({ content: "¡Ojo ahí! Toca tu propio botón.", flags: MessageFlags.Ephemeral });
         }
 
         if (remaining <= 0) {
           const { formatted } = await grantReward(userId);
           await interaction.update({
-            components: [makeContainer("success", "¡Tarea completada!", `Ganaste **${config.emojis.coin}${formatted}**.`)],
-            flags: CV2,
+            content: `🎉 ¡Qué velocidad de dedos! Acabaste la chamba y el jefe te dio **${formatted}** ${config.emojis.coin}. Ve a sobarte el brazo.`,
+            components: [],
           });
           return true;
         }
 
         await interaction.update({
           components: [
-            makeContainer("info", "Tarea: Presiona el botón", `Pulsaciones restantes: **${remaining}**.`)
+            new ContainerBuilder()
+              .setAccentColor(0x6C3483)
+              .addTextDisplayComponents(t =>
+                  t.setContent(`### 👆 Clickeador frenético\n¡Sigue dándole, te faltan **${remaining}** golpes más!`)
+              )
               .addSeparatorComponents((s) => s)
               .addActionRowComponents((row) =>
                 row.setComponents(
@@ -225,7 +216,7 @@ module.exports = {
                 )
               ),
           ],
-          flags: CV2,
+          flags: MessageFlags.IsComponentsV2,
         });
         return true;
       }
@@ -236,19 +227,19 @@ module.exports = {
         const userId = parts[4];
 
         if (interaction.user.id !== userId) {
-          return interaction.reply({ content: "Esto no es tu tarea.", flags: MessageFlags.Ephemeral });
+          return interaction.reply({ content: "Oiga, oiga, esta vista no es para usted.", flags: MessageFlags.Ephemeral });
         }
 
         if (clicked === correct) {
           const { formatted } = await grantReward(userId);
           await interaction.update({
-            components: [makeContainer("success", "¡Respuesta correcta!", `¡Buena vista! Ganaste **${config.emojis.coin}${formatted}**.`)],
-            flags: CV2,
+            content: `🎉 ¡Ojo de águila! Encontraste el emoji y ganaste **${formatted}** ${config.emojis.coin}.`,
+            components: [],
           });
         } else {
           await interaction.update({
-            components: [makeContainer("error", "Incorrecto", "Esa no era la figura. No obtuviste recompensa.")],
-            flags: CV2,
+            content: `❌ ¡¿Acaso andas bizco?! Tocaste el emoji equivocado. Te quedas sin pago por hoy.`,
+            components: [],
           });
         }
         return true;
@@ -259,7 +250,7 @@ module.exports = {
       console.error("Error en buttonHandler de trabajo:", error);
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
-          content: "Ocurrió un error al procesar tu respuesta.",
+          content: "Ay, el servidor de trabajo se cayó y perdiste la onda. Repórtalo y vuelve más tarde.",
           flags: MessageFlags.Ephemeral,
         }).catch(console.error);
       }
