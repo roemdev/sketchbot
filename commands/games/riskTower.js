@@ -20,7 +20,7 @@ module.exports = {
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
-      return interaction.reply({ content: "❌ ¡Casi! Pero no puedes apostar menos de una moneda.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
     }
 
     await userService.createUser(userId, interaction.user.username);
@@ -28,7 +28,7 @@ module.exports = {
     const currentBalance = await userService.getBalance(userId);
     if (currentBalance < bet) {
       interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
-      return interaction.reply({ content: "❌ ¡Ey! Estás intentando apostar dinero que no tienes. Ve a trabajar un rato.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "❌ No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
     }
 
     await userService.addBalance(userId, -bet, false);
@@ -45,9 +45,9 @@ function buildTowerPanel(userId, bet, current) {
       .setAccentColor(0x6C3483)
       .addTextDisplayComponents(t =>
           t.setContent(
-              `### 🗼 Escalando la Torre del Peligro\n` +
-              `Pusiste en la mesa: **${bet.toLocaleString()}** ${COIN}\n` +
-              `Saldo en juego ahora: **${current.toLocaleString()}** ${COIN}`
+              `### 🗼 Torre de Riesgo\n` +
+              `Apuesta inicial: ${COIN}**${bet.toLocaleString()}**\n` +
+              `Saldo en juego: ${COIN}**${current.toLocaleString()}**`
           )
       )
       .addSeparatorComponents(s => s)
@@ -76,7 +76,7 @@ module.exports.buttonHandler = async (interaction) => {
   const current = parseFloat(parts[4]);
 
   if (interaction.user.id !== userId) {
-    return interaction.reply({ content: "👀 Shh, no toques botones en la torre de otra persona.", flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: "Esto no es tu juego.", flags: MessageFlags.Ephemeral });
   }
 
   if (action === "risk") {
@@ -87,8 +87,8 @@ module.exports.buttonHandler = async (interaction) => {
           .setAccentColor(0xF4C542)
           .addTextDisplayComponents(t =>
               t.setContent(
-                  `### 🚀 ¡Nivel superado, sigues vivo!\n` +
-                  `La adrenalina sube, tu dinero también. Llevas **${next.toLocaleString()}** ${COIN}. ¿Te arriesgas otra vez o te rajas?`
+                  `### 🚀 ¡Subiste un nivel!\n` +
+                  `Tu saldo se ha multiplicado. Total actual: ${COIN}**${next.toLocaleString()}**`
               )
           )
           .addSeparatorComponents(s => s)
@@ -106,7 +106,7 @@ module.exports.buttonHandler = async (interaction) => {
       const loseContainer = new ContainerBuilder()
           .setAccentColor(0xC0392B)
           .addTextDisplayComponents(t =>
-              t.setContent(`### 💥 ¡Booooom! Caída libre\nLa torre no aguantó y colapsó frente a ti. Acabas de perder **${current.toLocaleString()}** ${COIN}. Suerte a la próxima, si te atreves.`)
+              t.setContent(`### 💥 Todo perdido\nLa torre colapsó. Perdiste ${COIN}**${current.toLocaleString()}** créditos.`)
           );
 
       return interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
@@ -120,7 +120,7 @@ module.exports.buttonHandler = async (interaction) => {
     const cashoutContainer = new ContainerBuilder()
         .setAccentColor(0xF4C542)
         .addTextDisplayComponents(t =>
-            t.setContent(`### 💰 ¡Retirada estratégica!\nCobraste antes de que todo se viniera abajo. Te llevas a casa **${current.toLocaleString()}** ${COIN} enteritos.`)
+            t.setContent(`### 💰 Cobro realizado\nTe retiraste a tiempo. Conservaste ${COIN}**${current.toLocaleString()}** créditos.`)
         );
 
     return interaction.update({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });

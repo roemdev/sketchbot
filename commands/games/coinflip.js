@@ -29,7 +29,7 @@ module.exports = {
 
     if (bet <= 0) {
       return interaction.reply({
-        content: "❌ Jeje, no puedes apostar aire. Pon al menos una moneda.",
+        content: "La cantidad debe ser mayor que cero.",
         flags: MessageFlags.Ephemeral
       });
     }
@@ -40,7 +40,7 @@ module.exports = {
       await userService.addBalance(userId, -bet, false);
     } catch {
       interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
-      return interaction.reply({ content: "❌ Ehh... no tienes tantas monedas. Ve a trabajar o apuesta menos.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
     }
 
     const choice = interaction.options.getString("eleccion");
@@ -49,7 +49,7 @@ module.exports = {
     const pendingContainer = new ContainerBuilder()
         .setAccentColor(0x6C3483)
         .addTextDisplayComponents(t =>
-            t.setContent(`### 🪙 ¡La Moneda Está en el Aire!\nApostaste **${bet.toLocaleString()}** ${COIN} a que sale **${choiceText}**.\nGirando, girando...`)
+            t.setContent(`### 🪙 Cara o Cruz\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}**.\nLanzando moneda...`)
         );
 
     await interaction.reply({ components: [pendingContainer], flags: MessageFlags.IsComponentsV2 });
@@ -67,7 +67,7 @@ module.exports = {
       const winContainer = new ContainerBuilder()
           .setAccentColor(0xF4C542)
           .addTextDisplayComponents(t =>
-              t.setContent(`### 🎉 ¡Ding ding ding!\nConfiabas en **${choiceText}** y efectivamente salió **${resultText}**.\nTe llevas **${reward.toLocaleString()}** ${COIN}. ¡A celebrar!`)
+              t.setContent(`### 🎉 ¡Ganaste!\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}** — salió **${resultText}**.\nGanaste ${COIN}**${reward.toLocaleString()}**.`)
           );
 
       await interaction.editReply({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
@@ -77,7 +77,7 @@ module.exports = {
       const loseContainer = new ContainerBuilder()
           .setAccentColor(0xC0392B)
           .addTextDisplayComponents(t =>
-              t.setContent(`### 💸 Auch... cayó la equivocada\nLe fuiste a **${choiceText}** pero la moneda dijo **${resultText}**.\nTus **${bet.toLocaleString()}** ${COIN} acaban de esfumarse.`)
+              t.setContent(`### 💸 Perdiste\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}** — salió **${resultText}**.\nMás suerte la próxima vez.`)
           );
 
       await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });

@@ -186,8 +186,6 @@ module.exports = {
         totalPrice: paymenterCredits
       });
 
-      await logTransaction({ discordId: targetUser.id, type: "paymenter_exchange", amount: costInCoins });
-
       return interaction.editReply(
         `¡Canje listo! Desconté **${costInCoins.toLocaleString()}** ${coin} y envié saldo a **${paymenterEmail}** en Paymenter.`
       );

@@ -50,6 +50,6 @@ module.exports = {
         );
 
     await interaction.channel.send({ components: [panel], flags: MessageFlags.IsComponentsV2 });
-    return interaction.reply({ content: "¡Listo! Dejé el panel de control aquí mismito.", flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: "Panel de control enviado correctamente.", flags: MessageFlags.Ephemeral });
   }
 };
