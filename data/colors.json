@@ -1,0 +1,20 @@
+{
+  "_note": "Para cambiar a producción: renombra 'roles' por '_roles_test' y '_roles_production' por 'roles'.",
+  "roles": [
+    { "id": "1330908811946496103", "name": "Role 1 (Test)", "emoji": "🔴", "buttonStyle": "Danger" },
+    { "id": "1330908876089987146", "name": "Role 2 (Test)", "emoji": "🟢", "buttonStyle": "Success" },
+    { "id": "1330908926459514880", "name": "Role 3 (Test)", "emoji": "🔵", "buttonStyle": "Primary" }
+  ],
+  "_roles_production": [
+    { "id": "1492979807162732687", "name": "Negro",    "emoji": "⬛", "buttonStyle": "Secondary" },
+    { "id": "1492979814699896842", "name": "Blanco",   "emoji": "⬜", "buttonStyle": "Secondary" },
+    { "id": "1492979816402780501", "name": "Amarillo", "emoji": "🟨", "buttonStyle": "Secondary" },
+    { "id": "1492979820072796223", "name": "Rosa",     "emoji": "🩷", "buttonStyle": "Secondary" },
+    { "id": "1492979824304849132", "name": "Morado",   "emoji": "🟣", "buttonStyle": "Secondary" },
+    { "id": "1492979832953245816", "name": "Verde",    "emoji": "🟩", "buttonStyle": "Secondary" },
+    { "id": "1492979834656264242", "name": "Azul",     "emoji": "🟦", "buttonStyle": "Secondary" },
+    { "id": "1492979836996554935", "name": "Naranja",  "emoji": "🟧", "buttonStyle": "Secondary" },
+    { "id": "1492979839177850930", "name": "Gris",     "emoji": "🩶", "buttonStyle": "Secondary" },
+    { "id": "1492979841077612606", "name": "Rojo",     "emoji": "🟥", "buttonStyle": "Secondary" }
+  ]
+}

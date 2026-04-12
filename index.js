@@ -3,12 +3,13 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 
-// Eliminamos axios y el intervalo de heartbeat que pediste quitar
-const client = new Client({ 
-    intents: [
-        GatewayIntentBits.Guilds, 
-        GatewayIntentBits.GuildVoiceStates
-    ] 
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,    // Permite recibir eventos de mensajes
+    GatewayIntentBits.MessageContent    // Permite leer qué dice el mensaje
+  ]
 });
 
 client.commands = new Collection();

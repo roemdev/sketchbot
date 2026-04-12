@@ -24,6 +24,7 @@
     "better-sqlite3": "^12.8.0",
     "chalk": "^4.1.2",
     "discord.js": "^14.25.1",
+    "ollama": "^0.6.3",
     "rcon-client": "^4.2.5",
     "sqlite": "^5.1.1"
   },

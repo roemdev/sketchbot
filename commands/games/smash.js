@@ -14,7 +14,7 @@ const config = require("../../core.json");
 const userService = require("../../services/userService");
 const { makeEmbed } = require("../../utils/embedFactory");
 
-const SMASH_CHARACTERS = config.smash.characters;
+const SMASH_CHARACTERS = require("../../data/smash.json");
 const BET_INCREMENT = config.smash.betIncrement;
 const SMASH_TIMEOUT = config.smash.timeout * 1000; // ms
 const HOST_CUT = config.smash.hostCut; // e.g. 0.05
