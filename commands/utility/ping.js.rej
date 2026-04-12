@@ -1,0 +1,23 @@
+--- ping.js
++++ ping.js
+@@ -7,18 +7,12 @@
+   async execute(interaction) {
+     await interaction.reply({ content: "Midiendo...", flags: MessageFlags.Ephemeral });
+
+     const wsPing = interaction.client.ws.ping;
+     const interactionPing = Date.now() - interaction.createdTimestamp;
+
+     await interaction.editReply({
+-      content: "",
+-      components: [
+-        new ContainerBuilder().setAccentColor(0x3498db)
+-            .addTextDisplayComponents(t => t.setContent(
+-                `### 🏓 Pong!\n**Latencia WebSocket:** ${wsPing}ms\n**Latencia de interacción:** ${interactionPing}ms`
+-            ))
+-      ],
+-      flags: MessageFlags.IsComponentsV2,
++      content: `🏓 **¡Pong!**\nEl WebSocket tardó **${wsPing}ms** y mi cerebro tardó **${interactionPing}ms** en responder. ¡No está mal!`,
++      components: []
+     });
+   },
+ };

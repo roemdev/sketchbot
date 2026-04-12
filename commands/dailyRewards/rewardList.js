@@ -1,6 +1,5 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
 const db = require("../../services/dbService");
-const { makeContainer, CV2, CV2_EPHEMERAL } = require("../../utils/ui");
 const config = require("../../core.json");
 
 module.exports = {
@@ -15,18 +14,16 @@ module.exports = {
 
     if (!rows || rows.length === 0) {
       return interaction.reply({
-        components: [makeContainer("info", "Vacío", "No hay recompensas configuradas actualmente.")],
-        flags: CV2_EPHEMERAL,
+        content: `Mmm, la caja fuerte está vacía. No hay ninguna recompensa configurada ahora mismo. 🦗`,
       });
     }
 
     const list = rows
-      .map((row, i) => `**${i + 1}.** <@&${row.role_id}> — **${config.emojis.coin}${row.ammount.toLocaleString()}** diarios`)
+      .map((row, i) => `**${i + 1}.** <@&${row.role_id}> — **${row.ammount.toLocaleString()}** ${config.emojis.coin} diarios`)
       .join("\n");
 
     return interaction.reply({
-      components: [makeContainer("info", "Tabla de Recompensas", list)],
-      flags: CV2,
+      content: `### 📋 Tabla de Recompensas\nAquí está lo que pagan por cada rol:\n${list}`,
     });
   },
 };

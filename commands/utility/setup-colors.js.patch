@@ -1,0 +1,32 @@
+--- commands/utility/setup-colors.js
++++ commands/utility/setup-colors.js
+@@ -21,7 +21,7 @@
+
+ function buildColorsPanel() {
+   const container = new ContainerBuilder()
+-      .setAccentColor(0x9b59b6)
++      .setAccentColor(0x5B7FA6)
+       .addTextDisplayComponents(t =>
+           t.setContent(
+               "### 🎨 Roles de Color\n" +
+@@ -58,7 +58,7 @@
+
+   async execute(interaction) {
+     await interaction.channel.send({ components: [buildColorsPanel()], flags: MessageFlags.IsComponentsV2 });
+-    return interaction.reply({ content: "Panel de colores enviado correctamente.", flags: MessageFlags.Ephemeral });
++    return interaction.reply({ content: "¡Listo! Dejé los potes de pintura en este canal.", flags: MessageFlags.Ephemeral });
+   },
+
+   async buttonHandler(interaction) {
+@@ -78,10 +78,10 @@
+     if (!hadRole) {
+       await member.roles.add(roleId);
+       const role = COLOR_ROLES.find(r => r.id === roleId);
+-      return interaction.editReply({ content: `${role.emoji} Se te asignó el rol **${role.name}**.` });
++      return interaction.editReply({ content: `${role.emoji} ¡Nuevo look! Te pusiste la camiseta color **${role.name}**.` });
+     }
+
+-    return interaction.editReply({ content: "Se quitó tu rol de color." });
++    return interaction.editReply({ content: "Te quitaste el color. A lo clásico, supongo." });
+   },
+ };

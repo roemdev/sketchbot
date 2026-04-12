@@ -118,8 +118,8 @@ module.exports = {
         if (now < expirationTime) {
           const expiredTimestamp = Math.round(expirationTime / 1_000);
           return interaction.reply({
-            content: `¡Epa, aguanta un poco! 🐴 Vas muy rápido con el comando \`${command.data.name}\`. Intenta de nuevo <t:${expiredTimestamp}:R>.`,
-            flags: MessageFlags.Ephemeral
+            content: `Please wait, you are on a cooldown for \`${command.data.name}\`. You can use it again <t:${expiredTimestamp}:R>.`,
+            flags: MessageFlags.Ephemeral,
           });
         }
       }
@@ -134,7 +134,7 @@ module.exports = {
       }
     } catch (error) {
       console.error(error);
-      const errorMessage = "¡Uy! Parece que tropecé con un cable. Hubo un error procesando eso. 😅";
+      const errorMessage = "There was an error while executing this command!";
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: errorMessage,

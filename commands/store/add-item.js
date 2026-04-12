@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 const storeService = require("../../services/storeService");
 
 module.exports = {
@@ -25,22 +25,12 @@ module.exports = {
       await storeService.addItem({ name: nombre, description: descripcion, price: precio, iconId: icono, minecraftItem: mcItem });
 
       await interaction.editReply({
-        components: [
-          new ContainerBuilder().setAccentColor(0x32cd32)
-              .addTextDisplayComponents(t => t.setContent(
-                  `### ✅ Artículo añadido\n**${icono} ${nombre}** agregado a la tienda por **${precio}** monedas.\nComando MC: \`give <jugador> ${mcItem}\``
-              ))
-        ],
-        flags: MessageFlags.IsComponentsV2,
+        content: `✅ ¡Artículo en vitrina!\n**${icono} ${nombre}** se añadió a la tienda por **${precio}** monedas.\nComando MC: \`give <jugador> ${mcItem}\``,
       });
     } catch (error) {
       console.error("Error al añadir item:", error);
       await interaction.editReply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
-              .addTextDisplayComponents(t => t.setContent("### ❌ Error al guardar\nOcurrió un problema al guardar el artículo en la base de datos."))
-        ],
-        flags: MessageFlags.IsComponentsV2,
+        content: `❌ Ocurrió un problema guardando el artículo en la base de datos. Diles a los técnicos.`,
       });
     }
   },

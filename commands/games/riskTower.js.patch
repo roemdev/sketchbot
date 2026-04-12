@@ -1,0 +1,83 @@
+--- commands/games/riskTower.js
++++ commands/games/riskTower.js
+@@ -19,7 +19,7 @@
+     const bet = interaction.options.getInteger("cantidad");
+
+     if (bet <= 0) {
+-      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
++      return interaction.reply({ content: "❌ ¡Casi! Pero no puedes apostar menos de una moneda.", flags: MessageFlags.Ephemeral });
+     }
+
+     await userService.createUser(userId, interaction.user.username);
+@@ -27,7 +27,7 @@
+     const currentBalance = await userService.getBalance(userId);
+     if (currentBalance < bet) {
+       interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
+-      return interaction.reply({ content: "❌ No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
++      return interaction.reply({ content: "❌ ¡Ey! Estás intentando apostar dinero que no tienes. Ve a trabajar un rato.", flags: MessageFlags.Ephemeral });
+     }
+
+     await userService.addBalance(userId, -bet, false);
+@@ -41,11 +41,11 @@
+
+ function buildTowerPanel(userId, bet, current) {
+   return new ContainerBuilder()
+-      .setAccentColor(0x9b59b6)
++      .setAccentColor(0x6C3483)
+       .addTextDisplayComponents(t =>
+           t.setContent(
+-              `### 🗼 Torre de Riesgo\n` +
+-              `Apuesta inicial: ${COIN}**${bet.toLocaleString()}**\n` +
++              `### 🗼 Escalando la Torre del Peligro\n` +
++              `Pusiste: **${bet.toLocaleString()}** ${COIN}\n` +
+               `Saldo en juego: ${COIN}**${current.toLocaleString()}**`
+           )
+       )
+@@ -74,7 +74,7 @@
+   const current = parseFloat(parts[4]);
+
+   if (interaction.user.id !== userId) {
+-    return interaction.reply({ content: "Esto no es tu juego.", flags: MessageFlags.Ephemeral });
++    return interaction.reply({ content: "👀 Shh, no toques botones en la torre de otra persona.", flags: MessageFlags.Ephemeral });
+   }
+
+   if (action === "risk") {
+@@ -82,11 +82,11 @@
+       const next = current * 1.25;
+
+       const winContainer = new ContainerBuilder()
+-          .setAccentColor(0x32cd32)
++          .setAccentColor(0x6C3483)
+           .addTextDisplayComponents(t =>
+               t.setContent(
+-                  `### 🚀 ¡Subiste un nivel!\n` +
+-                  `Tu saldo se ha multiplicado. Total actual: ${COIN}**${next.toLocaleString()}**`
++                  `### 🚀 ¡Nivel superado, sigues vivo!\n` +
++                  `La adrenalina sube, tu dinero también. Llevas **${next.toLocaleString()}** ${COIN}. ¿Te arriesgas otra vez o te rajas?`
+               )
+           )
+           .addSeparatorComponents(s => s)
+@@ -102,10 +102,10 @@
+       await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
+
+       const loseContainer = new ContainerBuilder()
+-          .setAccentColor(0xff4500)
++          .setAccentColor(0xC0392B)
+           .addTextDisplayComponents(t =>
+-              t.setContent(`### 💥 Todo perdido\nLa torre colapsó. Perdiste ${COIN}**${current.toLocaleString()}** créditos.`)
++              t.setContent(`### 💥 ¡Booooom! Caída libre\nLa torre no aguantó y colapsó frente a ti. Acabas de perder **${current.toLocaleString()}** ${COIN}. Suerte a la próxima, si es que te atreves.`)
+           );
+
+       return interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
+@@ -116,10 +116,10 @@
+     await transactionService.logTransaction({ discordId: userId, type: "game", amount: current });
+
+     const cashoutContainer = new ContainerBuilder()
+-        .setAccentColor(0x32cd32)
++        .setAccentColor(0xF4C542)
+         .addTextDisplayComponents(t =>
+-            t.setContent(`### 💰 Cobro realizado\nTe retiraste a tiempo. Conservaste ${COIN}**${current.toLocaleString()}** créditos.`)
++            t.setContent(`### 💰 ¡Retirada estratégica!\nCobraste antes de que todo se viniera abajo. Te llevas a casa **${current.toLocaleString()}** ${COIN} enteritos.`)
+         );
+
+     return interaction.update({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });

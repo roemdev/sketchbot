@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 const db = require("../../services/dbService");
-const { makeContainer, CV2_EPHEMERAL } = require("../../utils/ui");
 const config = require("../../core.json");
 
 module.exports = {
@@ -42,20 +41,13 @@ module.exports = {
         );
 
         return interaction.reply({
-          components: [
-            makeContainer(
-              "success",
-              "Recompensa guardada",
-              `El rol **${role.name}** ahora otorga **${config.emojis.coin}${amount.toLocaleString()}** diarios.`
-            ),
-          ],
-          flags: CV2_EPHEMERAL,
+          content: `¡Listo el pollo! El rol **${role.name}** ahora soltará **${amount.toLocaleString()}** ${config.emojis.coin} monedas cada día. 💰`,
         });
       } catch (error) {
         console.error(error);
         return interaction.reply({
-          components: [makeContainer("error", "Error de base de datos", "No se pudo guardar el rol.")],
-          flags: CV2_EPHEMERAL,
+          content: `❌ Uy, algo se rompió en la base de datos al guardar ese rol. Intenta de nuevo.`,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
@@ -65,20 +57,13 @@ module.exports = {
         await db.query(`DELETE FROM role_rewards WHERE role_id = ?`, [role.id]);
 
         return interaction.reply({
-          components: [
-            makeContainer(
-              "success",
-              "Recompensa eliminada",
-              `El rol **${role.name}** ya no otorga monedas diarias.`
-            ),
-          ],
-          flags: CV2_EPHEMERAL,
+          content: `Se acabó la fiesta para el rol **${role.name}**. Ya no dará monedas diarias. 👋`,
         });
       } catch (error) {
         console.error(error);
         return interaction.reply({
-          components: [makeContainer("error", "Error", "No se pudo eliminar el rol.")],
-          flags: CV2_EPHEMERAL,
+          content: `❌ Fallo general al intentar eliminar ese rol. Avisa a los técnicos.`,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }

@@ -22,11 +22,8 @@ module.exports = {
 
     if (!winnerChar) {
       return interaction.reply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
-              .addTextDisplayComponents(t => t.setContent(`### ❌ Personaje no encontrado\nNo se encontró ningún personaje asociado a "${winnerInput}". Escribe el nombre o alias correctamente.`))
-        ],
-        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
+        content: `❌ Hmm... ¿"${winnerInput}"? Ese no me suena a ningún personaje de Smash. Escribe bien su nombre o alias, anda.`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -44,11 +41,8 @@ module.exports = {
 
     if (!session) {
       return interaction.reply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
-              .addTextDisplayComponents(t => t.setContent("### ❌ Sin sesión activa\nNo tienes ninguna sesión de apuestas cerrada pendiente de resultado."))
-        ],
-        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
+        content: `❌ ¿Buscando fantasmas? No tienes ninguna sesión de apuestas cerrada esperando resultados en este momento.`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -75,10 +69,10 @@ module.exports = {
 
       return interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0xf0c040)
+          new ContainerBuilder().setAccentColor(0x5B7FA6)
               .addTextDisplayComponents(t => t.setContent(
-                  `### ${winnerChar.emoji} ${winnerChar.name} ganó — sin apostadores\n` +
-                  `Nadie apostó por **${winnerChar.name}**. El bote de ${COIN}${totalPot.toLocaleString()} fue al hoster.`
+                  `### ${winnerChar.emoji} ¡${winnerChar.name} se llevó la victoria!\n` +
+                  `Pero, ¡ay! Nadie confió en **${winnerChar.name}**. El pozo completito de **${totalPot.toLocaleString()}** ${COIN} se lo queda el Hoster.`
               ))
         ],
         flags: MessageFlags.IsComponentsV2,
@@ -92,20 +86,20 @@ module.exports = {
       const payout = Math.floor(prizePool * (winner.amount / winnersTotalBet));
       await userService.addBalance(winner.userId, payout, false);
       await logTransaction({ discordId: winner.userId, type: "smash_win", amount: payout });
-      payoutLines.push(`<@${winner.userId}> apostó ${COIN}${winner.amount.toLocaleString()} → recibe ${COIN}${payout.toLocaleString()}`);
+      payoutLines.push(`<@${winner.userId}> apostó **${winner.amount.toLocaleString()}** ${COIN} y se lleva **${payout.toLocaleString()}** ${COIN} a casa 💸`);
     }
 
     sessions.delete(sessionKey);
 
     return interaction.editReply({
       components: [
-        new ContainerBuilder().setAccentColor(0x32cd32)
+        new ContainerBuilder().setAccentColor(0xF4C542)
             .addTextDisplayComponents(t => t.setContent(
-                `### ${winnerChar.emoji} ${winnerChar.name} ganó\n\n` +
-                `**Bote total:** ${COIN}${totalPot.toLocaleString()}\n` +
-                `**Comisión del hoster (${HOST_CUT * 100}%):** ${COIN}${hostEarnings.toLocaleString()}\n` +
-                `**Premio repartido:** ${COIN}${prizePool.toLocaleString()}\n\n` +
-                `**Ganadores:**\n${payoutLines.join("\n")}`
+                `### ${winnerChar.emoji} ¡${winnerChar.name} arrasó con todo!\n\n` +
+                `**Pozo total en juego:** **${totalPot.toLocaleString()}** ${COIN}\n` +
+                `**Corte del Hoster (${HOST_CUT * 100}%):** **${hostEarnings.toLocaleString()}** ${COIN}\n` +
+                `**Botín a repartir:** **${prizePool.toLocaleString()}** ${COIN}\n\n` +
+                `**Vencedores con buen ojo:**\n${payoutLines.join("\n")}`
             ))
       ],
       flags: MessageFlags.IsComponentsV2,

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 const userService = require("../../services/userService");
-const { makeContainer, CV2 } = require("../../utils/ui");
+const { logTransaction } = require("../../services/transactionService");
 const config = require("../../core.json");
 
 module.exports = {
@@ -32,17 +32,17 @@ module.exports = {
 
     if (action === "add") {
       await userService.addBalance(target.id, amount, false);
+      await logTransaction({ discordId: target.id, type: "admin_add", amount });
       return interaction.reply({
-        components: [makeContainer("success", "Créditos añadidos", `Se añadieron **${coin}${amount.toLocaleString()}** a <@${target.id}>.`)],
-        flags: CV2,
+        content: `¡Listo! Le he sumado **${amount.toLocaleString()}** ${coin} monedas a <@${target.id}>. 🤑`,
       });
     }
 
     if (action === "remove") {
       await userService.removeBalance(target.id, amount, false);
+      await logTransaction({ discordId: target.id, type: "admin_remove", amount: -amount });
       return interaction.reply({
-        components: [makeContainer("success", "Créditos eliminados", `Se eliminaron **${coin}${amount.toLocaleString()}** de <@${target.id}>.`)],
-        flags: CV2,
+        content: `Hecho. Le quité **${amount.toLocaleString()}** ${coin} monedas a <@${target.id}>. Los bolsillos un poco más vacíos... 😅`,
       });
     }
   },
