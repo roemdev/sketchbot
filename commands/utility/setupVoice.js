@@ -17,7 +17,7 @@ module.exports = {
 
   async execute(interaction) {
     const panel = new ContainerBuilder()
-        .setAccentColor(0x5865f2)
+        .setAccentColor(0x5B7FA6)
         .addTextDisplayComponents(t =>
             t.setContent(
                 "### 🎙️ Panel de Control de Voz\n" +

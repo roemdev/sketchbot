@@ -3,18 +3,19 @@ const { apiKey: PAYMENTER_API_KEY, url: PAYMENTER_URL } = require('../../config.
 const { coin } = require('../../core.json').emojis;
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 const db = require('../../services/dbService');
+const { logTransaction } = require('../../services/transactionService');
 
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('monedas-a-creditos')
-    .setDescription('Convierte tus monedas del servidor a créditos en Paymenter'),
+    .setDescription('Convierte tus monedas del servidor a saldo en Paymenter'),
 
   async execute(interaction) {
     // ── Mostrar modal ───────────────────────────────────────────────────────
     const modal = new ModalBuilder()
       .setCustomId('monedas_a_creditos_modal')
-      .setTitle('Canjear monedas por créditos');
+      .setTitle('Cambiar monedas por saldo');
 
     const emailInput = new TextInputBuilder()
       .setCustomId('email_paymenter')
@@ -25,7 +26,7 @@ module.exports = {
 
     const amountInput = new TextInputBuilder()
       .setCustomId('creditos_paymenter')
-      .setLabel(`Créditos a canjear (1 = ${exchangeRate.toLocaleString()} monedas)`)
+      .setLabel(`Saldo a recibir (1 = ${exchangeRate.toLocaleString()} monedas)`)
       .setPlaceholder('Ej: 2')
       .setStyle(TextInputStyle.Short)
       .setRequired(true);
@@ -50,7 +51,7 @@ module.exports = {
 
     // Validar que la cantidad sea un número entero positivo
     if (isNaN(paymenterCredits) || paymenterCredits < 1) {
-      return interaction.editReply('❌ La cantidad de créditos debe ser un número entero mayor a 0.');
+      return interaction.editReply('Esa cantidad no me cuadra 😅. Pon un número entero mayor a 0.');
     }
 
     try {
@@ -63,7 +64,7 @@ module.exports = {
 
       if (currentBalance < costInCoins) {
         return interaction.editReply(
-          `❌ No tienes suficientes monedas. Balance actual: **${currentBalance.toLocaleString()}** ${coin} | Necesitas: **${costInCoins.toLocaleString()}** ${coin}.`
+          `No te alcanza por ahora 😬. Tienes **${currentBalance.toLocaleString()}** ${coin} y necesitas **${costInCoins.toLocaleString()}** ${coin}.`
         );
       }
 
@@ -77,7 +78,7 @@ module.exports = {
       });
 
       if (!getResponse.ok) {
-        return interaction.editReply(`❌ No se pudo conectar con Paymenter (Código: ${getResponse.status}).`);
+        return interaction.editReply(`No pude hablar con Paymenter (${getResponse.status}). Intenta en un ratito.`);
       }
 
       const usersData = await getResponse.json();
@@ -89,7 +90,7 @@ module.exports = {
       });
 
       if (!targetPaymenterUser) {
-        return interaction.editReply(`❌ No se encontró ninguna cuenta con el correo **${paymenterEmail}**.`);
+        return interaction.editReply(`No encontré ninguna cuenta con el correo **${paymenterEmail}**.`);
       }
 
       const paymenterId = targetPaymenterUser.attributes?.id ?? targetPaymenterUser.id;
@@ -118,7 +119,7 @@ module.exports = {
 
         if (!alreadyExists) {
           console.error(`[exchange-paymenter] Error credits POST ${creditResponse.status}:`, errBody);
-          return interaction.editReply(`❌ Falló la entrega de créditos en Paymenter (Código: ${creditResponse.status}).`);
+          return interaction.editReply(`Paymenter rechazó el saldo (${creditResponse.status}).`);
         }
 
         // Buscar registro existente y sumar
@@ -133,7 +134,7 @@ module.exports = {
         );
 
         if (!listRes.ok) {
-          return interaction.editReply('❌ No se pudo obtener el registro de créditos existente.');
+          return interaction.editReply('No pude cargar tu registro de saldo en Paymenter.');
         }
 
         const creditsList  = await listRes.json();
@@ -143,7 +144,7 @@ module.exports = {
         });
 
         if (!existingCredit) {
-          return interaction.editReply('❌ No se encontró el registro de créditos del usuario.');
+          return interaction.editReply('No encontré tu registro de saldo en Paymenter.');
         }
 
         const creditId  = existingCredit.id;
@@ -168,7 +169,7 @@ module.exports = {
         if (!creditResponse.ok) {
           const putErr = await creditResponse.text();
           console.error(`[exchange-paymenter] Error credits PUT ${creditResponse.status}:`, putErr);
-          return interaction.editReply(`❌ Falló la actualización de créditos en Paymenter (Código: ${creditResponse.status}).`);
+          return interaction.editReply(`No pude actualizar el saldo en Paymenter (${creditResponse.status}).`);
         }
       }
 
@@ -177,14 +178,21 @@ module.exports = {
         'UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?',
         [costInCoins, targetUser.id]
       );
+      await logTransaction({
+        discordId: targetUser.id,
+        type: 'coins_to_credits',
+        itemName: `Canje a Paymenter (${paymenterEmail})`,
+        amount: costInCoins,
+        totalPrice: paymenterCredits
+      });
 
       return interaction.editReply(
-        `✅ ¡Canje exitoso! Se descontaron **${costInCoins.toLocaleString()}** ${coin} monedas y se añadieron **${paymenterCredits}** crédito(s) a la cuenta **${paymenterEmail}** en Paymenter.`
+        `¡Canje listo! Desconté **${costInCoins.toLocaleString()}** ${coin} y envié saldo a **${paymenterEmail}** en Paymenter.`
       );
 
     } catch (error) {
       console.error('[exchange-paymenter] Error general:', error);
-      return interaction.editReply('❌ Ocurrió un error interno al procesar la operación.');
+      return interaction.editReply('Se me enredó el canje 😵. Inténtalo de nuevo en un momento.');
     }
   }
 };

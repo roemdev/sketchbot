@@ -23,7 +23,7 @@ module.exports = {
     if (!winnerChar) {
       return interaction.reply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent(`### ❌ Personaje no encontrado\nNo se encontró ningún personaje asociado a "${winnerInput}". Escribe el nombre o alias correctamente.`))
         ],
         flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
@@ -45,7 +45,7 @@ module.exports = {
     if (!session) {
       return interaction.reply({
         components: [
-          new ContainerBuilder().setAccentColor(0xff4500)
+          new ContainerBuilder().setAccentColor(0xC0392B)
               .addTextDisplayComponents(t => t.setContent("### ❌ Sin sesión activa\nNo tienes ninguna sesión de apuestas cerrada pendiente de resultado."))
         ],
         flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
@@ -75,7 +75,7 @@ module.exports = {
 
       return interaction.editReply({
         components: [
-          new ContainerBuilder().setAccentColor(0xf0c040)
+          new ContainerBuilder().setAccentColor(0x5B7FA6)
               .addTextDisplayComponents(t => t.setContent(
                   `### ${winnerChar.emoji} ${winnerChar.name} ganó — sin apostadores\n` +
                   `Nadie apostó por **${winnerChar.name}**. El bote de ${COIN}${totalPot.toLocaleString()} fue al hoster.`
@@ -99,7 +99,7 @@ module.exports = {
 
     return interaction.editReply({
       components: [
-        new ContainerBuilder().setAccentColor(0x32cd32)
+        new ContainerBuilder().setAccentColor(0xF4C542)
             .addTextDisplayComponents(t => t.setContent(
                 `### ${winnerChar.emoji} ${winnerChar.name} ganó\n\n` +
                 `**Bote total:** ${COIN}${totalPot.toLocaleString()}\n` +

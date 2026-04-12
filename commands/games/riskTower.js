@@ -42,7 +42,7 @@ module.exports = {
 
 function buildTowerPanel(userId, bet, current) {
   return new ContainerBuilder()
-      .setAccentColor(0x9b59b6)
+      .setAccentColor(0x6C3483)
       .addTextDisplayComponents(t =>
           t.setContent(
               `### 🗼 Torre de Riesgo\n` +
@@ -84,7 +84,7 @@ module.exports.buttonHandler = async (interaction) => {
       const next = current * 1.25;
 
       const winContainer = new ContainerBuilder()
-          .setAccentColor(0x32cd32)
+          .setAccentColor(0xF4C542)
           .addTextDisplayComponents(t =>
               t.setContent(
                   `### 🚀 ¡Subiste un nivel!\n` +
@@ -104,7 +104,7 @@ module.exports.buttonHandler = async (interaction) => {
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
       const loseContainer = new ContainerBuilder()
-          .setAccentColor(0xff4500)
+          .setAccentColor(0xC0392B)
           .addTextDisplayComponents(t =>
               t.setContent(`### 💥 Todo perdido\nLa torre colapsó. Perdiste ${COIN}**${current.toLocaleString()}** créditos.`)
           );
@@ -118,7 +118,7 @@ module.exports.buttonHandler = async (interaction) => {
     await transactionService.logTransaction({ discordId: userId, type: "game", amount: current });
 
     const cashoutContainer = new ContainerBuilder()
-        .setAccentColor(0x32cd32)
+        .setAccentColor(0xF4C542)
         .addTextDisplayComponents(t =>
             t.setContent(`### 💰 Cobro realizado\nTe retiraste a tiempo. Conservaste ${COIN}**${current.toLocaleString()}** créditos.`)
         );

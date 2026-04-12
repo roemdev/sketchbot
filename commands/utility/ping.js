@@ -13,7 +13,7 @@ module.exports = {
     await interaction.editReply({
       content: "",
       components: [
-        new ContainerBuilder().setAccentColor(0x3498db)
+        new ContainerBuilder().setAccentColor(0x5B7FA6)
             .addTextDisplayComponents(t => t.setContent(
                 `### 🏓 Pong!\n**Latencia WebSocket:** ${wsPing}ms\n**Latencia de interacción:** ${interactionPing}ms`
             ))
