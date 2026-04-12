@@ -32,7 +32,7 @@ module.exports = {
     }
 
     const container = new ContainerBuilder()
-        .setAccentColor(0x9b59b6)
+        .setAccentColor(0x6C3483)
         .addTextDisplayComponents(t =>
             t.setContent(
                 `### 🎁 ¡Prueba tu suerte!\n` +
@@ -79,7 +79,7 @@ module.exports.buttonHandler = async (interaction) => {
     await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
     const loseContainer = new ContainerBuilder()
-        .setAccentColor(0xff4500)
+        .setAccentColor(0xC0392B)
         .addTextDisplayComponents(t =>
             t.setContent(`### ❌ ¡Perdiste!\nEl premio estaba en la caja **${winningChest}**. Perdiste ${COIN}**${bet.toLocaleString()}**. ¡Vuelve a intentarlo!`)
         );

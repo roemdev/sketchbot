@@ -82,7 +82,7 @@ function buildPanel(session) {
   }
 
   const container = new ContainerBuilder()
-      .setAccentColor(0x6C3483)
+      .setAccentColor(0xC0392B)
       .addTextDisplayComponents(t =>
           t.setContent(
               `### 🥊 ¡Arrancan las Apuestas de Smash Bros!\n` +
@@ -125,8 +125,11 @@ module.exports = {
     for (const [, s] of sessions) {
       if (s.hostId === hostId && s.open) {
         return interaction.reply({
-          content: `❌ ¡Epa! Ya tienes una mesa de apuestas abierta. Ciérrala antes de armar otra fiesta.`,
-          flags: MessageFlags.Ephemeral,
+          components: [
+            new ContainerBuilder().setAccentColor(0xC0392B)
+                .addTextDisplayComponents(t => t.setContent("### ❌ Sesión activa\nCierra la sesión anterior antes de abrir una nueva."))
+          ],
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
         });
       }
     }
@@ -170,8 +173,11 @@ module.exports = {
     if (action === "bet") {
       if (!session || !session.open) {
         return interaction.reply({
-          content: `🔒 Demasiado tarde. Las apuestas están cerradas.`,
-          flags: MessageFlags.Ephemeral,
+          components: [
+            new ContainerBuilder().setAccentColor(0xC0392B)
+                .addTextDisplayComponents(t => t.setContent("### 🔒 Sesión cerrada\nLas apuestas ya están cerradas."))
+          ],
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
         });
       }
 
@@ -185,8 +191,11 @@ module.exports = {
           await userService.removeBalance(userId, BET_INCREMENT, false);
         } catch {
           return interaction.reply({
-            content: `❌ Mmm... no te alcanza para más. Cuesta **${BET_INCREMENT.toLocaleString()}** ${config.emojis.coin} subir la apuesta.`,
-            flags: MessageFlags.Ephemeral,
+            components: [
+              new ContainerBuilder().setAccentColor(0xC0392B)
+                  .addTextDisplayComponents(t => t.setContent(`### ❌ Saldo insuficiente\nNecesitas ${config.emojis.coin}${BET_INCREMENT.toLocaleString()} para aumentar tu apuesta.`))
+            ],
+            flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
           });
         }
 
@@ -196,8 +205,11 @@ module.exports = {
         await msg.edit({ components: [buildPanel(session)], flags: MessageFlags.IsComponentsV2 });
 
         return interaction.reply({
-          content: `🔥 ¡Te calientas! Ahora tienes **${bettor.amount.toLocaleString()}** ${config.emojis.coin} metidos en **${charName}**. ¡A cruzar los dedos!`,
-          flags: MessageFlags.Ephemeral,
+          components: [
+            new ContainerBuilder().setAccentColor(0xF4C542)
+                .addTextDisplayComponents(t => t.setContent(`### ✅ Apuesta aumentada\nTu apuesta total es ahora ${config.emojis.coin}${bettor.amount.toLocaleString()} en **${charName}**.`))
+          ],
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
         });
       }
 
@@ -221,22 +233,31 @@ module.exports = {
     if (action === "close") {
       if (!session) {
         return interaction.reply({
-          content: `❌ Aquí no hay nada, esta sesión desapareció.`,
-          flags: MessageFlags.Ephemeral,
+          components: [
+            new ContainerBuilder().setAccentColor(0xC0392B)
+                .addTextDisplayComponents(t => t.setContent("### ❌ No encontrada\nEsta sesión ya no existe."))
+          ],
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
         });
       }
 
       if (interaction.user.id !== session.hostId) {
         return interaction.reply({
-          content: `🚫 ¡Manos quietas! Solo el dueño de la mesa puede cerrar la caja.`,
-          flags: MessageFlags.Ephemeral,
+          components: [
+            new ContainerBuilder().setAccentColor(0xC0392B)
+                .addTextDisplayComponents(t => t.setContent("### 🚫 Sin permiso\nSolo el hoster puede cerrar las apuestas."))
+          ],
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
         });
       }
 
       if (!session.open) {
         return interaction.reply({
-          content: `ℹ️ Ya cerraste las apuestas, amigo. No le des más veces.`,
-          flags: MessageFlags.Ephemeral,
+          components: [
+            new ContainerBuilder().setAccentColor(0x5B7FA6)
+                .addTextDisplayComponents(t => t.setContent("### ℹ️ Ya cerrado\nLas apuestas ya estaban cerradas."))
+          ],
+          flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
         });
       }
 
@@ -247,8 +268,11 @@ module.exports = {
       await msg.edit({ components: [buildPanel(session)], flags: MessageFlags.IsComponentsV2 });
 
       return interaction.reply({
-        content: `🔒 ¡La suerte está echada! Usa \`/smash-resultado\` cuando los golpes acaben.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xF4C542)
+              .addTextDisplayComponents(t => t.setContent("### ✅ Apuestas cerradas\nUsa `/smash-resultado` para declarar el personaje ganador cuando termine el juego."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
@@ -264,32 +288,44 @@ module.exports = {
 
     if (!session || !session.open) {
       return interaction.reply({
-        content: `🔒 ¡Demasiado lento! La mesa acaba de cerrar.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### 🔒 Sesión cerrada\nLas apuestas ya están cerradas."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     const userId = interaction.user.id;
     if (session.bettors.has(userId)) {
       return interaction.reply({
-        content: `ℹ️ Oye, ya apostaste. Si quieres subir la apuesta, pica el botón de apostar de nuevo.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0x5B7FA6)
+              .addTextDisplayComponents(t => t.setContent("### ℹ️ Ya apostaste\nUsa el botón de apostar directamente para sumar a tu apuesta."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     const char = findCharacter(inputField.value);
     if (!char) {
       return interaction.reply({
-        content: `❌ Hmm... ¿"${inputField.value}"? Ese no me suena de nada. Intenta escribir su nombre mejor.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent(`### ❌ No encontrado\nNo se encontró ningún personaje asociado a "${inputField.value}". Intenta escribir el nombre completo.`))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     const uniqueChars = new Set([...session.bettors.values()].map(d => d.characterId));
     if (!uniqueChars.has(char.id) && uniqueChars.size >= 8) {
       return interaction.reply({
-        content: `❌ ¡Uy! Ya tenemos a 8 personajes partiéndose la cara. Te toca escoger a alguno de los que ya están en el ring.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### ❌ Límite alcanzado\nYa se apostó al límite de 8 personajes. Escoge uno de los que ya participan."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
@@ -298,8 +334,11 @@ module.exports = {
       await userService.removeBalance(userId, BET_INCREMENT, false);
     } catch {
       return interaction.reply({
-        content: `❌ Pfff... no te alcanza. La entrada mínima es **${BET_INCREMENT.toLocaleString()}** ${config.emojis.coin}. Ve a juntar moneditas.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent(`### ❌ Saldo insuficiente\nNecesitas ${config.emojis.coin}${BET_INCREMENT.toLocaleString()} para apostar.`))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
@@ -309,8 +348,11 @@ module.exports = {
     await msg.edit({ components: [buildPanel(session)], flags: MessageFlags.IsComponentsV2 });
 
     return interaction.reply({
-      content: `💥 ¡Boom! Has lanzado **${BET_INCREMENT.toLocaleString()}** ${config.emojis.coin} sobre los hombros de **${char.name}**. ¡Que no te decepcione!`,
-      flags: MessageFlags.Ephemeral,
+      components: [
+        new ContainerBuilder().setAccentColor(0xF4C542)
+            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Apuesta registrada!\nApostaste ${config.emojis.coin}${BET_INCREMENT.toLocaleString()} a **${char.name}**.`))
+      ],
+      flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
     });
   },
 

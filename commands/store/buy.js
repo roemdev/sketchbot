@@ -23,21 +23,46 @@ module.exports = {
 
     if (!isValidMinecraftNick(mcNick)) {
       return interaction.reply({
-        content: "❌ Ese nickname no parece de Minecraft. Escríbelo bien, anda.",
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### ❌ Nickname inválido\nEl nickname de Minecraft proporcionado no es válido."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     const item = await storeService.getItemByName(itemName);
     if (!item || item.status !== "available") {
       return interaction.reply({
-        content: "❌ Lo siento, ese artículo ya no está disponible o nunca existió.",
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### ❌ No disponible\nEl artículo solicitado no está disponible."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     await userService.createUser(interaction.user.id, interaction.user.username);
 
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`comprar_confirm_${item.id}_${mcNick}`).setLabel("Confirmar").setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`comprar_cancel_${item.id}`).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
+    );
+
+    const preview = new ContainerBuilder()
+        .setAccentColor(0x1E8449)
+        .addTextDisplayComponents(t => t.setContent(
+            `### 🛒 Confirmar compra\n` +
+            `Artículo: **${item.icon_id} ${item.name}**\n` +
+            `Precio: **${COIN}${item.price.toLocaleString()}**\n` +
+            `Destino: **${mcNick}**\n\n` +
+            `¿Deseas continuar?`
+        ))
+        .addSeparatorComponents(s => s)
+        .addActionRowComponents(row.components[0] ? row : r => r);
+
+    // ContainerBuilder doesn't take ActionRowBuilder directly in addActionRowComponents this way,
+    // so we build a separate container + reply with both
     return interaction.reply({
       components: [
         new ContainerBuilder()
@@ -92,8 +117,11 @@ module.exports = {
 
     if (action === "cancel") {
       return interaction.editReply({
-        content: "ℹ️ Compra cancelada. Guarda tus monedas para otra ocasión.",
-        components: [],
+        components: [
+          new ContainerBuilder().setAccentColor(0x1E8449)
+              .addTextDisplayComponents(t => t.setContent("### ℹ️ Compra cancelada\nNo se procesó ninguna transacción."))
+        ],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
@@ -111,13 +139,19 @@ module.exports = {
         });
 
         return interaction.editReply({
-          content: `✅ ¡Trato hecho! El artículo **${result.item.name}** ha sido entregado en Minecraft.`,
-          components: [],
+          components: [
+            new ContainerBuilder().setAccentColor(0xF4C542)
+                .addTextDisplayComponents(t => t.setContent("### ✅ Compra realizada con éxito\nEl artículo ha sido entregado en Minecraft."))
+          ],
+          flags: MessageFlags.IsComponentsV2,
         });
       } catch (err) {
         return interaction.editReply({
-          content: `❌ Uy, algo falló en la compra: ${err.message}`,
-          components: [],
+          components: [
+            new ContainerBuilder().setAccentColor(0xC0392B)
+                .addTextDisplayComponents(t => t.setContent(`### ❌ Error en la compra\n${err.message}`))
+          ],
+          flags: MessageFlags.IsComponentsV2,
         });
       }
     }

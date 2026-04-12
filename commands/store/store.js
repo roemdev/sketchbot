@@ -21,8 +21,11 @@ module.exports = {
 
     if (!isValidMinecraftNick(mcNick)) {
       return interaction.reply({
-        content: "❌ Ese nickname no parece de Minecraft. Escríbelo bien, anda.",
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### ❌ Nickname inválido\nEl nickname de Minecraft proporcionado no es válido."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
@@ -31,7 +34,11 @@ module.exports = {
     const items = await storeService.getItems("available");
     if (!items || items.length === 0) {
       return interaction.editReply({
-        content: "🛒 La tienda está vacía ahora mismo. Vuelve más tarde.",
+        components: [
+          new ContainerBuilder().setAccentColor(0x1E8449)
+              .addTextDisplayComponents(t => t.setContent("### 🛒 Tienda vacía\nNo hay items disponibles actualmente."))
+        ],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
@@ -80,7 +87,11 @@ module.exports = {
       const item = await storeService.getItem(itemId);
       if (!item || item.status !== "available") {
         return interaction.editReply({
-          content: "❌ Lo siento, ese artículo ya no está disponible.",
+          components: [
+            new ContainerBuilder().setAccentColor(0xC0392B)
+                .addTextDisplayComponents(t => t.setContent("### ❌ No disponible\nEl artículo ya no está disponible."))
+          ],
+          flags: MessageFlags.IsComponentsV2,
         });
       }
 
@@ -95,11 +106,21 @@ module.exports = {
       });
 
       return interaction.editReply({
-        content: `✅ ¡Trato hecho! Has comprado **${result.item.icon_id} ${result.item.name}** para **${mcNick}** por **${result.totalPrice.toLocaleString()}** ${COIN}.`,
+        components: [
+          new ContainerBuilder().setAccentColor(0xF4C542)
+              .addTextDisplayComponents(t => t.setContent(
+                  `### ✅ ¡Compra realizada!\nHas comprado **${result.item.icon_id} ${result.item.name}** para **${mcNick}** por ${COIN}${result.totalPrice.toLocaleString()}.`
+              ))
+        ],
+        flags: MessageFlags.IsComponentsV2,
       });
     } catch (err) {
       return interaction.editReply({
-        content: `❌ Uy, falló la compra: ${err.message}`,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent(`### ❌ Error en la compra\n${err.message}`))
+        ],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
   }

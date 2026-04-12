@@ -25,12 +25,22 @@ module.exports = {
       await storeService.addItem({ name: nombre, description: descripcion, price: precio, iconId: icono, minecraftItem: mcItem });
 
       await interaction.editReply({
-        content: `✅ ¡Artículo en vitrina!\n**${icono} ${nombre}** se añadió a la tienda por **${precio}** monedas.\nComando MC: \`give <jugador> ${mcItem}\``,
+        components: [
+          new ContainerBuilder().setAccentColor(0xF4C542)
+              .addTextDisplayComponents(t => t.setContent(
+                  `### ✅ Artículo añadido\n**${icono} ${nombre}** agregado a la tienda por **${precio}** monedas.\nComando MC: \`give <jugador> ${mcItem}\``
+              ))
+        ],
+        flags: MessageFlags.IsComponentsV2,
       });
     } catch (error) {
       console.error("Error al añadir item:", error);
       await interaction.editReply({
-        content: `❌ Ocurrió un problema guardando el artículo en la base de datos. Diles a los técnicos.`,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### ❌ Error al guardar\nOcurrió un problema al guardar el artículo en la base de datos."))
+        ],
+        flags: MessageFlags.IsComponentsV2,
       });
     }
   },

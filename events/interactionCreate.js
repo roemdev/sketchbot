@@ -29,7 +29,7 @@ module.exports = {
           );
           if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({
-              content: "Hubo un error al procesar el formulario.",
+              content: "Uy, ese formulario salió travieso. Prueba otra vez.",
               flags: MessageFlags.Ephemeral,
             });
           }
@@ -58,7 +58,7 @@ module.exports = {
           );
           if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({
-              content: "Hubo un error al procesar este botón.",
+              content: "Ese botón se puso rebelde 😅. Inténtalo de nuevo.",
               flags: MessageFlags.Ephemeral,
             });
           }
@@ -81,7 +81,7 @@ module.exports = {
           );
           if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({
-              content: "Hubo un error al procesar esta selección.",
+              content: "Esa selección se enredó un poquito. Dale otra vez.",
               flags: MessageFlags.Ephemeral,
             });
           }
@@ -118,8 +118,8 @@ module.exports = {
         if (now < expirationTime) {
           const expiredTimestamp = Math.round(expirationTime / 1_000);
           return interaction.reply({
-            content: `¡Epa, aguanta un poco! 🐴 Vas muy rápido con el comando \`${command.data.name}\`. Intenta de nuevo <t:${expiredTimestamp}:R>.`,
-            flags: MessageFlags.Ephemeral
+            content: `Tranqui, crack 😎. Ese comando está descansando y vuelve <t:${expiredTimestamp}:R>.`,
+            flags: MessageFlags.Ephemeral,
           });
         }
       }
@@ -134,7 +134,7 @@ module.exports = {
       }
     } catch (error) {
       console.error(error);
-      const errorMessage = "¡Uy! Parece que tropecé con un cable. Hubo un error procesando eso. 😅";
+      const errorMessage = "Ay no, este comando tropezó 😵. Intenta otra vez.";
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: errorMessage,

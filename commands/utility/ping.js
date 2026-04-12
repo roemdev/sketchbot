@@ -11,8 +11,14 @@ module.exports = {
     const interactionPing = Date.now() - interaction.createdTimestamp;
 
     await interaction.editReply({
-      content: `🏓 **¡Pong!**\nEl WebSocket tardó **${wsPing}ms** y mi cerebro tardó **${interactionPing}ms** en responder. ¡No está mal!`,
-      components: [],
+      content: "",
+      components: [
+        new ContainerBuilder().setAccentColor(0x5B7FA6)
+            .addTextDisplayComponents(t => t.setContent(
+                `### 🏓 Pong!\n**Latencia WebSocket:** ${wsPing}ms\n**Latencia de interacción:** ${interactionPing}ms`
+            ))
+      ],
+      flags: MessageFlags.IsComponentsV2,
     });
   },
 };

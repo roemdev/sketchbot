@@ -22,8 +22,11 @@ module.exports = {
 
     if (!winnerChar) {
       return interaction.reply({
-        content: `❌ Hmm... ¿"${winnerInput}"? Ese no me suena a ningún personaje de Smash. Escribe bien su nombre o alias, anda.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent(`### ❌ Personaje no encontrado\nNo se encontró ningún personaje asociado a "${winnerInput}". Escribe el nombre o alias correctamente.`))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
@@ -41,8 +44,11 @@ module.exports = {
 
     if (!session) {
       return interaction.reply({
-        content: `❌ ¿Buscando fantasmas? No tienes ninguna sesión de apuestas cerrada esperando resultados en este momento.`,
-        flags: MessageFlags.Ephemeral,
+        components: [
+          new ContainerBuilder().setAccentColor(0xC0392B)
+              .addTextDisplayComponents(t => t.setContent("### ❌ Sin sesión activa\nNo tienes ninguna sesión de apuestas cerrada pendiente de resultado."))
+        ],
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 

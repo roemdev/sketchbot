@@ -84,7 +84,7 @@ module.exports.buttonHandler = async (interaction) => {
       const next = current * 1.25;
 
       const winContainer = new ContainerBuilder()
-          .setAccentColor(0x6C3483)
+          .setAccentColor(0xF4C542)
           .addTextDisplayComponents(t =>
               t.setContent(
                   `### 🚀 ¡Nivel superado, sigues vivo!\n` +

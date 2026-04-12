@@ -1,12 +1,13 @@
-const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const userService = require("../../services/userService");
-const { logTransaction } = require("../../services/transactionService");
+const transactionService = require("../../services/transactionService");
+const { CV2 } = require("../../utils/ui");
 const config = require("../../core.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("manage-credits")
-    .setDescription("Gestiona los créditos de un usuario")
+    .setDescription("Gestiona las monedas de un usuario")
     .addStringOption((opt) =>
       opt
         .setName("action")
@@ -18,7 +19,7 @@ module.exports = {
       opt.setName("user").setDescription("Usuario a modificar").setRequired(true)
     )
     .addIntegerOption((opt) =>
-      opt.setName("amount").setDescription("Cantidad de créditos").setRequired(true).setMinValue(1)
+      opt.setName("amount").setDescription("Cantidad de monedas").setRequired(true).setMinValue(1)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
@@ -32,17 +33,29 @@ module.exports = {
 
     if (action === "add") {
       await userService.addBalance(target.id, amount, false);
-      await logTransaction({ discordId: target.id, type: "admin_add", amount });
+      await transactionService.logTransaction({
+        discordId: target.id,
+        type: "admin_add",
+        itemName: `Ajuste por ${interaction.user.username}`,
+        amount,
+      });
       return interaction.reply({
-        content: `¡Listo! Le he sumado **${amount.toLocaleString()}** ${coin} monedas a <@${target.id}>. 🤑`,
+        content: `Listo, sumé **${coin}${amount.toLocaleString()}** a <@${target.id}>.`,
+        flags: CV2,
       });
     }
 
     if (action === "remove") {
       await userService.removeBalance(target.id, amount, false);
-      await logTransaction({ discordId: target.id, type: "admin_remove", amount: -amount });
+      await transactionService.logTransaction({
+        discordId: target.id,
+        type: "admin_remove",
+        itemName: `Ajuste por ${interaction.user.username}`,
+        amount,
+      });
       return interaction.reply({
-        content: `Hecho. Le quité **${amount.toLocaleString()}** ${coin} monedas a <@${target.id}>. Los bolsillos un poco más vacíos... 😅`,
+        content: `Hecho, retiré **${coin}${amount.toLocaleString()}** de <@${target.id}>.`,
+        flags: CV2,
       });
     }
   },
