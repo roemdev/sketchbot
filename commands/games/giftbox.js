@@ -4,133 +4,86 @@ const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
+const COIN = config.emojis.coin;
 
 module.exports = {
-  // 1. COOLDOWN: Ahora manejado por interactionCreate.js
   cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
-    .setName("giftbox")
-    .setDescription("Triplica tu apuesta eligiendo la caja sorpresa correcta")
-    .addIntegerOption(option =>
-      option
-        .setName("cantidad")
-        .setDescription("Cantidad de créditos a apostar")
-        .setRequired(true)
-    ),
+      .setName("giftbox")
+      .setDescription("Triplica tu apuesta eligiendo la caja sorpresa correcta.")
+      .addIntegerOption(option =>
+          option.setName("cantidad").setDescription("Cantidad de créditos a apostar").setRequired(true)
+      ),
 
   async execute(interaction) {
     const userId = interaction.user.id;
-    const username = interaction.user.username;
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
-      return interaction.reply({
-        content: "La cantidad debe ser mayor que cero.",
-        flags: MessageFlags.Ephemeral
-      });
+      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
     }
 
-    await userService.createUser(userId, username);
+    await userService.createUser(userId, interaction.user.username);
 
     try {
-      // Se debita la apuesta inicial
       await userService.addBalance(userId, -bet, false);
-    } catch (err) {
-      return interaction.reply({
-        content: "No tienes suficientes créditos.",
-        flags: MessageFlags.Ephemeral
-      });
+    } catch {
+      return interaction.reply({ content: "No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
     }
 
-    const giftBoxContainer = new ContainerBuilder()
-      .setAccentColor(2895667)
-      .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent(
-          `### 🎁 ¡Prueba tu suerte!\n` +
-          `¡Pusiste en juego **${config.emojis.coin}${bet.toLocaleString("es-DO")}**!\n` +
-          `¡En una de estas cajas te espera el **TRIPLE** de tu apuesta! Escoge con sabiduría...`)
-      )
-      .addSeparatorComponents((separator) => separator)
-
-      .addActionRowComponents((actionRow) =>
-        actionRow.setComponents(
-          new ButtonBuilder()
-            .setCustomId(`giftbox_chest_1_${userId}_${bet}`)
-            .setEmoji("🎁")
-            .setStyle(ButtonStyle.Secondary),
-          new ButtonBuilder()
-            .setCustomId(`giftbox_chest_2_${userId}_${bet}`)
-            .setEmoji("🎁")
-            .setStyle(ButtonStyle.Secondary),
-          new ButtonBuilder()
-            .setCustomId(`giftbox_chest_3_${userId}_${bet}`)
-            .setEmoji("🎁")
-            .setStyle(ButtonStyle.Secondary),
+    const container = new ContainerBuilder()
+        .setAccentColor(0x9b59b6)
+        .addTextDisplayComponents(t =>
+            t.setContent(
+                `### 🎁 ¡Prueba tu suerte!\n` +
+                `Pusiste en juego ${COIN}**${bet.toLocaleString()}**.\n` +
+                `Una de estas cajas esconde el **triple** de tu apuesta. Escoge con sabiduría...`
+            )
         )
-      );
+        .addSeparatorComponents(s => s)
+        .addActionRowComponents(row =>
+            row.setComponents(
+                new ButtonBuilder().setCustomId(`giftbox_chest_1_${userId}_${bet}`).setEmoji("🎁").setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId(`giftbox_chest_2_${userId}_${bet}`).setEmoji("🎁").setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId(`giftbox_chest_3_${userId}_${bet}`).setEmoji("🎁").setStyle(ButtonStyle.Secondary),
+            )
+        );
 
-    await interaction.reply({
-      components: [giftBoxContainer],
-      flags: MessageFlags.IsComponentsV2,
-    });
+    await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
   }
 };
 
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return false;
+  if (!interaction.customId.startsWith("giftbox_chest_")) return false;
+
   const parts = interaction.customId.split("_");
-  const type = parts[1];
-  const choice = parts[2];
+  const choice = parseInt(parts[2], 10);
   const userId = parts[3];
   const bet = parseInt(parts[4], 10);
+  const winningChest = Math.floor(Math.random() * 3) + 1;
 
-  if (type === "chest") {
-    const winningChest = Math.floor(Math.random() * 3) + 1;
+  if (choice === winningChest) {
+    const reward = bet * 3;
+    await userService.addBalance(userId, reward, false);
+    await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
 
-    if (parseInt(choice, 10) === winningChest) {
-      const reward = bet * 3;
-      const formatted = reward.toLocaleString("es-DO");
-
-      // FIX CRÍTICO: Sumar la recompensa al balance del usuario y registrar la transacción.
-      await userService.addBalance(userId, reward, false);
-      await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
-      // FIN DEL FIX
-
-      const winContainer = new ContainerBuilder()
-        .setAccentColor(0x32cd32) // Verde
-        .addTextDisplayComponents((textDisplay) =>
-          textDisplay.setContent(
-            `### 🎉 ¡Ganaste!\n` +
-            `¡Muy bien! Elegiste la caja correcta y has ganado **${config.emojis.coin}${formatted}**. ¡Sigue jugando!`
-          )
-        )
-
-      await interaction.update({
-        components: [winContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
-    } else {
-      // FIX: Registrar transacción por pérdida (monto 0) para consistencia con otros juegos
-      await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
-      // FIN DEL FIX
-
-      const loseContainer = new ContainerBuilder()
-        .setAccentColor(0xff4500) // Rojo
-        .addTextDisplayComponents((textDisplay) =>
-          textDisplay.setContent(
-            `### ❌ ¡Perdiste!\n` +
-            `El premio estaba en la caja **${winningChest}**. Has perdido **${config.emojis.coin}${bet.toLocaleString("es-DO")}**. ¡Vuelve a intentarlo!`
-          )
+    const winContainer = new ContainerBuilder()
+        .setAccentColor(0x32cd32)
+        .addTextDisplayComponents(t =>
+            t.setContent(`### 🎉 ¡Ganaste!\nElegiste la caja correcta y ganaste ${COIN}**${reward.toLocaleString()}**. ¡Sigue jugando!`)
         );
 
-      await interaction.update({
-        components: [loseContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
-    }
+    return interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
+  } else {
+    await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
-    return true;
+    const loseContainer = new ContainerBuilder()
+        .setAccentColor(0xff4500)
+        .addTextDisplayComponents(t =>
+            t.setContent(`### ❌ ¡Perdiste!\nEl premio estaba en la caja **${winningChest}**. Perdiste ${COIN}**${bet.toLocaleString()}**. ¡Vuelve a intentarlo!`)
+        );
+
+    return interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
   }
-
-  return false;
 };

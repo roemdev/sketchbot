@@ -1,27 +1,24 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
-const { makeEmbed } = require('../../utils/embedFactory');
+const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord.js");
 
 module.exports = {
   cooldown: 5,
-  data: new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!'),
+  data: new SlashCommandBuilder().setName("ping").setDescription("Muestra la latencia del bot."),
+
   async execute(interaction) {
-    // Responder inmediatamente para medir la latencia
-    await interaction.reply({ content: 'Pinging...', flags: MessageFlags.Ephemeral });
+    await interaction.reply({ content: "Midiendo...", flags: MessageFlags.Ephemeral });
 
-    // Calcula el tiempo que tardó Discord en reconocer la interacción
-    const latency = interaction.client.ws.ping; // Latencia de Web Socket (heartbeat)
-    const responseTime = Date.now() - interaction.createdTimestamp; // Latencia de la interacción
+    const wsPing = interaction.client.ws.ping;
+    const interactionPing = Date.now() - interaction.createdTimestamp;
 
-    const embed = makeEmbed(
-      'info',
-      '🏓 Pong!',
-      `**Latencia del Bot (API Ping):** ${latency}ms\n**Latencia de la Interacción:** ${responseTime}ms`
-    );
-
-    // Editar la respuesta inicial con los resultados
     await interaction.editReply({
-      content: '',
-      embeds: [embed],
+      content: "",
+      components: [
+        new ContainerBuilder().setAccentColor(0x3498db)
+            .addTextDisplayComponents(t => t.setContent(
+                `### 🏓 Pong!\n**Latencia WebSocket:** ${wsPing}ms\n**Latencia de interacción:** ${interactionPing}ms`
+            ))
+      ],
+      flags: MessageFlags.IsComponentsV2,
     });
   },
 };

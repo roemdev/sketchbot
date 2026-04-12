@@ -4,14 +4,30 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/events/messageCreate.js" afterDir="false" />
+    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="now you can pick a color with setup-colors command.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/dailyRewards/dailyClaim.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/dailyRewards/dailyClaim.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/dailyRewards/rewardList.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/dailyRewards/rewardList.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/dailyRewards/roleRewards.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/dailyRewards/roleRewards.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/economy/balance.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/economy/balance.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/economy/manageCredits.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/economy/manageCredits.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/economy/swap.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/economy/swap.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/economy/task.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/economy/task.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/economy/transfer.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/economy/transfer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/coinflip.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/giftbox.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/giftbox.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/riskTower.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/riskTower.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/commands/games/smash.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/smash.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core.json" beforeDir="false" afterPath="$PROJECT_DIR$/core.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/smashResult.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/smashResult.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/store/add-item.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/store/add-item.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/store/buy.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/store/buy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/store/store.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/store/store.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/utility/ping.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/utility/ping.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/utility/setup-colors.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/utility/setup-colors.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/utility/setupVoice.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/utility/setupVoice.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database.sqlite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/embedFactory.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/voiceController.js" beforeDir="false" afterPath="$PROJECT_DIR$/utils/voiceController.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,14 +86,17 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "main",
     "javascript.preferred.runtime.type.id": "node",
+    "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/home/emivir/Documents/Projects/sketchbot",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -97,7 +116,7 @@
       <updated>1775934550316</updated>
       <workItem from="1775934551440" duration="1215000" />
       <workItem from="1775955810804" duration="3684000" />
-      <workItem from="1776023324498" duration="1583000" />
+      <workItem from="1776023324498" duration="3871000" />
     </task>
     <task id="LOCAL-00001" summary="removed sqlite3, installed better-sqlite3">
       <option name="closed" value="true" />
@@ -131,7 +150,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775960070720</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="now you can pick a color with setup-colors command.">
+      <option name="closed" value="true" />
+      <created>1776025402293</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776025402293</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -140,6 +167,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="removed sqlite3, installed better-sqlite3" />
     <MESSAGE value="hotfix: los botones no funcionanban no sé pq pero ya" />
-    <option name="LAST_COMMIT_MESSAGE" value="hotfix: los botones no funcionanban no sé pq pero ya" />
+    <MESSAGE value="now you can pick a color with setup-colors command." />
+    <option name="LAST_COMMIT_MESSAGE" value="now you can pick a color with setup-colors command." />
   </component>
 </project>

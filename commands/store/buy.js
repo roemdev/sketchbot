@@ -1,37 +1,21 @@
-const {
-  SlashCommandBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  MessageFlags
-} = require("discord.js");
-
-const { makeEmbed } = require("../../utils/embedFactory");
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = require("discord.js");
 const config = require("../../core.json");
 const storeService = require("../../services/storeService");
 const userService = require("../../services/userService");
-const { isValidMinecraftNick } = require("../../utils/validation");
 const transactionService = require("../../services/transactionService");
+const { isValidMinecraftNick } = require("../../utils/validation");
 
+const COIN = config.emojis.coin;
+const CACHE_TTL = 5 * 60 * 1000;
 let cachedItems = null;
 let lastCacheUpdate = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("comprar")
-    .setDescription("Compra un artículo de la tienda")
-    .addStringOption(option =>
-      option.setName("item")
-        .setDescription("Nombre del artículo que deseas comprar")
-        .setRequired(true)
-        .setAutocomplete(true)
-    )
-    .addStringOption(option =>
-      option.setName("nick")
-        .setDescription("Tu nick exacto de Minecraft")
-        .setRequired(true)
-    ),
+      .setName("comprar")
+      .setDescription("Compra un artículo de la tienda")
+      .addStringOption(o => o.setName("item").setDescription("Nombre del artículo").setRequired(true).setAutocomplete(true))
+      .addStringOption(o => o.setName("nick").setDescription("Tu nick exacto de Minecraft").setRequired(true)),
 
   async execute(interaction) {
     const itemName = interaction.options.getString("item");
@@ -39,60 +23,65 @@ module.exports = {
 
     if (!isValidMinecraftNick(mcNick)) {
       return interaction.reply({
-        embeds: [
-          makeEmbed(
-            "error",
-            "Nickname inválido",
-            "El nickname de Minecraft proporcionado no es válido."
-          )
+        components: [
+          new ContainerBuilder().setAccentColor(0xff4500)
+              .addTextDisplayComponents(t => t.setContent("### ❌ Nickname inválido\nEl nickname de Minecraft proporcionado no es válido."))
         ],
-        flags: MessageFlags.Ephemeral
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     const item = await storeService.getItemByName(itemName);
     if (!item || item.status !== "available") {
       return interaction.reply({
-        embeds: [
-          makeEmbed(
-            "error",
-            "Item no disponible",
-            "El artículo solicitado no está disponible."
-          )
+        components: [
+          new ContainerBuilder().setAccentColor(0xff4500)
+              .addTextDisplayComponents(t => t.setContent("### ❌ No disponible\nEl artículo solicitado no está disponible."))
         ],
-        flags: MessageFlags.Ephemeral
+        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
       });
     }
 
     await userService.createUser(interaction.user.id, interaction.user.username);
 
-    const preview = makeEmbed(
-      "info",
-      "Confirmar compra",
-      [
-        `Artículo: **${item.icon_id} ${item.name}**`,
-        `Precio: **${config.emojis.coin}${item.price.toLocaleString()}**`,
-        `Destino: **${mcNick}**`,
-        "",
-        "¿Deseas continuar?"
-      ].join("\n")
-    );
-
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`comprar_confirm_${item.id}_${mcNick}`)
-        .setLabel("Confirmar")
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId(`comprar_cancel_${item.id}`)
-        .setLabel("Cancelar")
-        .setStyle(ButtonStyle.Danger)
+        new ButtonBuilder().setCustomId(`comprar_confirm_${item.id}_${mcNick}`).setLabel("Confirmar").setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`comprar_cancel_${item.id}`).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
     );
 
+    const preview = new ContainerBuilder()
+        .setAccentColor(0x3498db)
+        .addTextDisplayComponents(t => t.setContent(
+            `### 🛒 Confirmar compra\n` +
+            `Artículo: **${item.icon_id} ${item.name}**\n` +
+            `Precio: **${COIN}${item.price.toLocaleString()}**\n` +
+            `Destino: **${mcNick}**\n\n` +
+            `¿Deseas continuar?`
+        ))
+        .addSeparatorComponents(s => s)
+        .addActionRowComponents(row.components[0] ? row : r => r);
+
+    // ContainerBuilder doesn't take ActionRowBuilder directly in addActionRowComponents this way,
+    // so we build a separate container + reply with both
     return interaction.reply({
-      embeds: [preview],
-      components: [row],
-      flags: MessageFlags.Ephemeral
+      components: [
+        new ContainerBuilder()
+            .setAccentColor(0x3498db)
+            .addTextDisplayComponents(t => t.setContent(
+                `### 🛒 Confirmar compra\n` +
+                `Artículo: **${item.icon_id} ${item.name}**\n` +
+                `Precio: **${COIN}${item.price.toLocaleString()}**\n` +
+                `Destino: **${mcNick}**\n\n¿Deseas continuar?`
+            ))
+            .addSeparatorComponents(s => s)
+            .addActionRowComponents(r =>
+                r.setComponents(
+                    new ButtonBuilder().setCustomId(`comprar_confirm_${item.id}_${mcNick}`).setLabel("Confirmar").setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId(`comprar_cancel_${item.id}`).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
+                )
+            )
+      ],
+      flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
     });
   },
 
@@ -100,21 +89,17 @@ module.exports = {
     if (!interaction.isAutocomplete()) return false;
 
     const focusedValue = interaction.options.getFocused();
-
     const now = Date.now();
+
     if (!cachedItems || now - lastCacheUpdate > CACHE_TTL) {
       cachedItems = await storeService.getItems("available");
       lastCacheUpdate = now;
     }
 
-    const filtered = cachedItems
-      .filter(item => item.name.toLowerCase().includes(focusedValue.toLowerCase()))
-      .slice(0, 25);
-
-    const choices = filtered.map(item => ({
-      name: `${item.name} - ${config.emojis.coin}${item.price.toLocaleString()}`,
-      value: item.name
-    }));
+    const choices = cachedItems
+        .filter(item => item.name.toLowerCase().includes(focusedValue.toLowerCase()))
+        .slice(0, 25)
+        .map(item => ({ name: `${item.name} - ${COIN}${item.price.toLocaleString()}`, value: item.name }));
 
     await interaction.respond(choices);
     return true;
@@ -130,34 +115,20 @@ module.exports = {
     const action = parts[1];
     const itemId = parseInt(parts[2], 10);
 
-    const mcNick = action === "confirm"
-      ? parts.slice(3).join("_")
-      : null;
-
     if (action === "cancel") {
-      await interaction.editReply({
-        embeds: [
-          makeEmbed("info", "Compra cancelada", "No se ha procesado ninguna transacción.")
+      return interaction.editReply({
+        components: [
+          new ContainerBuilder().setAccentColor(0xf0c040)
+              .addTextDisplayComponents(t => t.setContent("### ℹ️ Compra cancelada\nNo se procesó ninguna transacción."))
         ],
-        components: []
+        flags: MessageFlags.IsComponentsV2,
       });
-      return true;
     }
 
     if (action === "confirm") {
+      const mcNick = parts.slice(3).join("_");
       try {
-        const result = await storeService.buyItem(
-          interaction.user.id,
-          itemId,
-          mcNick
-        );
-
-        await interaction.editReply({
-          embeds: [
-            makeEmbed("success", "Compra realizada con éxito")
-          ],
-          components: []
-        });
+        const result = await storeService.buyItem(interaction.user.id, itemId, mcNick);
 
         await transactionService.logTransaction({
           discordId: interaction.user.id,
@@ -167,16 +138,21 @@ module.exports = {
           totalPrice: result.totalPrice
         });
 
-        return true;
-
-      } catch (err) {
-        await interaction.editReply({
-          embeds: [
-            makeEmbed("error", "Error en la compra", err.message)
+        return interaction.editReply({
+          components: [
+            new ContainerBuilder().setAccentColor(0x32cd32)
+                .addTextDisplayComponents(t => t.setContent("### ✅ Compra realizada con éxito\nEl artículo ha sido entregado en Minecraft."))
           ],
-          components: []
+          flags: MessageFlags.IsComponentsV2,
         });
-        return true;
+      } catch (err) {
+        return interaction.editReply({
+          components: [
+            new ContainerBuilder().setAccentColor(0xff4500)
+                .addTextDisplayComponents(t => t.setContent(`### ❌ Error en la compra\n${err.message}`))
+          ],
+          flags: MessageFlags.IsComponentsV2,
+        });
       }
     }
 

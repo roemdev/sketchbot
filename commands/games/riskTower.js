@@ -1,96 +1,69 @@
-const {
-  SlashCommandBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  MessageFlags,
-  ContainerBuilder
-} = require("discord.js");
-
+const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = require("discord.js");
 const config = require("../../core.json");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
+const COIN = config.emojis.coin;
 
 module.exports = {
-  // Cooldown simple para que lo maneje interactionCreate.js
   cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
-    .setName("torre")
-    .setDescription("Juego de torre con riesgo progresivo.")
-    .addIntegerOption(option =>
-      option
-        .setName("cantidad")
-        .setDescription("Cantidad de créditos a apostar")
-        .setRequired(true)
-    ),
+      .setName("torre")
+      .setDescription("Juego de torre con riesgo progresivo.")
+      .addIntegerOption(option =>
+          option.setName("cantidad").setDescription("Cantidad de créditos a apostar").setRequired(true)
+      ),
 
   async execute(interaction) {
     const userId = interaction.user.id;
-    const username = interaction.user.username;
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
-      return interaction.reply({
-        content: "La cantidad debe ser mayor que cero.",
-        flags: MessageFlags.Ephemeral
-      });
+      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
     }
 
-    await userService.createUser(userId, username);
+    await userService.createUser(userId, interaction.user.username);
 
-    // ✅ CORRECCIÓN DE VALIDACIÓN DE SALDO (ÚNICA MODIFICACIÓN NECESARIA)
     const currentBalance = await userService.getBalance(userId);
-
     if (currentBalance < bet) {
-      // Asumiendo que esta es la lógica correcta para remover el cooldown en tu setup:
-      interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
-      return interaction.reply({
-        content: "❌ ¡No tienes suficientes créditos!",
-        flags: MessageFlags.Ephemeral
-      });
-    }
-    // -------------------------------------------------------------
-
-    try {
-      await userService.addBalance(userId, -bet, false);
-    } catch (err) {
-      // Si falla por balance, eliminamos el cooldown que se aplicó en interactionCreate.js
-      interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
-      return interaction.reply({
-        content: "No tienes suficientes créditos.",
-        flags: MessageFlags.Ephemeral
-      });
+      interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
+      return interaction.reply({ content: "❌ No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
     }
 
-    const towerContainer = new ContainerBuilder()
-      .setAccentColor(2895667)
-      .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent(
-          `### 🗼 Torre de riesgo\n` +
-          `Apuesta inicial: **${config.emojis.coin}${bet.toLocaleString("es-DO")}**\nSaldo en juego: **${config.emojis.coin}${bet.toLocaleString("es-DO")}**`
-        )
-      )
-      .addSeparatorComponents((separator) => separator)
-      .addActionRowComponents((actionRow) =>
-        actionRow.setComponents(
-          new ButtonBuilder()
-            .setCustomId(`torre_risk_${userId}_${bet}_${bet}`)
-            .setLabel("⚡ Arriesgar")
-            .setStyle(ButtonStyle.Danger),
-          new ButtonBuilder()
-            .setCustomId(`torre_cashout_${userId}_${bet}_${bet}`)
-            .setLabel("💰 Cobrar")
-            .setStyle(ButtonStyle.Success)
-        )
-      );
+    await userService.addBalance(userId, -bet, false);
 
     await interaction.reply({
-      components: [towerContainer],
+      components: [buildTowerPanel(userId, bet, bet)],
       flags: MessageFlags.IsComponentsV2,
     });
   }
 };
+
+function buildTowerPanel(userId, bet, current) {
+  return new ContainerBuilder()
+      .setAccentColor(0x9b59b6)
+      .addTextDisplayComponents(t =>
+          t.setContent(
+              `### 🗼 Torre de Riesgo\n` +
+              `Apuesta inicial: ${COIN}**${bet.toLocaleString()}**\n` +
+              `Saldo en juego: ${COIN}**${current.toLocaleString()}**`
+          )
+      )
+      .addSeparatorComponents(s => s)
+      .addActionRowComponents(row =>
+          row.setComponents(
+              new ButtonBuilder()
+                  .setCustomId(`torre_risk_${userId}_${bet}_${current}`)
+                  .setLabel("⚡ Arriesgar")
+                  .setStyle(ButtonStyle.Danger),
+              new ButtonBuilder()
+                  .setCustomId(`torre_cashout_${userId}_${bet}_${current}`)
+                  .setLabel("💰 Cobrar")
+                  .setStyle(ButtonStyle.Success)
+          )
+      );
+}
 
 module.exports.buttonHandler = async (interaction) => {
   if (!interaction.isButton()) return false;
@@ -100,97 +73,57 @@ module.exports.buttonHandler = async (interaction) => {
   const action = parts[1];
   const userId = parts[2];
   const bet = parseInt(parts[3], 10);
-  let current = parseInt(parts[4], 10);
+  const current = parseFloat(parts[4]);
 
   if (interaction.user.id !== userId) {
     return interaction.reply({ content: "Esto no es tu juego.", flags: MessageFlags.Ephemeral });
   }
 
   if (action === "risk") {
-    const win = Math.random() < 0.7;
-
-    if (win) {
-      current = current * 1.25;
+    if (Math.random() < 0.4) {
+      const next = current * 1.25;
 
       const winContainer = new ContainerBuilder()
-        .setAccentColor(0x32cd32)
-        .addTextDisplayComponents((textDisplay) =>
-          textDisplay.setContent(
-            `### 🚀 ¡Subiste un nivel!\n` +
-            `Tu saldo en juego se ha multiplicado. Total actual: **${config.emojis.coin}${current.toLocaleString("es-DO")}**`
+          .setAccentColor(0x32cd32)
+          .addTextDisplayComponents(t =>
+              t.setContent(
+                  `### 🚀 ¡Subiste un nivel!\n` +
+                  `Tu saldo se ha multiplicado. Total actual: ${COIN}**${next.toLocaleString()}**`
+              )
           )
-        )
-        .addSeparatorComponents((separator) => separator)
-        .addActionRowComponents((actionRow) =>
-          actionRow.setComponents(
-            new ButtonBuilder()
-              .setCustomId(`torre_risk_${userId}_${bet}_${current}`)
-              .setLabel("⚡ Arriesgar")
-              .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-              .setCustomId(`torre_cashout_${userId}_${bet}_${current}`)
-              .setLabel("💰 Cobrar")
-              .setStyle(ButtonStyle.Success)
-          )
-        );
+          .addSeparatorComponents(s => s)
+          .addActionRowComponents(row =>
+              row.setComponents(
+                  new ButtonBuilder().setCustomId(`torre_risk_${userId}_${bet}_${next}`).setLabel("⚡ Arriesgar").setStyle(ButtonStyle.Danger),
+                  new ButtonBuilder().setCustomId(`torre_cashout_${userId}_${bet}_${next}`).setLabel("💰 Cobrar").setStyle(ButtonStyle.Success)
+              )
+          );
 
-      await interaction.update({
-        components: [winContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
-
+      return interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
     } else {
-      await transactionService.logTransaction({
-        discordId: userId,
-        type: "game",
-        amount: 0
-      });
-
-      // El cooldown se aplicó al inicio en interactionCreate.js
+      await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
       const loseContainer = new ContainerBuilder()
-        .setAccentColor(0xff4500)
-        .addTextDisplayComponents((textDisplay) =>
-          textDisplay.setContent(
-            `### 💥 Todo perdido\n` +
-            `La torre colapsó. Perdiste **${config.emojis.coin}${current.toLocaleString("es-DO")}** créditos.`
-          )
-        );
+          .setAccentColor(0xff4500)
+          .addTextDisplayComponents(t =>
+              t.setContent(`### 💥 Todo perdido\nLa torre colapsó. Perdiste ${COIN}**${current.toLocaleString()}** créditos.`)
+          );
 
-      await interaction.update({
-        components: [loseContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
+      return interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
     }
-    return true;
   }
 
   if (action === "cashout") {
     await userService.addBalance(userId, current, false);
-
-    await transactionService.logTransaction({
-      discordId: userId,
-      type: "game",
-      amount: current
-    });
-
-    // El cooldown se aplicó al inicio en interactionCreate.js
+    await transactionService.logTransaction({ discordId: userId, type: "game", amount: current });
 
     const cashoutContainer = new ContainerBuilder()
-      .setAccentColor(0x32cd32)
-      .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent(
-          `### 💰 Cobro realizado\n` +
-          `Decidiste retirarte a tiempo.\nHas conservado **${config.emojis.coin}${current.toLocaleString("es-DO")}** créditos.`
-        )
-      );
+        .setAccentColor(0x32cd32)
+        .addTextDisplayComponents(t =>
+            t.setContent(`### 💰 Cobro realizado\nTe retiraste a tiempo. Conservaste ${COIN}**${current.toLocaleString()}** créditos.`)
+        );
 
-    await interaction.update({
-      components: [cashoutContainer],
-      flags: MessageFlags.IsComponentsV2,
-    });
-
-    return true;
+    return interaction.update({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });
   }
 
   return false;

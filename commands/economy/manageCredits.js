@@ -1,62 +1,49 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 const userService = require("../../services/userService");
-const { makeEmbed } = require("../../utils/embedFactory");
+const { makeContainer, CV2 } = require("../../utils/ui");
 const config = require("../../core.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("manage-credits")
     .setDescription("Gestiona los créditos de un usuario")
-    .addStringOption(option =>
-      option.setName("action")
-        .setDescription("Acción a realizar: add o remove")
+    .addStringOption((opt) =>
+      opt
+        .setName("action")
+        .setDescription("Acción a realizar")
         .setRequired(true)
-        .addChoices(
-          { name: "add", value: "add" },
-          { name: "remove", value: "remove" }
-        )
+        .addChoices({ name: "add", value: "add" }, { name: "remove", value: "remove" })
     )
-    .addUserOption(option =>
-      option.setName("user")
-        .setDescription("Usuario a modificar")
-        .setRequired(true)
+    .addUserOption((opt) =>
+      opt.setName("user").setDescription("Usuario a modificar").setRequired(true)
     )
-    .addIntegerOption(option =>
-      option.setName("amount")
-        .setDescription("Cantidad de créditos")
-        .setRequired(true)
-        .setMinValue(1) // Prevent negative values that could bypass restrictions
+    .addIntegerOption((opt) =>
+      opt.setName("amount").setDescription("Cantidad de créditos").setRequired(true).setMinValue(1)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
   async execute(interaction) {
     const action = interaction.options.getString("action");
-    const targetUser = interaction.options.getUser("user");
+    const target = interaction.options.getUser("user");
     const amount = interaction.options.getInteger("amount");
+    const coin = config.emojis.coin;
 
-    // Asegurar registro
-    await userService.createUser(targetUser.id, targetUser.username);
-
-    let embed;
+    await userService.createUser(target.id, target.username);
 
     if (action === "add") {
-      await userService.addBalance(targetUser.id, amount, false);
-      embed = makeEmbed(
-        "success",
-        "¡Créditos añadidos!",
-        `Se añadieron **${config.emojis.coin}${amount.toLocaleString()}** a <@${targetUser.id}>.`
-      );
-    } else if (action === "remove") {
-      await userService.removeBalance(targetUser.id, amount, false);
-      embed = makeEmbed(
-        "success",
-        "¡Créditos eliminados!",
-        `Se eliminaron **${config.emojis.coin}${amount.toLocaleString()}** de <@${targetUser.id}>.`
-      );
-    } else {
-      return interaction.reply({ content: "Acción inválida.", ephemeral: true });
+      await userService.addBalance(target.id, amount, false);
+      return interaction.reply({
+        components: [makeContainer("success", "Créditos añadidos", `Se añadieron **${coin}${amount.toLocaleString()}** a <@${target.id}>.`)],
+        flags: CV2,
+      });
     }
 
-    return interaction.reply({ embeds: [embed] });
-  }
+    if (action === "remove") {
+      await userService.removeBalance(target.id, amount, false);
+      return interaction.reply({
+        components: [makeContainer("success", "Créditos eliminados", `Se eliminaron **${coin}${amount.toLocaleString()}** de <@${target.id}>.`)],
+        flags: CV2,
+      });
+    }
+  },
 };

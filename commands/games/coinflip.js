@@ -1,41 +1,30 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
-
+const { SlashCommandBuilder, MessageFlags, ContainerBuilder, TextDisplayBuilder } = require("discord.js");
 const config = require("../../core.json");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
+const COIN = config.emojis.coin;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
-  // Cooldown simple para que lo maneje interactionCreate.js
   cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
-    .setName("cara-cruz")
-    .setDescription("Cara o cruz con apuesta.")
-    .addIntegerOption(option =>
-      option
-        .setName("cantidad")
-        .setDescription("Cantidad de créditos a apostar")
-        .setRequired(true)
-    )
-    .addStringOption(option =>
-      option
-        .setName("eleccion")
-        .setDescription("Cara o cruz")
-        .setRequired(true)
-        .addChoices(
-          { name: "Cara", value: "heads" },
-          { name: "Cruz", value: "tails" }
-        )
-    ),
+      .setName("cara-cruz")
+      .setDescription("Cara o cruz con apuesta.")
+      .addIntegerOption(option =>
+          option.setName("cantidad").setDescription("Cantidad de créditos a apostar").setRequired(true)
+      )
+      .addStringOption(option =>
+          option.setName("eleccion").setDescription("Cara o cruz").setRequired(true)
+              .addChoices({ name: "Cara", value: "heads" }, { name: "Cruz", value: "tails" })
+      ),
 
   async execute(interaction) {
     const userId = interaction.user.id;
-    const username = interaction.user.username;
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
@@ -45,56 +34,53 @@ module.exports = {
       });
     }
 
-    await userService.createUser(userId, username);
+    await userService.createUser(userId, interaction.user.username);
 
     try {
       await userService.addBalance(userId, -bet, false);
     } catch {
-      // Si falla por balance, eliminamos el cooldown que se aplicó en interactionCreate.js
-      interaction.client.cooldowns.get(module.exports.data.name).delete(userId);
-      return interaction.reply({
-        content: "No tienes suficientes créditos.",
-        flags: MessageFlags.Ephemeral
-      });
+      interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
+      return interaction.reply({ content: "No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
     }
 
     const choice = interaction.options.getString("eleccion");
-    const choiceText = choice === "heads" ? "`CARA`" : "`CRUZ`";
+    const choiceText = choice === "heads" ? "CARA" : "CRUZ";
 
-    // Mensaje inicial
-    const msg = await interaction.reply({
-      content: `Apostaste ${config.emojis.coin}${bet.toLocaleString("es-DO")} a **${choiceText}**. Lanzando moneda...`
-    });
+    const pendingContainer = new ContainerBuilder()
+        .setAccentColor(0xf0c040)
+        .addTextDisplayComponents(t =>
+            t.setContent(`### 🪙 Cara o Cruz\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}**.\nLanzando moneda...`)
+        );
 
+    await interaction.reply({ components: [pendingContainer], flags: MessageFlags.IsComponentsV2 });
     await sleep(3000);
 
     const result = Math.random() < 0.5 ? "heads" : "tails";
-    const resultText = result === "heads" ? "`CARA`" : "`CRUZ`";
+    const resultText = result === "heads" ? "CARA" : "CRUZ";
+    const won = result === choice;
 
-    if (result === choice) {
+    if (won) {
       const reward = bet * 2;
       await userService.addBalance(userId, reward, false);
+      await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
 
-      await transactionService.logTransaction({
-        discordId: userId,
-        type: "game",
-        amount: reward
-      });
+      const winContainer = new ContainerBuilder()
+          .setAccentColor(0x32cd32)
+          .addTextDisplayComponents(t =>
+              t.setContent(`### 🎉 ¡Ganaste!\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}** — salió **${resultText}**.\nGanaste ${COIN}**${reward.toLocaleString()}**.`)
+          );
 
-      await interaction.editReply({
-        content: `Apostaste ${config.emojis.coin}${bet.toLocaleString("es-DO")} a **${choiceText}**. Lanzando moneda... **${resultText}** ¡ganaste **${config.emojis.coin}${reward.toLocaleString("es-DO")}**!`
-      });
-
+      await interaction.editReply({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
     } else {
-      await transactionService.logTransaction({
-        discordId: userId,
-        type: "game",
-        amount: 0
-      });
+      await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
-      await interaction.editReply({
-        content: `Apostaste ${config.emojis.coin}${bet.toLocaleString("es-DO")} a **${choiceText}**. Lanzando moneda... **${resultText}** no tuviste suerte.`
-      });
+      const loseContainer = new ContainerBuilder()
+          .setAccentColor(0xff4500)
+          .addTextDisplayComponents(t =>
+              t.setContent(`### 💸 Perdiste\nApostaste ${COIN}**${bet.toLocaleString()}** a **${choiceText}** — salió **${resultText}**.\nMás suerte la próxima vez.`)
+          );
+
+      await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
     }
   }
 };
