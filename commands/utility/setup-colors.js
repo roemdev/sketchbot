@@ -58,7 +58,7 @@ module.exports = {
 
   async execute(interaction) {
     await interaction.channel.send({ components: [buildColorsPanel()], flags: MessageFlags.IsComponentsV2 });
-    return interaction.reply({ content: "¡Listo! Dejé los potes de pintura en este canal.", flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: "Panel de colores enviado correctamente.", flags: MessageFlags.Ephemeral });
   },
 
   async buttonHandler(interaction) {
@@ -78,9 +78,9 @@ module.exports = {
     if (!hadRole) {
       await member.roles.add(roleId);
       const role = COLOR_ROLES.find(r => r.id === roleId);
-      return interaction.editReply({ content: `${role.emoji} ¡Nuevo look! Te pusiste la camiseta color **${role.name}**.` });
+      return interaction.editReply({ content: `${role.emoji} Se te asignó el rol **${role.name}**.` });
     }
 
-    return interaction.editReply({ content: "Te quitaste el color. A lo clásico, supongo." });
+    return interaction.editReply({ content: "Se quitó tu rol de color." });
   },
 };

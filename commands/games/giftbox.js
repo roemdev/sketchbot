@@ -20,7 +20,7 @@ module.exports = {
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
-      return interaction.reply({ content: "❌ Ehh... tienes que meter algo en la caja, ¿no? Apuesta al menos 1.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
     }
 
     await userService.createUser(userId, interaction.user.username);
@@ -71,7 +71,7 @@ module.exports.buttonHandler = async (interaction) => {
     const winContainer = new ContainerBuilder()
         .setAccentColor(0xF4C542)
         .addTextDisplayComponents(t =>
-            t.setContent(`### 🎉 ¡El Ojo que Todo lo Ve!\nAbriste la caja premiada y te llevas **${reward.toLocaleString()}** ${COIN}. ¡Eres un monstruo!`)
+            t.setContent(`### 🎉 ¡Ganaste!\nElegiste la caja correcta y ganaste ${COIN}**${reward.toLocaleString()}**. ¡Sigue jugando!`)
         );
 
     return interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });

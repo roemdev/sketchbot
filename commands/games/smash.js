@@ -1,95 +1,77 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ContainerBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  MessageFlags,
+  ContainerBuilder,
+  ActionRowBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} = require("discord.js");
+
 const config = require("../../core.json");
 const userService = require("../../services/userService");
 
-const SMASH_TIMEOUT = config.smash.timeout * 1000;
-const BET_INCREMENT = config.smash.betIncrement;
-
 const SMASH_CHARACTERS = require("../../data/smash.json");
-const CHARACTER_ALIASES = {
-  "dk": "donkey kong",
-  "k rool": "king k. rool",
-  "k. rool": "king k. rool",
-  "diddy": "diddy kong",
-  "bayo": "samus", // or separate if there's a specific samus/bayo alias needed
-  "g&w": "mr. game & watch",
-  "game and watch": "mr. game & watch",
-  "doc": "dr. mario",
-  "dedede": "king dedede",
-  "zss": "zero suit samus",
-  "falcon": "captain falcon",
-  "puff": "jigglypuff",
-  "jiggly": "jigglypuff",
-  "mac": "little mac",
-  "rosa": "rosalina & luma",
-  "rosalina": "rosalina & luma",
-  "byleth": "byleth",
-  "hero": "byleth", // Simplified for generic matching
-  "minmin": "min min",
-  "pac": "pac-man",
-  "pacman": "pac-man",
-  "pythra": "pyra / mythra",
-  "pyra": "pyra / mythra",
-  "mythra": "pyra / mythra",
-  "aegis": "pyra / mythra",
-  "plant": "piranha plant",
-  "brawler": "mii brawler",
-  "swordfighter": "mii swordfighter",
-  "gunner": "mii gunner",
-};
+const BET_INCREMENT = config.smash.betIncrement;
+const SMASH_TIMEOUT = config.smash.timeout * 1000;
+const HOST_CUT = config.smash.hostCut;
 
 const sessions = new Map();
 
-function findCharacter(input) {
-  const lowerInput = input.toLowerCase().trim();
-  const mapped = CHARACTER_ALIASES[lowerInput] || lowerInput;
+const CHARACTER_ALIASES = {
+  dk: "donkeykong", krool: "kingkrool", kkr: "kingkrool",
+  gw: "mrgamewatch", gameandwatch: "mrgamewatch", mac: "littlemac",
+  zss: "zerosuitsamus", dedede: "kingdedede", gannon: "ganondorf",
+  pyra: "pyramythra", mythra: "pyramythra", aegis: "pyramythra",
+  banjo: "banjo", kazooie: "banjo", rosalina: "rosalina", estela: "rosalina",
+  bowserjr: "bowserjr", bj: "bowserjr", robalina: "rob", bayo: "bayonetta",
+  planta: "piranhaplant", doc: "drmario", capitanfalcon: "captainfalcon",
+  falcon: "captainfalcon", samusoscura: "darksamus",
+};
 
-  return SMASH_CHARACTERS.find(char =>
-    char.name.toLowerCase() === mapped ||
-    char.name.toLowerCase().includes(mapped) ||
-    char.id.toLowerCase() === mapped
+function findCharacter(input) {
+  const query = input.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const searchId = CHARACTER_ALIASES[query] || query;
+
+  return (
+      SMASH_CHARACTERS.find(c => c.id === searchId) ||
+      SMASH_CHARACTERS.find(c => c.name.toLowerCase().replace(/[^a-z0-9]/g, "") === searchId) ||
+      SMASH_CHARACTERS.find(c => c.name.toLowerCase().replace(/[^a-z0-9]/g, "").includes(searchId))
   );
 }
 
 function buildPanel(session) {
-  let totalBote = 0;
-  for (const [, data] of session.bettors) totalBote += data.amount;
+  const COIN = config.emojis.coin;
+  let totalPot = 0;
+  const byChar = {};
 
-  const characters = new Map();
-  for (const [, data] of session.bettors) {
-    if (!characters.has(data.characterId)) {
-      const char = SMASH_CHARACTERS.find(c => c.id === data.characterId);
-      characters.set(data.characterId, {
-        emoji: char.emoji,
-        name: char.name,
-        total: 0,
-        players: [],
-      });
-    }
-    const cData = characters.get(data.characterId);
-    cData.total += data.amount;
-    cData.players.push(`${data.username} (${config.emojis.coin}${data.amount.toLocaleString()})`);
+  for (const [userId, data] of session.bettors) {
+    totalPot += data.amount;
+    if (!byChar[data.characterId]) byChar[data.characterId] = { total: 0, users: [] };
+    byChar[data.characterId].total += data.amount;
+    byChar[data.characterId].users.push({ userId, amount: data.amount });
   }
 
-  let playersList = "";
-  if (characters.size === 0) {
-    playersList = "Aún nadie ha apostado.";
-  } else {
-    for (const [, cData] of characters) {
-      playersList += `\n${cData.emoji} **${cData.name}** - Total: ${config.emojis.coin}${cData.total.toLocaleString()}\n`;
-      playersList += cData.players.map(p => `└ ${p}`).join("\n") + "\n";
-    }
-  }
+  const activeCharacters = SMASH_CHARACTERS.filter(c => byChar[c.id]);
+  const characterLines = activeCharacters.length > 0
+      ? activeCharacters.map(char => {
+        const entry = byChar[char.id];
+        const names = entry.users.map(u => `<@${u.userId}> (${COIN}${u.amount.toLocaleString()})`).join(", ");
+        return `> ${char.emoji} **${char.name}** — ${COIN}${entry.total.toLocaleString()} | ${names}`;
+      })
+      : ["> Aún no hay apuestas registradas."];
+
+  const statusLine = session.open
+      ? `⏳ **Apuestas abiertas** — Bote total: ${COIN}${totalPot.toLocaleString()}`
+      : `🔒 **Apuestas cerradas** — Bote total: ${COIN}${totalPot.toLocaleString()}`;
 
   const container = new ContainerBuilder()
       .setAccentColor(0xC0392B)
       .addTextDisplayComponents(t =>
           t.setContent(
-              `### 🥊 ¡Arrancan las Apuestas de Smash Bros!\n` +
-              `**Mesa manejada por:** <@${session.hostId}>\n` +
-              `**Taquilla:** ${session.open ? "🟢 ¡Vengan esas monedas!" : "🔴 NO VA MÁS"}\n\n` +
-              `**Pozo en Juego:** **${totalBote.toLocaleString()}** ${config.emojis.coin}\n` +
-              `**Jugadores apostados:**\n${playersList}`
+              `### 🎮 Smash Bros — Torneo de Apuestas\nHosteado por <@${session.hostId}>\n\n${statusLine}\n\n${characterLines.join("\n")}`
           )
       )
       .addSeparatorComponents(s => s);

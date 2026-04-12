@@ -54,7 +54,7 @@ module.exports = {
               .setButtonAccessory(button =>
                   button
                       .setCustomId(`tienda_buy_${item.id}_${mcNick}_${interaction.user.id}`)
-                      .setLabel(`${item.price.toLocaleString()} ${COIN}`)
+                      .setLabel(`${COIN}${item.price.toLocaleString()}`)
                       .setStyle(ButtonStyle.Success)
               )
       );
@@ -73,7 +73,7 @@ module.exports = {
 
     if (interaction.user.id !== authorId) {
       return interaction.reply({
-        content: "⚠️ ¡Manos quietas! Solo quien inició el comando puede tocar esos botones.",
+        content: "⚠️ Solo quien inició el comando puede interactuar con estos botones.",
         flags: MessageFlags.Ephemeral
       });
     }

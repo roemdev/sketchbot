@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
+const { makeContainer, CV2 } = require("../../utils/ui");
 const userService = require("../../services/userService");
 const config = require("../../core.json");
 
@@ -28,7 +29,8 @@ module.exports = {
     if (sub === "mío") {
       const user = await userService.createUser(interaction.user.id, interaction.user.username);
       return interaction.reply({
-        content: `Cuentas con **${user.balance.toLocaleString("es-DO")}** ${coin} monedas en el bolsillo. Nada mal. 👀`,
+        components: [makeContainer("base", "Balance", `Tu balance: **${coin}${user.balance.toLocaleString("es-DO")}**`)],
+        flags: CV2,
       });
     }
 
@@ -36,7 +38,14 @@ module.exports = {
       const target = interaction.options.getUser("usuario");
       const user = await userService.createUser(target.id, target.username);
       return interaction.reply({
-        content: `A ver, a ver... \`${target.username}\` (<@${target.id}>) tiene **${user.balance.toLocaleString("es-DO")}** ${coin} monedas. ¡Uy, mira quién tiene plata!`,
+        components: [
+          makeContainer(
+            "base",
+            "Balance",
+            `Balance de \`${target.username}\` (<@${target.id}>): **${coin}${user.balance.toLocaleString("es-DO")}**`
+          ),
+        ],
+        flags: CV2,
       });
     }
 
@@ -45,16 +54,18 @@ module.exports = {
 
       if (!topUsers.length) {
         return interaction.reply({
-          content: "Vaya, parece que estamos en crisis. No hay usuarios registrados aún en el Top.",
+          components: [makeContainer("info", "Leaderboard", "No hay usuarios registrados aún.")],
+          flags: CV2,
         });
       }
 
       const lines = topUsers.map(
-        (user, i) => `**${i + 1}.** \`${user.username}\` — **${user.balance.toLocaleString()}** ${coin}`
+        (user, i) => `${i + 1}. \`${user.username}\` — **${coin}${user.balance.toLocaleString()}**`
       );
 
       return interaction.reply({
-        content: `### 🏦 Top 10 más ricos de Arkania\nLos verdaderos magnates del servidor:\n\n${lines.join("\n")}`,
+        components: [makeContainer("base", "🏦 Top 10 más ricos de Arkania", lines.join("\n"))],
+        flags: CV2,
       });
     }
   },

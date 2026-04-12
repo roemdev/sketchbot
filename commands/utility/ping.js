@@ -1,11 +1,11 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord.js");
 
 module.exports = {
   cooldown: 5,
   data: new SlashCommandBuilder().setName("ping").setDescription("Muestra la latencia del bot."),
 
   async execute(interaction) {
-    await interaction.reply({ content: "Midiendo latencia... dame un segundo.", flags: MessageFlags.Ephemeral });
+    await interaction.reply({ content: "Midiendo...", flags: MessageFlags.Ephemeral });
 
     const wsPing = interaction.client.ws.ping;
     const interactionPing = Date.now() - interaction.createdTimestamp;

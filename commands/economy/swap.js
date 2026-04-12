@@ -3,11 +3,11 @@ const {
   ButtonBuilder,
   ButtonStyle,
   MessageFlags,
-  ContainerBuilder
 } = require("discord.js");
 const userService = require("../../services/userService");
 const { sendCommand } = require("../../services/minecraftService");
 const transactionService = require("../../services/transactionService");
+const { makeContainer, CV2, CV2_EPHEMERAL } = require("../../utils/ui");
 const { isValidMinecraftNick } = require("../../utils/validation");
 const config = require("../../core.json");
 
@@ -31,61 +31,61 @@ module.exports = {
 
     if (!isValidMinecraftNick(mcNick)) {
       return interaction.reply({
-        content: "❌ Hmm, ese nick no parece de Minecraft. Escríbelo bien y vuelve a intentarlo.",
-        flags: MessageFlags.Ephemeral,
+        components: [makeContainer("error", null, "El nickname de Minecraft proporcionado no es válido.")],
+        flags: CV2_EPHEMERAL,
       });
     }
 
     if (monedas <= 0) {
       return interaction.reply({
-        content: "❌ Ups... ¡Necesitas ingresar más de cero monedas para hacer magia!",
-        flags: MessageFlags.Ephemeral,
+        components: [makeContainer("error", null, "La cantidad debe ser mayor a 0.")],
+        flags: CV2_EPHEMERAL,
       });
     }
 
     const user = await userService.getUser(interaction.user.id);
     if (!user) {
       return interaction.reply({
-        content: "❌ ¡No tienes perfil! Escribe algún otro comando primero o algo.",
-        flags: MessageFlags.Ephemeral,
+        components: [makeContainer("error", null, "No tienes un perfil creado.")],
+        flags: CV2_EPHEMERAL,
       });
     }
 
     if (user.balance < monedas) {
       return interaction.reply({
-        content: `❌ Uy, andas corto. No tienes **${monedas.toLocaleString()}** ${COIN} monedas.`,
-        flags: MessageFlags.Ephemeral,
+        components: [makeContainer("error", null, "No tienes suficientes monedas para realizar este swap.")],
+        flags: CV2_EPHEMERAL,
       });
     }
 
     const cobble = Math.floor(monedas / RATE);
     if (cobble <= 0) {
       return interaction.reply({
-        content: `❌ Para conseguir al menos 1 C$, necesitas subir la cantidad de monedas. La tasa es ${RATE.toLocaleString()} ${COIN}.`,
-        flags: MessageFlags.Ephemeral,
+        components: [makeContainer("error", null, "Debes ingresar una cantidad mayor para generar al menos 1 C$.")],
+        flags: CV2_EPHEMERAL,
       });
     }
 
-    const container = new ContainerBuilder()
-      .setAccentColor(0x5B7FA6)
-      .addTextDisplayComponents(t =>
-        t.setContent(`### 🔄 ¿Listo para el canje?\nEstás a punto de enviar:\n\n**${monedas.toLocaleString()}** ${COIN} ➡️ **${cobble.toLocaleString()}** C$\nPara la cuenta de: **${mcNick}**`)
-      )
+    const container = makeContainer(
+      "info",
+      "Confirmar conversión",
+      `Monedas a convertir: **${COIN}${monedas.toLocaleString()}**\nCobbledollars a recibir: **C$${cobble.toLocaleString()}**\nJugador que recibe: **${mcNick}**`
+    )
       .addSeparatorComponents((s) => s)
       .addActionRowComponents((row) =>
         row.setComponents(
           new ButtonBuilder()
             .setCustomId(`swap_confirm_${monedas}_${mcNick}`)
-            .setLabel("¡Dale, confirmo!")
+            .setLabel("Confirmar")
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId(`swap_cancel_${monedas}_${mcNick}`)
-            .setLabel("Me arrepentí")
+            .setLabel("Cancelar")
             .setStyle(ButtonStyle.Danger)
         )
       );
 
-    return interaction.reply({ components: [container], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+    return interaction.reply({ components: [container], flags: CV2_EPHEMERAL });
   },
 
   async buttonHandler(interaction) {
@@ -99,31 +99,31 @@ module.exports = {
 
     if (action === "cancel") {
       return interaction.update({
-        content: "ℹ️ Conversión cancelada. Tus monedas están a salvo... por ahora.",
-        components: [],
+        components: [makeContainer("info", "Cancelado", "No se procesó ninguna transacción.")],
+        flags: CV2,
       });
     }
 
     if (action === "confirm") {
       if (!isValidMinecraftNick(mcNick)) {
         return interaction.update({
-          content: "❌ Hmm, ese nick no parece de Minecraft.",
-          components: [],
+          components: [makeContainer("error", null, "El nickname de Minecraft no es válido.")],
+          flags: CV2,
         });
       }
 
       const user = await userService.getUser(interaction.user.id);
       if (!user) {
         return interaction.update({
-          content: "❌ ¡No tienes perfil!",
-          components: [],
+          components: [makeContainer("error", null, "No tienes un perfil creado.")],
+          flags: CV2,
         });
       }
 
       if (user.balance < monedas) {
         return interaction.update({
-          content: "❌ ¿Eh? Parece que se te acabaron las monedas entre que abriste el menú y ahora.",
-          components: [],
+          components: [makeContainer("error", null, "Ya no tienes suficientes monedas para completar esta transacción.")],
+          flags: CV2,
         });
       }
 
@@ -133,8 +133,8 @@ module.exports = {
         await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);
       } catch {
         return interaction.update({
-          content: "❌ ¡Algo explotó conectando con Minecraft! Habla con los admins de inmediato.",
-          components: [],
+          components: [makeContainer("error", null, "Error enviando los C$ a Minecraft. Contacta a un administrador.")],
+          flags: CV2,
         });
       }
 
@@ -147,8 +147,8 @@ module.exports = {
       });
 
       return interaction.update({
-        content: `✅ ¡Mágico! Cambiaste **${monedas.toLocaleString()}** ${COIN} por **${cobble.toLocaleString()}** C$ para la cuenta de **${mcNick}**. A disfrutar.`,
-        components: [],
+        components: [makeContainer("success", "Transacción completada", `Se convirtieron **${COIN}${monedas.toLocaleString()}** → **C$${cobble.toLocaleString()}** para **${mcNick}**.`)],
+        flags: CV2,
       });
     }
 
