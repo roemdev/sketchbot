@@ -1,62 +1,45 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 const userService = require("../../services/userService");
-const transactionService = require("../../services/transactionService");
-const { CV2 } = require("../../utils/ui");
+const { logTransaction } = require("../../services/transactionService");
 const config = require("../../core.json");
+
+const COIN = config.emojis.coin;
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("manage-credits")
-    .setDescription("Gestiona las monedas de un usuario")
-    .addStringOption((opt) =>
-      opt
-        .setName("action")
-        .setDescription("Acción a realizar")
-        .setRequired(true)
-        .addChoices({ name: "add", value: "add" }, { name: "remove", value: "remove" })
-    )
-    .addUserOption((opt) =>
-      opt.setName("user").setDescription("Usuario a modificar").setRequired(true)
-    )
-    .addIntegerOption((opt) =>
-      opt.setName("amount").setDescription("Cantidad de monedas").setRequired(true).setMinValue(1)
-    )
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
+      .setName("manage-credits")
+      .setDescription("Gestiona las monedas de un usuario")
+      .addStringOption(o =>
+          o.setName("action").setDescription("Acción a realizar").setRequired(true)
+              .addChoices({ name: "add", value: "add" }, { name: "remove", value: "remove" })
+      )
+      .addUserOption(o => o.setName("user").setDescription("Usuario a modificar").setRequired(true))
+      .addIntegerOption(o => o.setName("amount").setDescription("Cantidad de monedas").setRequired(true).setMinValue(1))
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents),
 
   async execute(interaction) {
     const action = interaction.options.getString("action");
-    const target = interaction.options.getUser("user");
+    const targetUser = interaction.options.getUser("user");
     const amount = interaction.options.getInteger("amount");
-    const coin = config.emojis.coin;
 
-    await userService.createUser(target.id, target.username);
+    await userService.createUser(targetUser.id, targetUser.username);
 
     if (action === "add") {
-      await userService.addBalance(target.id, amount, false);
-      await transactionService.logTransaction({
-        discordId: target.id,
-        type: "admin_add",
-        itemName: `Ajuste por ${interaction.user.username}`,
-        amount,
-      });
+      await userService.addBalance(targetUser.id, amount, false);
+      await logTransaction({ discordId: targetUser.id, type: "admin_add", amount });
       return interaction.reply({
-        content: `Listo, sumé **${coin}${amount.toLocaleString()}** a <@${target.id}>.`,
-        flags: CV2,
+        content: `Se añadieron **${COIN}${amount.toLocaleString()}** a <@${targetUser.id}>.`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
     if (action === "remove") {
-      await userService.removeBalance(target.id, amount, false);
-      await transactionService.logTransaction({
-        discordId: target.id,
-        type: "admin_remove",
-        itemName: `Ajuste por ${interaction.user.username}`,
-        amount,
-      });
+      await userService.removeBalance(targetUser.id, amount, false);
+      await logTransaction({ discordId: targetUser.id, type: "admin_remove", amount });
       return interaction.reply({
-        content: `Hecho, retiré **${coin}${amount.toLocaleString()}** de <@${target.id}>.`,
-        flags: CV2,
+        content: `Se quitaron **${COIN}${amount.toLocaleString()}** a <@${targetUser.id}>.`,
+        flags: MessageFlags.Ephemeral,
       });
     }
-  },
+  }
 };

@@ -21,12 +21,11 @@ const BUTTON_STYLES = {
 
 function buildColorsPanel() {
   const container = new ContainerBuilder()
-      .setAccentColor(0x5B7FA6)
+      .setAccentColor(0x9b59b6)
       .addTextDisplayComponents(t =>
           t.setContent(
-              "### 🎨 Roles de Color\n" +
-              "Elige un color para pintar tu nombre en el servidor.\n" +
-              "Haz clic en el mismo botón para quitarlo.\n\n" +
+              "### 🎨 Elige tu color\n" +
+              "Toca un color para asignártelo. Tócalo de nuevo para quitarlo.\n\n" +
               "-# Solo puedes tener un color activo a la vez."
           )
       )
@@ -58,7 +57,7 @@ module.exports = {
 
   async execute(interaction) {
     await interaction.channel.send({ components: [buildColorsPanel()], flags: MessageFlags.IsComponentsV2 });
-    return interaction.reply({ content: "Panel de colores enviado correctamente.", flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: "Panel de colores enviado.", flags: MessageFlags.Ephemeral });
   },
 
   async buttonHandler(interaction) {
@@ -78,9 +77,9 @@ module.exports = {
     if (!hadRole) {
       await member.roles.add(roleId);
       const role = COLOR_ROLES.find(r => r.id === roleId);
-      return interaction.editReply({ content: `${role.emoji} Se te asignó el rol **${role.name}**.` });
+      return interaction.editReply({ content: `${role.emoji} Ahora tienes el color **${role.name}**.` });
     }
 
-    return interaction.editReply({ content: "Se quitó tu rol de color." });
+    return interaction.editReply({ content: "Color quitado." });
   },
 };

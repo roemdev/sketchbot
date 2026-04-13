@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = require("discord.js");
+const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder, ButtonBuilder } = require("discord.js");
 const config = require("../../core.json");
 const storeService = require("../../services/storeService");
 const userService = require("../../services/userService");
@@ -13,76 +13,42 @@ let lastCacheUpdate = 0;
 module.exports = {
   data: new SlashCommandBuilder()
       .setName("comprar")
-      .setDescription("Compra un artículo de la tienda")
+      .setDescription("Compra un artículo de la tienda directamente")
       .addStringOption(o => o.setName("item").setDescription("Nombre del artículo").setRequired(true).setAutocomplete(true))
-      .addStringOption(o => o.setName("nick").setDescription("Tu nick exacto de Minecraft").setRequired(true)),
+      .addStringOption(o => o.setName("nick").setDescription("Tu nick exacto en Minecraft").setRequired(true)),
 
   async execute(interaction) {
     const itemName = interaction.options.getString("item");
     const mcNick = (interaction.options.getString("nick") || "").trim();
 
     if (!isValidMinecraftNick(mcNick)) {
-      return interaction.reply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xC0392B)
-              .addTextDisplayComponents(t => t.setContent("### ❌ Nickname inválido\nEl nickname de Minecraft proporcionado no es válido."))
-        ],
-        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
-      });
+      return interaction.reply({ content: "Ese nick de Minecraft no es válido.", flags: MessageFlags.Ephemeral });
     }
 
     const item = await storeService.getItemByName(itemName);
     if (!item || item.status !== "available") {
-      return interaction.reply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xC0392B)
-              .addTextDisplayComponents(t => t.setContent("### ❌ No disponible\nEl artículo solicitado no está disponible."))
-        ],
-        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
-      });
+      return interaction.reply({ content: "Ese artículo no está disponible.", flags: MessageFlags.Ephemeral });
     }
 
     await userService.createUser(interaction.user.id, interaction.user.username);
 
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`comprar_confirm_${item.id}_${mcNick}`).setLabel("Confirmar").setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`comprar_cancel_${item.id}`).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
-    );
-
-    const preview = new ContainerBuilder()
+    const container = new ContainerBuilder()
         .setAccentColor(0x1E8449)
         .addTextDisplayComponents(t => t.setContent(
             `### 🛒 Confirmar compra\n` +
             `Artículo: **${item.icon_id} ${item.name}**\n` +
             `Precio: **${COIN}${item.price.toLocaleString()}**\n` +
-            `Destino: **${mcNick}**\n\n` +
-            `¿Deseas continuar?`
+            `Destino: **${mcNick}**\n\n¿Lo compramos?`
         ))
         .addSeparatorComponents(s => s)
-        .addActionRowComponents(row.components[0] ? row : r => r);
-
-    // ContainerBuilder doesn't take ActionRowBuilder directly in addActionRowComponents this way,
-    // so we build a separate container + reply with both
-    return interaction.reply({
-      components: [
-        new ContainerBuilder()
-            .setAccentColor(0x1E8449)
-            .addTextDisplayComponents(t => t.setContent(
-                `### 🛒 Confirmar compra\n` +
-                `Artículo: **${item.icon_id} ${item.name}**\n` +
-                `Precio: **${COIN}${item.price.toLocaleString()}**\n` +
-                `Destino: **${mcNick}**\n\n¿Deseas continuar?`
-            ))
-            .addSeparatorComponents(s => s)
-            .addActionRowComponents(r =>
-                r.setComponents(
-                    new ButtonBuilder().setCustomId(`comprar_confirm_${item.id}_${mcNick}`).setLabel("Confirmar").setStyle(ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId(`comprar_cancel_${item.id}`).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
-                )
+        .addActionRowComponents(row =>
+            row.setComponents(
+                new ButtonBuilder().setCustomId(`comprar_confirm_${item.id}_${mcNick}`).setLabel("Confirmar").setStyle(ButtonStyle.Success),
+                new ButtonBuilder().setCustomId(`comprar_cancel_${item.id}`).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
             )
-      ],
-      flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
-    });
+        );
+
+    return interaction.reply({ components: [container], flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
   },
 
   async autocompleteHandler(interaction) {
@@ -116,13 +82,10 @@ module.exports = {
     const itemId = parseInt(parts[2], 10);
 
     if (action === "cancel") {
-      return interaction.editReply({
-        components: [
-          new ContainerBuilder().setAccentColor(0x1E8449)
-              .addTextDisplayComponents(t => t.setContent("### ℹ️ Compra cancelada\nNo se procesó ninguna transacción."))
-        ],
-        flags: MessageFlags.IsComponentsV2,
-      });
+      const cancelContainer = new ContainerBuilder()
+          .setAccentColor(0x5B7FA6)
+          .addTextDisplayComponents(t => t.setContent("### Compra cancelada\nNo se procesó ninguna transacción."));
+      return interaction.editReply({ components: [cancelContainer], flags: MessageFlags.IsComponentsV2 });
     }
 
     if (action === "confirm") {
@@ -135,24 +98,20 @@ module.exports = {
           type: "buy",
           itemName: result.item.name,
           mcNick,
-          totalPrice: result.totalPrice
+          totalPrice: result.totalPrice,
         });
 
-        return interaction.editReply({
-          components: [
-            new ContainerBuilder().setAccentColor(0xF4C542)
-                .addTextDisplayComponents(t => t.setContent("### ✅ Compra realizada con éxito\nEl artículo ha sido entregado en Minecraft."))
-          ],
-          flags: MessageFlags.IsComponentsV2,
-        });
+        const successContainer = new ContainerBuilder()
+            .setAccentColor(0xF4C542)
+            .addTextDisplayComponents(t => t.setContent(
+                `### ✅ ¡Comprado!\n**${result.item.icon_id} ${result.item.name}** está en camino a **${mcNick}**.`
+            ));
+        return interaction.editReply({ components: [successContainer], flags: MessageFlags.IsComponentsV2 });
       } catch (err) {
-        return interaction.editReply({
-          components: [
-            new ContainerBuilder().setAccentColor(0xC0392B)
-                .addTextDisplayComponents(t => t.setContent(`### ❌ Error en la compra\n${err.message}`))
-          ],
-          flags: MessageFlags.IsComponentsV2,
-        });
+        const errContainer = new ContainerBuilder()
+            .setAccentColor(0xC0392B)
+            .addTextDisplayComponents(t => t.setContent(`### ❌ No se pudo completar\n${err.message}`));
+        return interaction.editReply({ components: [errContainer], flags: MessageFlags.IsComponentsV2 });
       }
     }
 

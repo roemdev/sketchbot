@@ -10,17 +10,15 @@ module.exports = {
   cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
       .setName("giftbox")
-      .setDescription("Triplica tu apuesta eligiendo la caja sorpresa correcta.")
-      .addIntegerOption(option =>
-          option.setName("cantidad").setDescription("Cantidad de créditos a apostar").setRequired(true)
-      ),
+      .setDescription("Una de tres cajas tiene el triple de tu apuesta. ¿Cuál es?")
+      .addIntegerOption(o => o.setName("cantidad").setDescription("Monedas a apostar").setRequired(true)),
 
   async execute(interaction) {
     const userId = interaction.user.id;
     const bet = interaction.options.getInteger("cantidad");
 
     if (bet <= 0) {
-      return interaction.reply({ content: "La cantidad debe ser mayor que cero.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "La apuesta tiene que ser mayor a 0.", flags: MessageFlags.Ephemeral });
     }
 
     await userService.createUser(userId, interaction.user.username);
@@ -28,16 +26,16 @@ module.exports = {
     try {
       await userService.addBalance(userId, -bet, false);
     } catch {
-      return interaction.reply({ content: "No tienes suficientes créditos.", flags: MessageFlags.Ephemeral });
+      return interaction.reply({ content: "No tienes suficientes monedas para esa apuesta.", flags: MessageFlags.Ephemeral });
     }
 
     const container = new ContainerBuilder()
         .setAccentColor(0x6C3483)
         .addTextDisplayComponents(t =>
             t.setContent(
-                `### 🎁 ¡Prueba tu suerte!\n` +
-                `Pusiste en juego ${COIN}**${bet.toLocaleString()}**.\n` +
-                `Una de estas cajas esconde el **triple** de tu apuesta. Escoge con sabiduría...`
+                `### 🎁 ¡Elige tu caja!\n` +
+                `Pusiste en juego **${COIN}${bet.toLocaleString()}**.\n` +
+                `Una de estas tres cajas tiene el **triple**. Las otras dos... no tanto. Elige bien.`
             )
         )
         .addSeparatorComponents(s => s)
@@ -49,7 +47,7 @@ module.exports = {
             )
         );
 
-    await interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
   }
 };
 
@@ -71,7 +69,7 @@ module.exports.buttonHandler = async (interaction) => {
     const winContainer = new ContainerBuilder()
         .setAccentColor(0xF4C542)
         .addTextDisplayComponents(t =>
-            t.setContent(`### 🎉 ¡Ganaste!\nElegiste la caja correcta y ganaste ${COIN}**${reward.toLocaleString()}**. ¡Sigue jugando!`)
+            t.setContent(`### 🎉 ¡Era esa!\nElegiste la caja correcta y te llevas **${COIN}${reward.toLocaleString()}**. Buen olfato.`)
         );
 
     return interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
@@ -81,7 +79,7 @@ module.exports.buttonHandler = async (interaction) => {
     const loseContainer = new ContainerBuilder()
         .setAccentColor(0xC0392B)
         .addTextDisplayComponents(t =>
-            t.setContent(`### ❌ ¡Perdiste!\nEl premio estaba en la caja **${winningChest}**. Perdiste ${COIN}**${bet.toLocaleString()}**. ¡Vuelve a intentarlo!`)
+            t.setContent(`### ❌ Mala suerte\nEl premio estaba en la caja **${winningChest}**. Se fueron **${COIN}${bet.toLocaleString()}**. La próxima confías más en tu instinto.`)
         );
 
     return interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });

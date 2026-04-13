@@ -22,11 +22,8 @@ module.exports = {
 
     if (!winnerChar) {
       return interaction.reply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xC0392B)
-              .addTextDisplayComponents(t => t.setContent(`### ❌ Personaje no encontrado\nNo se encontró ningún personaje asociado a "${winnerInput}". Escribe el nombre o alias correctamente.`))
-        ],
-        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
+        content: `No encontré ningún personaje con "${winnerInput}". Revisa el nombre o alias.`,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -44,11 +41,8 @@ module.exports = {
 
     if (!session) {
       return interaction.reply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xC0392B)
-              .addTextDisplayComponents(t => t.setContent("### ❌ Sin sesión activa\nNo tienes ninguna sesión de apuestas cerrada pendiente de resultado."))
-        ],
-        flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2,
+        content: "No tienes ninguna sesión de apuestas cerrada esperando resultado.",
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -78,7 +72,7 @@ module.exports = {
           new ContainerBuilder().setAccentColor(0x5B7FA6)
               .addTextDisplayComponents(t => t.setContent(
                   `### ${winnerChar.emoji} ${winnerChar.name} ganó — sin apostadores\n` +
-                  `Nadie apostó por **${winnerChar.name}**. El bote de ${COIN}${totalPot.toLocaleString()} fue al hoster.`
+                  `Nadie apostó por **${winnerChar.name}**. El bote de ${COIN}${totalPot.toLocaleString()} fue directo al hoster.`
               ))
         ],
         flags: MessageFlags.IsComponentsV2,
@@ -101,7 +95,7 @@ module.exports = {
       components: [
         new ContainerBuilder().setAccentColor(0xF4C542)
             .addTextDisplayComponents(t => t.setContent(
-                `### ${winnerChar.emoji} ${winnerChar.name} ganó\n\n` +
+                `### ${winnerChar.emoji} ¡${winnerChar.name} ganó!\n\n` +
                 `**Bote total:** ${COIN}${totalPot.toLocaleString()}\n` +
                 `**Comisión del hoster (${HOST_CUT * 100}%):** ${COIN}${hostEarnings.toLocaleString()}\n` +
                 `**Premio repartido:** ${COIN}${prizePool.toLocaleString()}\n\n` +

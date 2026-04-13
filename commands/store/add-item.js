@@ -4,10 +4,10 @@ const storeService = require("../../services/storeService");
 module.exports = {
   data: new SlashCommandBuilder()
       .setName("añadir_item")
-      .setDescription("Añade un nuevo artículo a la tienda (Solo Admins)")
+      .setDescription("Añade un nuevo artículo a la tienda")
       .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents)
       .addStringOption(o => o.setName("nombre").setDescription("Nombre visible del artículo").setRequired(true))
-      .addIntegerOption(o => o.setName("precio").setDescription("Precio en créditos/monedas").setRequired(true).setMinValue(0))
+      .addIntegerOption(o => o.setName("precio").setDescription("Precio en monedas").setRequired(true).setMinValue(0))
       .addStringOption(o => o.setName("mc_item").setDescription("ID técnico del item en Minecraft (ej: diamond_sword)").setRequired(true))
       .addStringOption(o => o.setName("descripcion").setDescription("Descripción del artículo").setRequired(false))
       .addStringOption(o => o.setName("icono").setDescription("Emoji o ícono").setRequired(false)),
@@ -24,24 +24,12 @@ module.exports = {
     try {
       await storeService.addItem({ name: nombre, description: descripcion, price: precio, iconId: icono, minecraftItem: mcItem });
 
-      await interaction.editReply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xF4C542)
-              .addTextDisplayComponents(t => t.setContent(
-                  `### ✅ Artículo añadido\n**${icono} ${nombre}** agregado a la tienda por **${precio}** monedas.\nComando MC: \`give <jugador> ${mcItem}\``
-              ))
-        ],
-        flags: MessageFlags.IsComponentsV2,
+      return interaction.editReply({
+        content: `Listo. **${icono} ${nombre}** ya está en la tienda por **${precio} monedas**. Comando MC: \`give <jugador> ${mcItem}\``,
       });
     } catch (error) {
       console.error("Error al añadir item:", error);
-      await interaction.editReply({
-        components: [
-          new ContainerBuilder().setAccentColor(0xC0392B)
-              .addTextDisplayComponents(t => t.setContent("### ❌ Error al guardar\nOcurrió un problema al guardar el artículo en la base de datos."))
-        ],
-        flags: MessageFlags.IsComponentsV2,
-      });
+      return interaction.editReply({ content: "No se pudo guardar el artículo. Revisa la consola." });
     }
   },
 };

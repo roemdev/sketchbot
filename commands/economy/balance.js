@@ -1,72 +1,49 @@
-const { SlashCommandBuilder } = require("discord.js");
-const { makeContainer, CV2 } = require("../../utils/ui");
+const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const userService = require("../../services/userService");
 const config = require("../../core.json");
 
+const COIN = config.emojis.coin;
+
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("balance")
-    .setDescription("Muestra balances de usuarios")
-    .addSubcommand((sub) =>
-      sub.setName("mío").setDescription("Muestra tu propio balance")
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName("usuario")
-        .setDescription("Muestra el balance de un usuario específico")
-        .addUserOption((opt) =>
-          opt.setName("usuario").setDescription("Usuario a consultar").setRequired(true)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub.setName("top-10").setDescription("Muestra el leaderboard con los top usuarios")
-    ),
+      .setName("balance")
+      .setDescription("Muestra balances de usuarios")
+      .addSubcommand(sub => sub.setName("mío").setDescription("Muestra tu propio balance"))
+      .addSubcommand(sub =>
+          sub.setName("usuario").setDescription("Muestra el balance de otro usuario")
+              .addUserOption(o => o.setName("usuario").setDescription("Usuario a consultar").setRequired(true))
+      )
+      .addSubcommand(sub => sub.setName("top-10").setDescription("Los 10 más ricos del servidor")),
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
-    const coin = config.emojis.coin;
 
     if (sub === "mío") {
-      const user = await userService.createUser(interaction.user.id, interaction.user.username);
+      const dbUser = await userService.createUser(interaction.user.id, interaction.user.username);
       return interaction.reply({
-        components: [makeContainer("base", "Balance", `Tu balance: **${coin}${user.balance.toLocaleString("es-DO")}**`)],
-        flags: CV2,
+        content: `Tienes **${COIN}${dbUser.balance.toLocaleString("es-DO")}** en tu bolsillo.`,
       });
     }
 
     if (sub === "usuario") {
       const target = interaction.options.getUser("usuario");
-      const user = await userService.createUser(target.id, target.username);
+      const dbUser = await userService.createUser(target.id, target.username);
       return interaction.reply({
-        components: [
-          makeContainer(
-            "base",
-            "Balance",
-            `Balance de \`${target.username}\` (<@${target.id}>): **${coin}${user.balance.toLocaleString("es-DO")}**`
-          ),
-        ],
-        flags: CV2,
+        content: `**${target.username}** tiene **${COIN}${dbUser.balance.toLocaleString("es-DO")}**.`,
       });
     }
 
     if (sub === "top-10") {
       const topUsers = await userService.getTopUsers(10);
-
       if (!topUsers.length) {
-        return interaction.reply({
-          components: [makeContainer("info", "Leaderboard", "No hay usuarios registrados aún.")],
-          flags: CV2,
-        });
+        return interaction.reply({ content: "Nadie tiene monedas todavía. Sean los primeros." });
       }
 
-      const lines = topUsers.map(
-        (user, i) => `${i + 1}. \`${user.username}\` — **${coin}${user.balance.toLocaleString()}**`
-      );
+      const lines = topUsers.map((user, index) =>
+          `**${index + 1}.** \`${user.username}\` — **${COIN}${user.balance.toLocaleString()}**`
+      ).join("\n");
 
-      return interaction.reply({
-        components: [makeContainer("base", "🏦 Top 10 más ricos de Arkania", lines.join("\n"))],
-        flags: CV2,
-      });
+      return interaction.reply({ content: `🏆 **Los 10 más ricos del servidor**\n\n${lines}` });
     }
-  },
+  }
 };
