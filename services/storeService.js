@@ -100,12 +100,28 @@ async function addItem({ name, description, price, iconId, minecraftItem }) {
   );
 }
 
+async function updateItem(id, data) {
+  const { name, description, price, iconId, minecraftItem } = data;
+  const query = `
+        UPDATE store
+        SET name = ?, description = ?, price = ?, icon_id = ?, minecraft_item = ?
+        WHERE id = ?
+    `;
+  return await db.query(query, [name, description, price, iconId, minecraftItem, id]);
+}
+
+async function deleteItem(id) {
+  // Usamos DELETE para eliminarlo físicamente o podrías usar un UPDATE para cambiar el status a 'deleted'
+  return await db.query("DELETE FROM store WHERE id = ?", [id]);
+}
+
 // ---------------------------------------------------------------------
 
 module.exports = {
   getItem,
   getItems,
   buyItem,
-  getItemByName,
   addItem,
+  updateItem,
+  deleteItem
 };

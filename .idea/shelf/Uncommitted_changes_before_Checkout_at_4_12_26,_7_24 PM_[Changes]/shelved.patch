@@ -1,0 +1,99 @@
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"c248d4f6-f0c6-4e42-b438-24cc6480a373\" name=\"Changes\" comment=\"migration to componentsV2 (not worthy tbh)\">\n      <change afterPath=\"$PROJECT_DIR$/delete-commands.js\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/economy/coinsToCredits.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/economy/coinsToCredits.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/economy/task.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/economy/transfer.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/coinflip.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/coinflip.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/giftbox.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/giftbox.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/riskTower.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/smash.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/games/smashResult.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/store/buy.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/utility/ping.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/utility/ping.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/utility/setup-colors.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/utility/setup-colors.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/utility/setupVoice.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/commands/utility/setupVoice.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/database.sqlite\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/database.sqlite\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/events/interactionCreate.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/events/interactionCreate.js.patch\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/utils/voiceController.js.orig\" beforeDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/utils/voiceController.js.patch\" beforeDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"EmbeddingIndexingInfo\">\n    <option name=\"cachedIndexableFilesCount\" value=\"49\" />\n    <option name=\"fileBasedEmbeddingIndicesEnabled\" value=\"true\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"JavaScript File\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"GitHubPullRequestSearchHistory\">{\n  &quot;lastFilter&quot;: {\n    &quot;state&quot;: &quot;OPEN&quot;,\n    &quot;assignee&quot;: &quot;roemdev&quot;\n  }\n}</component>\n  <component name=\"GithubPullRequestsUISettings\">{\n  &quot;selectedUrlAndAccountId&quot;: {\n    &quot;url&quot;: &quot;https://github.com/roemdev/sketchbot.git&quot;,\n    &quot;accountId&quot;: &quot;0d424da3-26aa-433b-b984-5d85c90074af&quot;\n  }\n}</component>\n  <component name=\"McpProjectServerCommands\">\n    <commands />\n    <urls />\n  </component>\n  <component name=\"ProblemsViewState\">\n    <option name=\"selectedTabId\" value=\"CurrentFile\" />\n  </component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 3,\n  &quot;fromUser&quot;: false\n}</component>\n  <component name=\"ProjectId\" id=\"3CDyh3oOk1pLFDAPkMrTIgvYZpk\" />\n  <component name=\"ProjectLevelVcsManager\">\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\"><![CDATA[{\n  \"keyToString\": {\n    \"ASKED_SHARE_PROJECT_CONFIGURATION_FILES\": \"true\",\n    \"ModuleVcsDetector.initialDetectionPerformed\": \"true\",\n    \"RunOnceActivity.MCP Project settings loaded\": \"true\",\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\n    \"RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252\": \"true\",\n    \"RunOnceActivity.git.unshallow\": \"true\",\n    \"RunOnceActivity.typescript.service.memoryLimit.init\": \"true\",\n    \"codeWithMe.voiceChat.enabledByDefault\": \"false\",\n    \"com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1\": \"true\",\n    \"git-widget-placeholder\": \"main\",\n    \"javascript.preferred.runtime.type.id\": \"node\",\n    \"junie.onboarding.icon.badge.shown\": \"true\",\n    \"last_opened_file_path\": \"/home/emivir/Documents/Projects/sketchbot\",\n    \"node.js.detected.package.eslint\": \"true\",\n    \"node.js.detected.package.tslint\": \"true\",\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\n    \"nodejs_package_manager_path\": \"npm\",\n    \"to.speed.mode.migration.done\": \"true\",\n    \"vue.rearranger.settings.migration\": \"true\"\n  }\n}]]></component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-WS-261.22158.274\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"c248d4f6-f0c6-4e42-b438-24cc6480a373\" name=\"Changes\" comment=\"\" />\n      <created>1775934550316</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1775934550316</updated>\n      <workItem from=\"1775934551440\" duration=\"1215000\" />\n      <workItem from=\"1775955810804\" duration=\"3684000\" />\n      <workItem from=\"1776023324498\" duration=\"6110000\" />\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"removed sqlite3, installed better-sqlite3\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1775956033693</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1775956033693</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"removed sqlite3, installed better-sqlite3\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1775956679502</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1775956679502</updated>\n    </task>\n    <task id=\"LOCAL-00003\" summary=\"removed sqlite3, installed better-sqlite3\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1775956701664</created>\n      <option name=\"number\" value=\"00003\" />\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1775956701664</updated>\n    </task>\n    <task id=\"LOCAL-00004\" summary=\"hotfix: los botones no funcionanban no sé pq pero ya\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1775960070720</created>\n      <option name=\"number\" value=\"00004\" />\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1775960070720</updated>\n    </task>\n    <task id=\"LOCAL-00005\" summary=\"now you can pick a color with setup-colors command.\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1776025402293</created>\n      <option name=\"number\" value=\"00005\" />\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1776025402293</updated>\n    </task>\n    <task id=\"LOCAL-00006\" summary=\"migration to componentsV2 (not worthy tbh)\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1776027787498</created>\n      <option name=\"number\" value=\"00006\" />\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1776027787498</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"7\" />\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <MESSAGE value=\"removed sqlite3, installed better-sqlite3\" />\n    <MESSAGE value=\"hotfix: los botones no funcionanban no sé pq pero ya\" />\n    <MESSAGE value=\"now you can pick a color with setup-colors command.\" />\n    <MESSAGE value=\"migration to componentsV2 (not worthy tbh)\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"migration to componentsV2 (not worthy tbh)\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision a7bbabaa17495656939ae04adb13c73cb74ce678)
++++ b/.idea/workspace.xml	(date 1776036271175)
+@@ -4,33 +4,7 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="migration to componentsV2 (not worthy tbh)">
+-      <change afterPath="$PROJECT_DIR$/delete-commands.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/economy/coinsToCredits.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/economy/coinsToCredits.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/economy/task.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/economy/transfer.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/giftbox.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/giftbox.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/riskTower.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/smash.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/games/smashResult.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/store/buy.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/utility/ping.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/utility/ping.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/utility/setup-colors.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/utility/setup-colors.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/utility/setupVoice.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/commands/utility/setupVoice.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/database.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/database.sqlite" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/events/interactionCreate.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/events/interactionCreate.js.patch" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/utils/voiceController.js.orig" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/utils/voiceController.js.patch" beforeDir="false" />
+-    </list>
++    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="migration to componentsV2 (not worthy tbh)" />
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+@@ -81,30 +55,30 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+-    "ModuleVcsDetector.initialDetectionPerformed": "true",
+-    "RunOnceActivity.MCP Project settings loaded": "true",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+-    "RunOnceActivity.git.unshallow": "true",
+-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+-    "codeWithMe.voiceChat.enabledByDefault": "false",
+-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+-    "git-widget-placeholder": "main",
+-    "javascript.preferred.runtime.type.id": "node",
+-    "junie.onboarding.icon.badge.shown": "true",
+-    "last_opened_file_path": "/home/emivir/Documents/Projects/sketchbot",
+-    "node.js.detected.package.eslint": "true",
+-    "node.js.detected.package.tslint": "true",
+-    "node.js.selected.package.eslint": "(autodetect)",
+-    "node.js.selected.package.tslint": "(autodetect)",
+-    "nodejs_package_manager_path": "npm",
+-    "to.speed.mode.migration.done": "true",
+-    "vue.rearranger.settings.migration": "true"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
++    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
++    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
++    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
++    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
++    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
++    &quot;last_opened_file_path&quot;: &quot;/home/emivir/Documents/Projects/sketchbot&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
++    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
++    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="SharedIndexes">
+     <attachedChunks>
+       <set>

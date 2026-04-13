@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder, ButtonBuilder } = require("discord.js");
+const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = require("discord.js");
 const storeService = require("../../services/storeService");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
@@ -20,17 +20,14 @@ module.exports = {
     const mcNick = (interaction.options.getString("nick") || "").trim();
 
     if (!isValidMinecraftNick(mcNick)) {
-      return interaction.reply({
-        content: "Ese nick de Minecraft no es válido.",
-        flags: MessageFlags.Ephemeral,
-      });
+      return interaction.reply({ content: "Ese nick de Minecraft no es válido.", flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferReply();
 
     const items = await storeService.getItems("available");
     if (!items || items.length === 0) {
-      return interaction.editReply({ content: "La tienda está vacía por ahora. Vuelve más tarde." });
+      return interaction.editReply({ content: "La tienda está vacía por ahora." });
     }
 
     const storeContainer = new ContainerBuilder()
@@ -41,7 +38,7 @@ module.exports = {
     for (const item of items) {
       storeContainer.addSectionComponents(section =>
           section
-              .addTextDisplayComponents(t => t.setContent(`${item.icon_id} **${item.name}**\n${item.description || "Sin descripción"}`))
+              .addTextDisplayComponents(t => t.setContent(`**[ID: ${item.id}]** ${item.icon_id} **${item.name}**\n${item.description || "Sin descripción"}`))
               .setButtonAccessory(button =>
                   button
                       .setCustomId(`tienda_buy_${item.id}_${mcNick}_${interaction.user.id}`)
@@ -56,8 +53,7 @@ module.exports = {
   },
 
   async buttonHandler(interaction) {
-    if (!interaction.isButton()) return false;
-    if (!interaction.customId.startsWith("tienda_buy_")) return false;
+    if (!interaction.isButton() || !interaction.customId.startsWith("tienda_buy_")) return false;
 
     const parts = interaction.customId.split("_");
     const authorId = parts[parts.length - 1];
@@ -73,9 +69,7 @@ module.exports = {
 
     try {
       const item = await storeService.getItem(itemId);
-      if (!item || item.status !== "available") {
-        return interaction.editReply({ content: "Ese artículo ya no está disponible." });
-      }
+      if (!item) throw new Error("El artículo ya no existe.");
 
       const result = await storeService.buyItem(interaction.user.id, item, mcNick);
 
@@ -87,9 +81,7 @@ module.exports = {
         totalPrice: result.totalPrice,
       });
 
-      return interaction.editReply({
-        content: `¡Comprado! **${result.item.icon_id} ${result.item.name}** está en camino a **${mcNick}**.`,
-      });
+      return interaction.editReply({ content: `¡Comprado! **${result.item.name}** enviado a **${mcNick}**.` });
     } catch (err) {
       return interaction.editReply({ content: err.message });
     }
