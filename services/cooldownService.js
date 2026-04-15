@@ -1,54 +1,37 @@
-const db = require("./dbService");
+const supabase = require("./dbService");
 
 module.exports = {
-  /**
-   * Verifica si un usuario está en cooldown para un comando
-   * @param {string} discordId 
-   * @param {string} command 
-   * @returns {Promise<number|null>} Segundos restantes o null si no está en cooldown
-   */
   checkCooldown: async (discordId, command) => {
-    const rows = await db.query(
-      "SELECT * FROM cooldowns WHERE discord_id = ? AND command = ?",
-      [discordId, command]
-    );
+    const { data, error } = await supabase
+        .from("cooldowns")
+        .select("expires_at")
+        .eq("discord_id", discordId)
+        .eq("command", command)
+        .single();
 
-    if (!rows.length) return null;
+    if (error || !data) return null;
 
     const now = new Date();
-    // SQLite almacena fechas generalmente como texto o números, new Date() lo parsea bien
-    const expires = new Date(rows[0].expires_at);
+    const expires = new Date(data.expires_at);
 
     if (now >= expires) {
-      // Expiró, eliminar registro
-      await db.execute(
-        "DELETE FROM cooldowns WHERE discord_id = ? AND command = ?",
-        [discordId, command]
-      );
+      await supabase
+          .from("cooldowns")
+          .delete()
+          .eq("discord_id", discordId)
+          .eq("command", command);
       return null;
     }
 
-    // Tiempo restante en segundos
     return Math.ceil((expires - now) / 1000);
   },
 
-  /**
-   * Registra un cooldown para un usuario
-   * @param {string} discordId 
-   * @param {string} command 
-   * @param {number} seconds 
-   */
   setCooldown: async (discordId, command, seconds) => {
     const expires = new Date(Date.now() + seconds * 1000).toISOString();
-
-    // SQLite: Usamos ON CONFLICT en lugar de ON DUPLICATE KEY
-    // Nota: Requiere que (discord_id, command) sea PRIMARY KEY o UNIQUE en la tabla
-    await db.execute(
-      `INSERT INTO cooldowns (discord_id, command, expires_at)
-       VALUES (?, ?, ?)
-       ON CONFLICT(discord_id, command)
-       DO UPDATE SET expires_at = ?`,
-      [discordId, command, expires, expires]
-    );
-  }
+    const { error } = await supabase
+        .from("cooldowns")
+        .upsert({ discord_id: discordId, command, expires_at: expires },
+            { onConflict: "discord_id,command" });
+    if (error) throw error;
+  },
 };

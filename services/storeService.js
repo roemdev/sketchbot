@@ -1,127 +1,79 @@
+const supabase = require("./dbService");
 const { sendCommand } = require("./minecraftService");
-const db = require("./dbService");
 const { isValidMinecraftNick } = require("../utils/validation");
 
-// ---------------------------------------------------------------------
-//  GET ITEM BY NAME (exacto o aproximado)
-// ---------------------------------------------------------------------
-async function getItemByName(name) {
-  // En SQLite recibimos directamente el array de filas
-  const rows = await db.query(
-    `
-    SELECT * FROM store
-    WHERE name LIKE ? AND status = 'available'
-    ORDER BY id
-    LIMIT 1
-    `,
-    [`%${name}%`],
-  );
-  return rows[0] || null;
-}
-
-// ---------------------------------------------------------------------
-//  GET ITEM BY ID
-// ---------------------------------------------------------------------
 async function getItem(itemId) {
-  const rows = await db.query(
-    "SELECT * FROM store WHERE id = ? AND status = 'available'",
-    [itemId],
-  );
-  return rows[0] || null;
+  const { data, error } = await supabase
+      .from("store")
+      .select("*")
+      .eq("id", itemId)
+      .eq("status", "available")
+      .single();
+  if (error) return null;
+  return data;
 }
 
-// ---------------------------------------------------------------------
-//  GET ALL ITEMS
-// ---------------------------------------------------------------------
 async function getItems(status = "available") {
-  const rows = await db.query("SELECT * FROM store WHERE status = ?", [status]);
-  return rows;
+  const { data, error } = await supabase
+      .from("store")
+      .select("*")
+      .eq("status", status);
+  if (error) throw error;
+  return data ?? [];
 }
 
-// ---------------------------------------------------------------------
-//  BUY ITEM
-// ---------------------------------------------------------------------
 async function buyItem(discordId, itemIdOrItem, mcNick = null) {
-  // 1. Obtener usuario
-  const users = await db.query(
-    "SELECT * FROM user_stats WHERE discord_id = ?",
-    [discordId],
-  );
-  if (!users.length) throw new Error("Usuario no encontrado");
-  const user = users[0];
+  const { data: users, error: userError } = await supabase
+      .from("user_stats")
+      .select("*")
+      .eq("discord_id", discordId)
+      .single();
+  if (userError || !users) throw new Error("Usuario no encontrado");
 
-  // 2. Obtener item
   let item;
   if (typeof itemIdOrItem === "object" && itemIdOrItem !== null) {
     item = itemIdOrItem;
     if (item.status !== "available") throw new Error("Item no disponible");
   } else {
-    const items = await db.query(
-      "SELECT * FROM store WHERE id = ? AND status = 'available'",
-      [itemIdOrItem],
-    );
-    if (!items.length) throw new Error("Item no disponible");
-    item = items[0];
+    item = await getItem(itemIdOrItem);
+    if (!item) throw new Error("Item no disponible");
   }
 
-  // 3. Verificar saldo
-  const totalPrice = item.price; // * quantity;
-  if (user.balance < totalPrice)
-    throw new Error("No tienes suficientes créditos");
+  if (users.balance < item.price) throw new Error("No tienes suficientes créditos");
 
-  // 4. Descontar saldo (Usamos execute para UPDATE)
-  await db.execute(
-    "UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?",
-    [totalPrice, discordId],
-  );
-  user.balance -= totalPrice;
+  const { data: success, error: rpcError } = await supabase.rpc("decrement_balance", {
+    p_discord_id: discordId,
+    p_amount: item.price,
+  });
+  if (rpcError) throw rpcError;
+  if (success === false) throw new Error("No tienes suficientes créditos");
 
-  // 5. Entregar item en Minecraft si aplica
   if (item.minecraft_item && mcNick) {
-    if (!isValidMinecraftNick(mcNick)) {
-      throw new Error("El nickname de Minecraft proporcionado no es válido.");
-    }
-    const command = `give ${mcNick} ${item.minecraft_item}`;
-    await sendCommand(command);
+    if (!isValidMinecraftNick(mcNick)) throw new Error("El nickname de Minecraft proporcionado no es válido.");
+    await sendCommand(`give ${mcNick} ${item.minecraft_item}`);
   }
 
-  return { user, item, totalPrice };
+  return { user: users, item, totalPrice: item.price };
 }
 
-// ---------------------------------------------------------------------
-//  ADD ITEM (NUEVO)
-// ---------------------------------------------------------------------
 async function addItem({ name, description, price, iconId, minecraftItem }) {
-  // Usamos db.execute para hacer el INSERT en SQLite
-  await db.execute(
-    `INSERT INTO store (name, description, price, icon_id, minecraft_item, status)
-     VALUES (?, ?, ?, ?, ?, 'available')`,
-    [name, description, price, iconId, minecraftItem],
-  );
+  const { error } = await supabase
+      .from("store")
+      .insert({ name, description, price, icon_id: iconId, minecraft_item: minecraftItem, status: "available" });
+  if (error) throw error;
 }
 
-async function updateItem(id, data) {
-  const { name, description, price, iconId, minecraftItem } = data;
-  const query = `
-        UPDATE store
-        SET name = ?, description = ?, price = ?, icon_id = ?, minecraft_item = ?
-        WHERE id = ?
-    `;
-  return await db.query(query, [name, description, price, iconId, minecraftItem, id]);
+async function updateItem(id, { name, description, price, iconId, minecraftItem }) {
+  const { error } = await supabase
+      .from("store")
+      .update({ name, description, price, icon_id: iconId, minecraft_item: minecraftItem })
+      .eq("id", id);
+  if (error) throw error;
 }
 
 async function deleteItem(id) {
-  // Usamos DELETE para eliminarlo físicamente o podrías usar un UPDATE para cambiar el status a 'deleted'
-  return await db.query("DELETE FROM store WHERE id = ?", [id]);
+  const { error } = await supabase.from("store").delete().eq("id", id);
+  if (error) throw error;
 }
 
-// ---------------------------------------------------------------------
-
-module.exports = {
-  getItem,
-  getItems,
-  buyItem,
-  addItem,
-  updateItem,
-  deleteItem
-};
+module.exports = { getItem, getItems, buyItem, addItem, updateItem, deleteItem };

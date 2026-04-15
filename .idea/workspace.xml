@@ -4,10 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="migration to componentsV2 (not worthy tbh)">
+    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="bet limited to 100k and giftbox deleted.">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/coinflip.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/games/riskTower.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/riskTower.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/ready.js" beforeDir="false" afterPath="$PROJECT_DIR$/events/ready.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/cooldownService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/cooldownService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/dbService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/dbService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/storeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/storeService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/transactionService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/transactionService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/userService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/userService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/voiceController.js" beforeDir="false" afterPath="$PROJECT_DIR$/utils/voiceController.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +23,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="51" />
+    <option name="cachedIndexableFilesCount" value="50" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
@@ -117,7 +125,9 @@
       <workItem from="1776023324498" duration="6110000" />
       <workItem from="1776036436984" duration="441000" />
       <workItem from="1776043114159" duration="1887000" />
-      <workItem from="1776221002158" duration="551000" />
+      <workItem from="1776221002158" duration="648000" />
+      <workItem from="1776221670322" duration="6000" />
+      <workItem from="1776292816933" duration="2028000" />
     </task>
     <task id="LOCAL-00001" summary="removed sqlite3, installed better-sqlite3">
       <option name="closed" value="true" />
@@ -167,7 +177,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776027787498</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="bet limited to 100k and giftbox deleted.">
+      <option name="closed" value="true" />
+      <created>1776221625483</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1776221625483</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,6 +207,7 @@
     <MESSAGE value="hotfix: los botones no funcionanban no sé pq pero ya" />
     <MESSAGE value="now you can pick a color with setup-colors command." />
     <MESSAGE value="migration to componentsV2 (not worthy tbh)" />
-    <option name="LAST_COMMIT_MESSAGE" value="migration to componentsV2 (not worthy tbh)" />
+    <MESSAGE value="bet limited to 100k and giftbox deleted." />
+    <option name="LAST_COMMIT_MESSAGE" value="bet limited to 100k and giftbox deleted." />
   </component>
 </project>

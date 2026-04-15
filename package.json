@@ -20,13 +20,12 @@
   },
   "homepage": "https://github.com/roemdev/sketchbot#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.103.2",
     "axios": "^1.6.7",
-    "better-sqlite3": "^12.8.0",
     "chalk": "^4.1.2",
     "discord.js": "^14.25.1",
     "ollama": "^0.6.3",
-    "rcon-client": "^4.2.5",
-    "sqlite": "^5.1.1"
+    "rcon-client": "^4.2.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

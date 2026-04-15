@@ -1,5 +1,5 @@
 const { MessageFlags } = require("discord.js");
-const db = require("../services/dbService");
+const supabase = require("../services/dbService"); // Ahora utilizamos el cliente de Supabase
 
 async function handleInteraction(interaction) {
     const member = interaction.member;
@@ -9,8 +9,18 @@ async function handleInteraction(interaction) {
         return interaction.reply({ content: "Tienes que estar en un canal de voz para usar esto.", flags: MessageFlags.Ephemeral });
     }
 
-    const rows = await db.query("SELECT * FROM temp_channels WHERE channel_id = ?", [voiceChannel.id]);
-    if (rows.length === 0) {
+    // Migración a Supabase: Consultar el canal temporal
+    const { data: rows, error: selectError } = await supabase
+        .from("temp_channels")
+        .select("*")
+        .eq("channel_id", voiceChannel.id);
+
+    if (selectError) {
+        console.error("Error consultando temp_channels:", selectError);
+        return interaction.reply({ content: "Ocurrió un error interno al verificar el canal.", flags: MessageFlags.Ephemeral });
+    }
+
+    if (!rows || rows.length === 0) {
         return interaction.reply({ content: "Este canal no es temporal o ya expiró.", flags: MessageFlags.Ephemeral });
     }
 
@@ -25,11 +35,21 @@ async function handleInteraction(interaction) {
             return interaction.reply({ content: "El dueño actual sigue conectado. No puedes reclamar el canal todavía.", flags: MessageFlags.Ephemeral });
         }
 
-        await db.execute("UPDATE temp_channels SET owner_id = ? WHERE channel_id = ?", [member.id, voiceChannel.id]);
+        // Migración a Supabase: Actualizar el dueño del canal
+        const { error: updateError } = await supabase
+            .from("temp_channels")
+            .update({ owner_id: member.id })
+            .eq("channel_id", voiceChannel.id);
+
+        if (updateError) {
+            console.error("Error actualizando el dueño del canal en Supabase:", updateError);
+            return interaction.reply({ content: "Ocurrió un error al intentar reclamar el canal.", flags: MessageFlags.Ephemeral });
+        }
+
         if (!interaction.client.tempVCs) interaction.client.tempVCs = new Map();
         interaction.client.tempVCs.set(voiceChannel.id, { ownerId: member.id });
 
-        return interaction.reply({ content: "👑 Canal reclamado. Ahora es tuyo.", flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: "✅ Canal reclamado. Ahora es tuyo.", flags: MessageFlags.Ephemeral });
     }
 
     if (ownerId !== member.id) {
@@ -45,7 +65,7 @@ async function handleInteraction(interaction) {
                 await voiceChannel.permissionOverwrites.edit(everyoneRole, { Connect: false });
                 await voiceChannel.permissionOverwrites.edit(member.id, { Connect: true });
                 await voiceChannel.permissionOverwrites.edit(botId, { Connect: true, ViewChannel: true, ManageChannels: true });
-                return interaction.reply({ content: "🔐 Canal bloqueado. Nadie más puede entrar.", flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: "🔒 Canal bloqueado. Nadie más puede entrar.", flags: MessageFlags.Ephemeral });
 
             case "vc_unlock":
                 await voiceChannel.permissionOverwrites.edit(everyoneRole, { Connect: true });
@@ -55,16 +75,16 @@ async function handleInteraction(interaction) {
                 await voiceChannel.permissionOverwrites.edit(everyoneRole, { ViewChannel: false });
                 await voiceChannel.permissionOverwrites.edit(member.id, { ViewChannel: true });
                 await voiceChannel.permissionOverwrites.edit(botId, { Connect: true, ViewChannel: true, ManageChannels: true });
-                return interaction.reply({ content: "🙈 Canal oculto. Nadie lo ve en la lista.", flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: "👻 Canal oculto. Nadie lo ve en la lista.", flags: MessageFlags.Ephemeral });
 
             case "vc_show":
                 await voiceChannel.permissionOverwrites.edit(everyoneRole, { ViewChannel: true });
-                return interaction.reply({ content: "🙉 Canal visible de nuevo.", flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: "👁️ Canal visible de nuevo.", flags: MessageFlags.Ephemeral });
 
             case "vc_kick": {
                 const targetId = interaction.values[0];
                 if (targetId === member.id) {
-                    return interaction.reply({ content: "No puedes expulsarte a ti mismo 🙃", flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: "No puedes expulsarte a ti mismo ❌", flags: MessageFlags.Ephemeral });
                 }
                 const targetMember = voiceChannel.members.get(targetId);
                 if (!targetMember) {
