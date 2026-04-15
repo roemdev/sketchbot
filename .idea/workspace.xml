@@ -5,16 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="migration to componentsV2 (not worthy tbh)">
-      <change afterPath="$PROJECT_DIR$/commands/economy/store.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/commands/economy/storeConfig.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/games/smash.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/smash.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/games/smashResult.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/store/add-item.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/store/buy.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/store/store.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.sqlite" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/storeService.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/storeService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/coinflip.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/riskTower.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/riskTower.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,7 +15,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="53" />
+    <option name="cachedIndexableFilesCount" value="51" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
@@ -75,31 +68,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "javascript.preferred.runtime.type.id": "node",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/home/emivir/Documents/Projects/sketchbot",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "/var/lib/snapd/snap/webstorm/593/plugins/javascript-plugin/jsLanguageServicesImpl/external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/emivir/Documents/Projects/sketchbot&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/var/lib/snapd/snap/webstorm/593/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/commands/economy" />
@@ -124,6 +117,7 @@
       <workItem from="1776023324498" duration="6110000" />
       <workItem from="1776036436984" duration="441000" />
       <workItem from="1776043114159" duration="1887000" />
+      <workItem from="1776221002158" duration="551000" />
     </task>
     <task id="LOCAL-00001" summary="removed sqlite3, installed better-sqlite3">
       <option name="closed" value="true" />
