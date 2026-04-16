@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="migration to supabase">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/events/tempVoice.js" beforeDir="false" afterPath="$PROJECT_DIR$/events/tempVoice.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/coinflip.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/games/riskTower.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/riskTower.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
