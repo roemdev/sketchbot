@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="migration to supabase">
+    <list default="true" id="c248d4f6-f0c6-4e42-b438-24cc6480a373" name="Changes" comment="translated to spa">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/games/coinflip.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/coinflip.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commands/games/riskTower.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/games/riskTower.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/commands/dailyRewards/dailyClaim.js" beforeDir="false" afterPath="$PROJECT_DIR$/commands/dailyRewards/dailyClaim.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -121,6 +120,7 @@
       <workItem from="1776221670322" duration="6000" />
       <workItem from="1776292816933" duration="2899000" />
       <workItem from="1776378537077" duration="162000" />
+      <workItem from="1776381194634" duration="71000" />
     </task>
     <task id="LOCAL-00001" summary="removed sqlite3, installed better-sqlite3">
       <option name="closed" value="true" />
@@ -186,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776294888556</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="translated to spa">
+      <option name="closed" value="true" />
+      <created>1776380293471</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1776380293471</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -210,6 +218,7 @@
     <MESSAGE value="migration to componentsV2 (not worthy tbh)" />
     <MESSAGE value="bet limited to 100k and giftbox deleted." />
     <MESSAGE value="migration to supabase" />
-    <option name="LAST_COMMIT_MESSAGE" value="migration to supabase" />
+    <MESSAGE value="translated to spa" />
+    <option name="LAST_COMMIT_MESSAGE" value="translated to spa" />
   </component>
 </project>
