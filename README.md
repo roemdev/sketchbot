@@ -1,36 +1,49 @@
-# Sketchbot
+<div align="center">
+  <h1>🎨 Sketchbot</h1>
+  <p>Un bot de Discord multifuncional desarrollado en Node.js, impulsado por Supabase y con inteligencia artificial integrada.</p>
+</div>
 
-**Sketchbot** es un bot de Discord multifuncional desarrollado en Node.js, diseñado para gestionar sistemas de economía, recompensas diarias, minijuegos y una tienda integrada con servidores de Minecraft. Además, ofrece utilidades para la gestión de canales de voz temporales.
+**Sketchbot** es un avanzado bot de Discord diseñado para gestionar sistemas de economía, recompensas diarias, minijuegos, una tienda integrada con servidores de Minecraft y ahora, respuestas inteligentes potenciadas por IA.
 
-## 🚀 Potencial y Características
+---
+
+## 🚀 Características Principales
 
 Sketchbot está diseñado para fomentar la actividad y la interacción en tu servidor de Discord. Sus principales capacidades incluyen:
 
-*   **Economía Completa:**
+*   **🪙 Economía Completa:**
     *   Consultar balance (`/balance`).
     *   Ganar monedas realizando tareas (`/task`).
-    *   Intercambiar monedas (`/swap`).
+    *   Transferir monedas entre usuarios (`/transfer`).
+    *   Intercambiar monedas o convertirlas a créditos (`/swap`, `/coinsToCredits`).
     *   Gestión administrativa de créditos (`/manageCredits`).
-*   **Recompensas y Fidelización:**
+*   **🎁 Recompensas y Fidelización:**
     *   Recompensas diarias para todos los usuarios (`/dailyClaim`).
     *   Recompensas exclusivas basadas en roles (`/roleRewards`).
-*   **Minijuegos (Gambling):**
+    *   Lista de recompensas disponibles (`/rewardList`).
+*   **🎲 Minijuegos (Gambling):**
     *   **Coinflip:** Apuesta cara o cruz para duplicar tu dinero (`/coinflip`).
-    *   **Giftbox:** Abre una caja regalo con posibilidad de premio o nada (`/giftbox`).
     *   **Risk Tower:** Escala una torre de riesgo para multiplicar tus ganancias (`/riskTower`).
-*   **Tienda y Minecraft:**
+    *   **Smash:** Participa en el juego de "smash" (`/smash`).
+*   **🛒 Tienda y Minecraft:**
     *   Sistema de tienda virtual (`/store`).
-    *   Compra de ítems que se entregan automáticamente en un servidor de Minecraft (`/buy`) mediante integración RCON.
-*   **Gestión de Voz:**
-    *   Creación automática de canales de voz temporales cuando los usuarios se unen a un canal "Join to Create".
-*   **Utilidades:**
-    *   Comandos de diagnóstico como `/ping`, `/uptime`.
+    *   Configuración de la tienda (`/storeConfig`).
+    *   Integración directa con Minecraft mediante RCON.
+*   **🤖 Inteligencia Artificial:**
+    *   Menciona a `@Sketchbot` en cualquier canal y te responderá inteligentemente gracias a su integración nativa con **Ollama** (ideal para correr modelos locales como `phi4-mini`).
+*   **🎤 Gestión de Voz:**
+    *   Creación automática de canales de voz temporales ("Join to Create").
+    *   Configuración y personalización de utilidades de voz y colores (`/setupVoice`, `/setup-colors`).
+*   **☁️ Base de Datos Moderna:**
+    *   Totalmente migrado a **Supabase** para un rendimiento y escalabilidad óptimos.
 
 ## 📋 Requisitos Previos
 
 Para instalar y ejecutar este bot, necesitarás:
 
-*   [Node.js](https://nodejs.org/) (v16.9.0 o superior).
+*   [Node.js](https://nodejs.org/) (v22.22.1 o superior recomendado).
+*   Un proyecto en [Supabase](https://supabase.com/) (para la base de datos PostgreSQL).
+*   Un servidor con [Ollama](https://ollama.com/) (opcional, si deseas habilitar la IA integrada).
 *   Un servidor de Minecraft (opcional, si deseas usar la integración de la tienda).
 
 ## 🛠️ Instalación
@@ -49,15 +62,16 @@ Para instalar y ejecutar este bot, necesitarás:
 ## ⚙️ Configuración
 
 ### 1. Archivo `config.json`
-Debes crear un archivo llamado `config.json` en la raíz del proyecto. Este archivo contiene las credenciales sensibles.
+Debes crear un archivo llamado `config.json` en la raíz del proyecto. Este archivo contiene las credenciales sensibles, incluyendo las nuevas de Supabase.
 
 ```json
 {
   "token": "TU_TOKEN_DE_DISCORD_AQUI",
   "clientId": "TU_CLIENT_ID_DE_LA_APLICACION",
   "guildId": "TU_ID_DEL_SERVIDOR_(GUILD)",
-  "database": {
-    "filename": "database.sqlite"
+  "supabase": {
+    "url": "https://TU_PROYECTO.supabase.co",
+    "serviceRoleKey": "TU_SERVICE_ROLE_KEY"
   },
   "rcon": {
     "host": "ip_servidor_minecraft",
@@ -68,17 +82,15 @@ Debes crear un archivo llamado `config.json` en la raíz del proyecto. Este arch
 ```
 
 ### 2. Archivo `core.json`
-Este archivo ya existe en el repositorio y controla la lógica del juego y la economía. Puedes ajustarlo según tus necesidades:
+Este archivo controla la lógica del juego y la economía. Puedes ajustarlo según tus necesidades:
 
-*   **economy:** Tasa de cambio.
+*   **economy:** Tasa de cambio y moneda.
 *   **emojis:** Emojis usados por el bot.
-*   **tasks:** Configuración de ganancias mínimas/máximas, duración y enfriamiento (cooldown).
+*   **tasks:** Configuración de ganancias mínimas/máximas, duración y enfriamiento.
 *   **dailyClaim:** Tiempo de espera para la recompensa diaria.
 *   **game:** Cooldown general para juegos.
-*   **voice:** ID del canal de voz "Join to Create" y plantilla para el nombre de los canales temporales.
-
-### 3. Configuración de la Base de Datos
-El bot utiliza **SQLite** para el almacenamiento de datos. El archivo de la base de datos (por defecto `database.sqlite`) y todas las tablas necesarias se crearán automáticamente al ejecutar el bot por primera vez.
+*   **voice:** Configuraciones de "Join to Create".
+*   **smash:** Configuraciones del juego Smash.
 
 ## ▶️ Ejecución y Uso
 
@@ -96,25 +108,29 @@ El bot utiliza **SQLite** para el almacenamiento de datos. El archivo de la base
 
 ## 📜 Lista de Comandos
 
-### Economía
+### 🪙 Economía
 *   `/balance [user]`: Muestra tu saldo o el de otro usuario.
 *   `/task`: Realiza una tarea para ganar monedas.
-*   `/swap <amount>`: Intercambia monedas (funcionalidad específica a definir).
+*   `/transfer <user> <amount>`: Transfiere monedas a otro usuario.
+*   `/swap <amount>`: Intercambia monedas.
+*   `/coinsToCredits <amount>`: Convierte tus monedas en créditos.
 *   `/manageCredits <add|remove> <user> <amount>`: (Admin) Añade o quita créditos.
 
-### Juegos
+### 🎲 Juegos
 *   `/coinflip <amount> <side>`: Apuesta a cara o cruz.
-*   `/giftbox`: Abre una caja sorpresa.
 *   `/riskTower <amount>`: Juega al Risk Tower.
+*   `/smash`: Inicia una partida de Smash.
 
-### Tienda
+### 🛒 Tienda
 *   `/store`: Muestra los ítems disponibles.
-*   `/buy <item> [mc_nick]`: Compra un ítem. Si es para Minecraft, proporciona tu nick.
+*   `/storeConfig`: (Admin) Configura los ítems de la tienda.
 
-### Recompensas
+### 🎁 Recompensas
 *   `/dailyClaim`: Reclama tu recompensa diaria.
 *   `/roleRewards`: Reclama recompensas por tus roles.
+*   `/rewardList`: Ve la lista de recompensas.
 
-### Utilidades
+### 🛠️ Utilidades
 *   `/ping`: Comprueba la latencia del bot.
-*   `/uptime`: Muestra cuánto tiempo lleva activo el bot.
+*   `/setupVoice`: Configura el canal "Join to Create".
+*   `/setup-colors`: Configura roles de colores en el servidor.
