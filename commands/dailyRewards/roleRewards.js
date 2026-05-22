@@ -27,10 +27,9 @@ module.exports = {
       const amount = interaction.options.getInteger("cantidad");
 
       try {
-        await db.query(
-            "INSERT OR REPLACE INTO role_rewards (role_id, ammount) VALUES (?, ?)",
-            [role.id, amount]
-        );
+        await db
+            .from("role_rewards")
+            .upsert({ role_id: role.id, ammount: amount }, { onConflict: "role_id" });
 
         return interaction.reply({
           content: `Listo. **${role.name}** ahora otorga **${COIN}${amount.toLocaleString()}** diarias.`,
@@ -47,7 +46,10 @@ module.exports = {
 
     if (subcommand === "remove") {
       try {
-        await db.query("DELETE FROM role_rewards WHERE role_id = ?", [role.id]);
+        await db
+            .from("role_rewards")
+            .delete()
+            .eq("role_id", role.id);
 
         return interaction.reply({
           content: `**${role.name}** ya no otorga monedas diarias.`,

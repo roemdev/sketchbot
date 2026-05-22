@@ -3,6 +3,7 @@ const db = require("../../services/dbService");
 const config = require("../../core.json");
 const { logTransaction } = require("../../services/transactionService");
 const cooldownService = require("../../services/cooldownService");
+const userService = require("../../services/userService");
 
 const COIN = config.emojis.coin;
 
@@ -69,30 +70,10 @@ module.exports = {
         })
         .join("\n");
 
-    // Obtener balance actual
-    const { data: user, error: userError } = await db
-        .from("user_stats")
-        .select("balance")
-        .eq("discord_id", userId)
-        .single();
-
-    if (userError) {
-      console.error(userError);
-      return interaction.reply({
-        content: "Error obteniendo balance.",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    const newBalance = (user.balance || 0) + total;
-
-    // Actualizar balance
-    const { error: updateError } = await db
-        .from("user_stats")
-        .update({ balance: newBalance })
-        .eq("discord_id", userId);
-
-    if (updateError) {
+    // Actualizar balance de manera atómica con userService para evitar condiciones de carrera
+    try {
+      await userService.addBalance(userId, total, false);
+    } catch (updateError) {
       console.error(updateError);
       return interaction.reply({
         content: "Error actualizando balance.",

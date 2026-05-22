@@ -2,7 +2,7 @@ const { exchangeRate, currency } = require("../../core.json").economy;
 const { apiKey: PAYMENTER_API_KEY, url: PAYMENTER_URL } = require("../../config.json").paymenter;
 const { coin: COIN } = require("../../core.json").emojis;
 const { SlashCommandBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
-const db = require("../../services/dbService");
+const userService = require("../../services/userService");
 const { logTransaction } = require("../../services/transactionService");
 
 module.exports = {
@@ -51,8 +51,7 @@ module.exports = {
     }
 
     try {
-      const rows = await db.query("SELECT balance FROM user_stats WHERE discord_id = ?", [targetUser.id]);
-      const currentBalance = rows.length > 0 ? rows[0].balance : 0;
+      const currentBalance = await userService.getBalance(targetUser.id);
 
       if (currentBalance < costInCoins) {
         return interaction.editReply(
@@ -133,7 +132,7 @@ module.exports = {
         }
       }
 
-      await db.execute("UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?", [costInCoins, targetUser.id]);
+      await userService.removeBalance(targetUser.id, costInCoins, false);
       await logTransaction({ discordId: targetUser.id, type: "coins_to_credits", amount: costInCoins, itemName: `${paymenterCredits} crédito(s) Paymenter → ${paymenterEmail}` });
 
       return interaction.editReply(
