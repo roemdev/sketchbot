@@ -1,4 +1,2 @@
 node_modules
-old.config.json
-config-copy.json
-database.sqlite
+config.json
