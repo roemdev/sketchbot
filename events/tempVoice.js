@@ -1,4 +1,4 @@
-const config = require("../core.json");
+const config = require("../utils/config");
 const db = require("../services/dbService");
 
 module.exports = {

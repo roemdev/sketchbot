@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 const userService = require("../../services/userService");
 const { logTransaction } = require("../../services/transactionService");
-const config = require("../../core.json");
+const config = require("../../utils/config");
 
 const COIN = config.emojis.coin;
 

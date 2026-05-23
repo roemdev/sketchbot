@@ -1,0 +1,17 @@
+{
+  "levels": {
+    "minXpEarn": 10,
+    "maxXpEarn": 30,
+    "baseCoinReward": 10000,
+    "roles": {
+      "5": "ROLE_ID_LEVEL_5",
+      "10": "ROLE_ID_LEVEL_10"
+    }
+  },
+  "voiceXp": {
+    "intervalSeconds": 60,
+    "afkChannelId": null,
+    "levelUpChannelId": null,
+    "levelUpMessage": "✨ ¡Felicidades {user}! Has subido al **nivel {level}** 🎉"
+  }
+}

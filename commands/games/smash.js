@@ -10,7 +10,7 @@ const {
   TextInputStyle
 } = require("discord.js");
 
-const config = require("../../core.json");
+const config = require("../../utils/config");
 const userService = require("../../services/userService");
 const { logTransaction } = require("../../services/transactionService");
 const SMASH_CHARACTERS = require("../../data/smash.json");

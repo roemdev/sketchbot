@@ -1,6 +1,6 @@
-const { exchangeRate, currency } = require("../../core.json").economy;
+const { exchangeRate, currency } = require("../../utils/config").economy;
 const { apiKey: PAYMENTER_API_KEY, url: PAYMENTER_URL } = require("../../config.json").paymenter;
-const { coin: COIN } = require("../../core.json").emojis;
+const { coin: COIN } = require("../../utils/config").emojis;
 const { SlashCommandBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
 const userService = require("../../services/userService");
 const { logTransaction } = require("../../services/transactionService");

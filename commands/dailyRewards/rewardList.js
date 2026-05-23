@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const db = require("../../services/dbService");
-const config = require("../../core.json");
+const config = require("../../utils/config");
 
 const COIN = config.emojis.coin;
 

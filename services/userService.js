@@ -66,9 +66,11 @@ module.exports = {
     return data ?? [];
   },
 
-  addXp: async (discordId, amount) => {
-    const user = await module.exports.getUser(discordId);
-    if (!user) return null;
+  addXp: async (discordId, amount, username = "Usuario de Voz") => {
+    let user = await module.exports.getUser(discordId);
+    if (!user) {
+      user = await module.exports.createUser(discordId, username);
+    }
 
     let currentXp = (user.xp || 0) + amount;
     let currentLevel = user.level || 1;
@@ -90,5 +92,43 @@ module.exports = {
 
     if (error) throw error;
     return { xp: currentXp, level: currentLevel, leveledUp, levelsGained };
+  },
+
+  setXpAndLevel: async (discordId, level, xp, username = "Usuario") => {
+    let user = await module.exports.getUser(discordId);
+    if (!user) {
+      user = await module.exports.createUser(discordId, username);
+    }
+    const { error } = await supabase
+        .from("user_stats")
+        .update({ xp, level })
+        .eq("discord_id", discordId);
+    if (error) throw error;
+    return { xp, level };
+  },
+
+  removeXp: async (discordId, amount) => {
+    const user = await module.exports.getUser(discordId);
+    if (!user) return null;
+
+    let currentXp = (user.xp || 0) - amount;
+    let currentLevel = user.level || 1;
+
+    while (currentXp < 0 && currentLevel > 1) {
+      currentLevel--;
+      currentXp += currentLevel * 100;
+    }
+
+    if (currentXp < 0) {
+      currentXp = 0;
+    }
+
+    const { error } = await supabase
+        .from("user_stats")
+        .update({ xp: currentXp, level: currentLevel })
+        .eq("discord_id", discordId);
+
+    if (error) throw error;
+    return { xp: currentXp, level: currentLevel };
   }
 };

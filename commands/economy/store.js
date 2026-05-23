@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ButtonStyle, MessageFlags, ContainerBuilder } = req
 const storeService = require("../../services/storeService");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
-const config = require("../../core.json");
+const config = require("../../utils/config");
 const { isValidMinecraftNick } = require("../../utils/validation");
 
 const COIN = config.emojis.coin;

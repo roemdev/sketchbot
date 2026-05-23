@@ -1,6 +1,7 @@
 const { Events, ActivityType } = require('discord.js');
 const chalk = require('chalk');
 const supabase = require("../services/dbService"); // Importamos la conexión de Supabase
+const voiceXpService = require("../services/voiceXpService");
 
 module.exports = {
   name: Events.ClientReady,
@@ -61,5 +62,8 @@ module.exports = {
     } catch (error) {
       console.error(chalk.red("Error al limpiar los canales temporales en el arranque (Supabase):"), error);
     }
+
+    // --- INICIALIZAR SISTEMA DE EXPERIENCIA POR VOZ ---
+    voiceXpService.init(client);
   },
 };

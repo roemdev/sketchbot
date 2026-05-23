@@ -1,0 +1,23 @@
+{
+  "economy": {
+    "exchangeRate": 500000,
+    "currency": "USD"
+  },
+  "emojis": {
+    "coin": "🪙"
+  },
+  "tasks": {
+    "minEarn": 3000,
+    "maxEarn": 10000,
+    "taskDuration": 20,
+    "cooldown": 300
+  },
+  "dailyClaim": {
+    "cooldown": 64800
+  },
+  "smash": {
+    "betIncrement": 10000,
+    "hostCut": 0.05,
+    "timeout": 300
+  }
+}

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const db = require("../../services/dbService");
-const config = require("../../core.json");
+const config = require("../../utils/config");
 const { logTransaction } = require("../../services/transactionService");
 const cooldownService = require("../../services/cooldownService");
 const userService = require("../../services/userService");

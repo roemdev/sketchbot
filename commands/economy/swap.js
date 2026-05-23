@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags, ContainerBuilder, ButtonBuilder, Butt
 const userService = require("../../services/userService");
 const { sendCommand } = require("../../services/minecraftService");
 const transactionService = require("../../services/transactionService");
-const config = require("../../core.json");
+const config = require("../../utils/config");
 const { isValidMinecraftNick } = require("../../utils/validation");
 
 const RATE = config.economy.exchangeRate;
