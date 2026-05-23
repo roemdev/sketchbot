@@ -59,10 +59,36 @@ module.exports = {
   getTopUsers: async (limit = 10) => {
     const { data, error } = await supabase
         .from("user_stats")
-        .select("discord_id, username, balance")
+        .select("discord_id, username, balance, level, xp")
         .order("balance", { ascending: false })
         .limit(limit);
     if (error) throw error;
     return data ?? [];
   },
+
+  addXp: async (discordId, amount) => {
+    const user = await module.exports.getUser(discordId);
+    if (!user) return null;
+
+    let currentXp = (user.xp || 0) + amount;
+    let currentLevel = user.level || 1;
+    let leveledUp = false;
+    let levelsGained = 0;
+
+    // Fórmula: XP necesaria para el siguiente nivel = Nivel actual * 100
+    while (currentXp >= currentLevel * 100) {
+      currentXp -= currentLevel * 100;
+      currentLevel++;
+      leveledUp = true;
+      levelsGained++;
+    }
+
+    const { error } = await supabase
+        .from("user_stats")
+        .update({ xp: currentXp, level: currentLevel })
+        .eq("discord_id", discordId);
+
+    if (error) throw error;
+    return { xp: currentXp, level: currentLevel, leveledUp, levelsGained };
+  }
 };
