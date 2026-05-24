@@ -77,11 +77,6 @@ class RoleRewardService {
     }
   }
 
-  /**
-   * Syncs all members in a guild against their levels in the database.
-   * @param {Guild} guild - The Discord guild.
-   * @returns {Promise<{processed: number, updated: number}>}
-   */
   async syncAllMembers(guild) {
     const roleRewards = await this.getSortedRoleRewards();
     if (!roleRewards.length) return { processed: 0, updated: 0 };
@@ -97,19 +92,19 @@ class RoleRewardService {
       throw error;
     }
 
-    const userMap = new Map(users.map(u => [u.discord_id, u.level || 1]));
-
-    // Fetch all guild members
-    const members = await guild.members.fetch();
-
     let processed = 0;
     let updated = 0;
 
-    for (const [memberId, member] of members) {
-      if (member.user.bot) continue;
+    for (const user of users) {
+      const memberId = user.discord_id;
+      const level = user.level || 1;
 
-      const level = userMap.get(memberId);
-      if (level === undefined) continue; // Not in DB, skip
+      // Skip bank accounts and special non-user records
+      if (!memberId || memberId.includes("_") || isNaN(memberId)) continue;
+
+      // Fetch the member individually. This works without the privileged GuildMembers intent!
+      const member = await guild.members.fetch(memberId).catch(() => null);
+      if (!member || member.user.bot) continue;
 
       processed++;
 
