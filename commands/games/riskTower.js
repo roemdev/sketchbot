@@ -78,7 +78,7 @@ module.exports.buttonHandler = async (interaction) => {
     }
 
     if (action === "risk") {
-        if (Math.random() < 0.75) {
+        if (Math.random() < 0.8) {
             const next = nextValue(current);
 
             const winContainer = new ContainerBuilder()

@@ -8,8 +8,8 @@ const COIN = config.emojis.coin || "🪙";
 module.exports = {
   cooldown: 300, // 5 minutos de cooldown para evitar spam
   data: new SlashCommandBuilder()
-      .setName("robar")
-      .setDescription("Intenta robarle el 5% de su cartera a un usuario registrado aleatorio"),
+    .setName("robar")
+    .setDescription("Intenta robarle el 5% de su cartera a un usuario registrado aleatorio"),
 
   async execute(interaction) {
     const userId = interaction.user.id;
@@ -22,10 +22,10 @@ module.exports = {
 
     // Obtener todos los usuarios elegibles para ser robados (excluyendo bancos y al propio autor)
     const { data: users, error } = await supabase
-        .from("user_stats")
-        .select("discord_id, username, balance")
-        .not("discord_id", "ilike", "%_bank")
-        .neq("discord_id", userId);
+      .from("user_stats")
+      .select("discord_id, username, balance")
+      .not("discord_id", "ilike", "%_bank")
+      .neq("discord_id", userId);
 
     if (error || !users || users.length === 0) {
       const container = new ContainerBuilder()
@@ -62,14 +62,13 @@ module.exports = {
         .addTextDisplayComponents(t => t.setContent(`### 🥷 ¡Robo Exitoso!`))
         .addSeparatorComponents(s => s)
         .addSectionComponents(section =>
-            section
-                .addTextDisplayComponents(t =>
-                    t.setContent(
-                        `¡Silencioso como el viento! Le has robado el **5%** de la cartera a <@${target.discord_id}>.\n\n` +
-                        `💵 **Botín obtenido:** +${COIN}**${stolen.toLocaleString("es-DO")}**`
-                    )
-                )
-                .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
+          section
+            .addTextDisplayComponents(t =>
+              t.setContent(
+                `¡Silencioso como el viento! Le has robado el **5%** de la cartera a <@${target.discord_id}>.\n\n` +
+                `💵 **Botín obtenido:** +${COIN}**${stolen.toLocaleString("es-DO")}**`
+              )
+            )
         );
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -83,7 +82,7 @@ module.exports = {
       }
 
       const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
-      const fineText = fine > 0 
+      const fineText = fine > 0
         ? `Tuviste que pagar una multa del **2%** de tu banco: -${COIN}**${fine.toLocaleString("es-DO")}**.`
         : `Te salvaste de la multa porque no tienes monedas guardadas en tu banco.`;
 
@@ -92,14 +91,14 @@ module.exports = {
         .addTextDisplayComponents(t => t.setContent(`### 🚨 ¡Atrapado por la Ley!`))
         .addSeparatorComponents(s => s)
         .addSectionComponents(section =>
-            section
-                .addTextDisplayComponents(t =>
-                    t.setContent(
-                        `Intentaste robarle a <@${target.discord_id}>, pero saltaron las alarmas. ¡Te atraparon con las manos en la masa!\n\n` +
-                        `💸 **Sanción:** ${fineText}`
-                    )
-                )
-                .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
+          section
+            .addTextDisplayComponents(t =>
+              t.setContent(
+                `Intentaste robarle a <@${target.discord_id}>, pero saltaron las alarmas. ¡Te atraparon con las manos en la masa!\n\n` +
+                `💸 **Sanción:** ${fineText}`
+              )
+            )
+            .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
         );
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
