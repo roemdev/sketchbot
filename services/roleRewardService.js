@@ -20,7 +20,7 @@ class RoleRewardService {
   }
 
   /**
-   * Assigns appropriate level roles to a member and removes any roles they shouldn't have.
+   * Assigns the highest qualified level role to a member and removes any other level roles.
    * @param {GuildMember} member - The guild member to update.
    * @param {number} level - The level of the user.
    * @returns {Promise<{added: string[], removed: string[]}>}
@@ -30,17 +30,21 @@ class RoleRewardService {
       const roleRewards = await this.getSortedRoleRewards();
       if (!roleRewards.length) return { added: [], removed: [] };
 
-      // Filter roles: member should have all roles where role.level <= level
-      const targetRoleIds = roleRewards
-        .filter(r => r.level <= level)
-        .map(r => r.role_id);
-      
-      const allRewardRoleIds = roleRewards.map(r => r.role_id);
+      // Find the highest role that the user qualifies for
+      const qualifiedRoles = roleRewards.filter(r => r.level <= level);
+      const targetRole = qualifiedRoles.length > 0 ? qualifiedRoles[qualifiedRoles.length - 1] : null;
+      const targetRoleId = targetRole ? targetRole.role_id : null;
 
+      const allRewardRoleIds = roleRewards.map(r => r.role_id);
       const memberRoleIds = [...member.roles.cache.keys()];
 
-      const rolesToAdd = targetRoleIds.filter(id => !memberRoleIds.includes(id));
-      const rolesToRemove = allRewardRoleIds.filter(id => memberRoleIds.includes(id) && !targetRoleIds.includes(id));
+      // We should only ADD the highest qualified role if they don't have it
+      const rolesToAdd = targetRoleId && !memberRoleIds.includes(targetRoleId) ? [targetRoleId] : [];
+
+      // We should REMOVE all other reward roles that the member has
+      const rolesToRemove = allRewardRoleIds.filter(id => {
+        return memberRoleIds.includes(id) && id !== targetRoleId;
+      });
 
       const added = [];
       const removed = [];
@@ -108,14 +112,20 @@ class RoleRewardService {
 
       processed++;
 
-      const targetRoleIds = roleRewards
-        .filter(r => r.level <= level)
-        .map(r => r.role_id);
+      // Find the highest role that the user qualifies for
+      const qualifiedRoles = roleRewards.filter(r => r.level <= level);
+      const targetRole = qualifiedRoles.length > 0 ? qualifiedRoles[qualifiedRoles.length - 1] : null;
+      const targetRoleId = targetRole ? targetRole.role_id : null;
 
       const memberRoleIds = [...member.roles.cache.keys()];
 
-      const rolesToAdd = targetRoleIds.filter(id => !memberRoleIds.includes(id));
-      const rolesToRemove = allRewardRoleIds.filter(id => memberRoleIds.includes(id) && !targetRoleIds.includes(id));
+      // We should only ADD the highest qualified role if they don't have it
+      const rolesToAdd = targetRoleId && !memberRoleIds.includes(targetRoleId) ? [targetRoleId] : [];
+
+      // We should REMOVE all other reward roles that the member has
+      const rolesToRemove = allRewardRoleIds.filter(id => {
+        return memberRoleIds.includes(id) && id !== targetRoleId;
+      });
 
       if (rolesToAdd.length > 0 || rolesToRemove.length > 0) {
         let memberUpdated = false;

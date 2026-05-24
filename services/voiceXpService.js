@@ -55,7 +55,7 @@ async function scanVoiceChannels(client) {
             const coinReward = xpInfo.level * baseCoin;
             await userService.addBalance(member.id, coinReward, false);
 
-            // 6. Sincronizar roles de nivel según la tabla de supabase
+            // 6. Sincronizar roles de nivel según la tabla de supabase (sin acumulación)
             let roleAwardedText = "";
             try {
               const syncResult = await roleRewardService.syncMemberRoles(member, xpInfo.level);
@@ -64,7 +64,7 @@ async function scanVoiceChannels(client) {
                   .map(id => guild.roles.cache.get(id)?.name)
                   .filter(Boolean);
                 if (addedRoleNames.length > 0) {
-                  roleAwardedText = `\n🎖️ ¡Has recibido los roles: **${addedRoleNames.join(", ")}**!`;
+                  roleAwardedText = `\n🎖️ ¡Has recibido el rol **${addedRoleNames[0]}**!`;
                 }
               }
             } catch (roleError) {
