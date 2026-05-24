@@ -15,46 +15,48 @@ function getProgressBar(current, max, length = 10) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-      .setName("nivel")
-      .setDescription("Muestra tu nivel de experiencia y el XP restante")
-      .addUserOption(o =>
-          o.setName("usuario")
-              .setDescription("El usuario a consultar")
-              .setRequired(false)
-      ),
+    .setName("nivel")
+    .setDescription("Muestra tu nivel de experiencia y el XP restante")
+    .addUserOption(o =>
+      o.setName("usuario")
+        .setDescription("El usuario a consultar")
+        .setRequired(false)
+    ),
 
   async execute(interaction) {
     const targetUser = interaction.options.getUser("usuario") || interaction.user;
-    
+
     // Asegurar que el usuario tenga un perfil en la base de datos
     const dbUser = await userService.createUser(targetUser.id, targetUser.username);
 
     const level = dbUser.level || 1;
     const xp = dbUser.xp || 0;
     const nextLevelXp = userService.getXpNeededForLevel(level);
-    const remainingXp = nextLevelXp - xp;
-
     const totalXp = userService.getTotalXp(level, xp);
+    const faltanteXp = nextLevelXp - xp;
+
     const avatarUrl = targetUser.displayAvatarURL({ extension: "png", size: 128 });
 
     const container = new ContainerBuilder()
       .setAccentColor(0x3498DB) // Azul premium para información y experiencia
-      .addTextDisplayComponents(t => 
+      .addTextDisplayComponents(t =>
         t.setContent(`## Nivel de ${targetUser.username}`)
+      ).addSeparatorComponents(s => s)
+      .addSectionComponents(section =>
+        section
+          .addTextDisplayComponents(t =>
+            t.setContent(
+              `Nivel: **${level}**\n` +
+              `Experiencia: **${xp.toLocaleString("es-DO")}** / **${nextLevelXp.toLocaleString("es-DO")}** XP \n` +
+              `Total Exp: **${totalXp.toLocaleString("es-DO")}** \n` +
+              `> *Faltan **${faltanteXp}** XP para el próximo nivel*`
+            )
+          )
+          .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
       )
       .addSeparatorComponents(s => s)
-      .addSectionComponents(section =>
-          section
-              .addTextDisplayComponents(t =>
-                  t.setContent(
-                      `**🌟 Nivel:** **${level}**\n` +
-                      `**${XP} Experiencia:** **${XP}${xp.toLocaleString("es-DO")}** / **${nextLevelXp.toLocaleString("es-DO")}** XP\n` +
-                      `**📊 Total XP:** **${XP}${totalXp.toLocaleString("es-DO")}** XP\n\n` +
-                      `**📈 Progreso:**\n${getProgressBar(xp, nextLevelXp)}\n` +
-                      `Faltan **${XP}${remainingXp.toLocaleString("es-DO")}** XP para el nivel **${level + 1}**.`
-                  )
-              )
-              .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
+      .addTextDisplayComponents(t =>
+        t.setContent(getProgressBar(xp, nextLevelXp))
       );
 
     return interaction.reply({
