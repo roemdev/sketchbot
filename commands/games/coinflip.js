@@ -5,7 +5,7 @@ const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
 const COIN = config.emojis.coin;
-const MAX_BET = 100_000;
+const MAX_BET = 300_000;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));

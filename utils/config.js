@@ -21,7 +21,7 @@ const set = loadJson('settings.json');
 
 module.exports = {
   economy: eco.economy || {},
-  emojis: eco.emojis || {},
+  emojis: { ...(eco.emojis || {}), ...(lvl.emojis || {}) },
   tasks: eco.tasks || {},
   dailyClaim: eco.dailyClaim || {},
   smash: eco.smash || {},

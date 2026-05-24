@@ -11,7 +11,10 @@
   "voiceXp": {
     "intervalSeconds": 60,
     "afkChannelId": null,
-    "levelUpChannelId": null,
+    "levelUpChannelId": "1413508722277224600",
     "levelUpMessage": "✨ ¡Felicidades {user}! Has subido al **nivel {level}** 🎉"
+  },
+  "emojis": {
+    "xp": "✨"
   }
 }

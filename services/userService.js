@@ -56,12 +56,52 @@ module.exports = {
     return await module.exports.getUser(discordId);
   },
 
-  getTopUsers: async (limit = 10) => {
-    const { data, error } = await supabase
+  getXpNeededForLevel: (level) => {
+    const lvl = level || 1;
+    return 5 * lvl * lvl + 50 * lvl + 100;
+  },
+
+  getTotalXp: (level, xp) => {
+    const lvl = level || 1;
+    let total = 0;
+    for (let i = 1; i < lvl; i++) {
+      total += 5 * i * i + 50 * i + 100;
+    }
+    return total + (xp || 0);
+  },
+
+  getBankBalance: async (discordId) => {
+    const bankRecord = await module.exports.getUser(`${discordId}_bank`);
+    return bankRecord ? bankRecord.balance : 0;
+  },
+
+  setBankBalance: async (discordId, amount, username = "Banco") => {
+    const bankId = `${discordId}_bank`;
+    const bankRecord = await module.exports.getUser(bankId);
+    if (!bankRecord) {
+      await module.exports.createUser(bankId, `${username}_bank`);
+    }
+    const { error } = await supabase
+      .from("user_stats")
+      .update({ balance: amount })
+      .eq("discord_id", bankId);
+    if (error) throw error;
+  },
+
+  getTopUsers: async (limit = 10, sortBy = "balance") => {
+    let query = supabase
         .from("user_stats")
         .select("discord_id, username, balance, level, xp")
-        .order("balance", { ascending: false })
+        .not("discord_id", "ilike", "%_bank")
         .limit(limit);
+
+    if (sortBy === "level") {
+      query = query.order("level", { ascending: false }).order("xp", { ascending: false });
+    } else {
+      query = query.order("balance", { ascending: false });
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data ?? [];
   },
@@ -77,9 +117,8 @@ module.exports = {
     let leveledUp = false;
     let levelsGained = 0;
 
-    // Fórmula: XP necesaria para el siguiente nivel = Nivel actual * 100
-    while (currentXp >= currentLevel * 100) {
-      currentXp -= currentLevel * 100;
+    while (currentXp >= module.exports.getXpNeededForLevel(currentLevel)) {
+      currentXp -= module.exports.getXpNeededForLevel(currentLevel);
       currentLevel++;
       leveledUp = true;
       levelsGained++;
@@ -116,7 +155,7 @@ module.exports = {
 
     while (currentXp < 0 && currentLevel > 1) {
       currentLevel--;
-      currentXp += currentLevel * 100;
+      currentXp += module.exports.getXpNeededForLevel(currentLevel);
     }
 
     if (currentXp < 0) {

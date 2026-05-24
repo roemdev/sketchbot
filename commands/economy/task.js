@@ -6,6 +6,7 @@ const { logTransaction } = require("../../services/transactionService");
 
 const { minEarn, maxEarn, taskDuration, cooldown } = config.tasks;
 const COIN = config.emojis.coin;
+const XP = config.emojis.xp || "✨";
 
 async function grantReward(interaction, userId) {
   const earned = Math.floor(Math.random() * (maxEarn - minEarn + 1)) + minEarn;
@@ -13,27 +14,7 @@ async function grantReward(interaction, userId) {
   await logTransaction({ discordId: userId, type: "task", amount: earned });
   await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
 
-  const xpEarned = Math.floor(Math.random() * (config.levels.maxXpEarn - config.levels.minXpEarn + 1)) + config.levels.minXpEarn;
-  const xpInfo = await userService.addXp(userId, xpEarned);
-
-  let levelUpMessage = "";
-  if (xpInfo && xpInfo.leveledUp) {
-      const levelReward = xpInfo.level * config.levels.baseCoinReward;
-      await userService.addBalance(userId, levelReward, false);
-      levelUpMessage += `\n🎉 ¡Subiste al **Nivel ${xpInfo.level}**! Ganaste **${COIN}${levelReward.toLocaleString()}** extra.`;
-
-      const roleId = config.levels.roles[xpInfo.level.toString()];
-      if (roleId && interaction.member && interaction.member.roles) {
-          try {
-              await interaction.member.roles.add(roleId);
-              levelUpMessage += `\n🎖️ ¡Has recibido un nuevo rol!`;
-          } catch (e) {
-              console.error("Error giving role:", e);
-          }
-      }
-  }
-
-  return { earned, xpEarned, levelUpMessage };
+  return { earned };
 }
 
 module.exports = {
@@ -61,9 +42,9 @@ module.exports = {
 
       switch (taskType) {
         case 0: {
-          const { earned, xpEarned, levelUpMessage } = await grantReward(interaction, userId);
+          const { earned } = await grantReward(interaction, userId);
           return interaction.reply({
-            content: `Hoy tocó trabajar de funcionario público. Hiciste nada.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas\n-> **✨ ${xpEarned}** XP${levelUpMessage}`,
+            content: `Hoy tocó trabajar de funcionario público. Hiciste nada.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`,
           });
         }
 
@@ -178,10 +159,10 @@ module.exports.buttonHandler = async (interaction) => {
       }
 
       if (clicked === correctSum) {
-        const { earned, xpEarned, levelUpMessage } = await grantReward(interaction, userId);
+        const { earned } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
             .setAccentColor(0xF4C542)
-            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Correcto!\nSe nota que pasaste matemáticas.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas\n-> **✨ ${xpEarned}** XP${levelUpMessage}`));
+            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Correcto!\nSe nota que pasaste matemáticas.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
@@ -200,10 +181,10 @@ module.exports.buttonHandler = async (interaction) => {
       }
 
       if (remaining <= 0) {
-        const { earned, xpEarned, levelUpMessage } = await grantReward(interaction, userId);
+        const { earned } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
             .setAccentColor(0xF4C542)
-            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Lo lograste!\nDedo entrenado.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas\n-> **✨ ${xpEarned}** XP${levelUpMessage}`));
+            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Lo lograste!\nDedo entrenado.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
 
@@ -233,10 +214,10 @@ module.exports.buttonHandler = async (interaction) => {
       }
 
       if (clickedId === correctId) {
-        const { earned, xpEarned, levelUpMessage } = await grantReward(interaction, userId);
+        const { earned } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
             .setAccentColor(0xF4C542)
-            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Bien visto!\nElegiste la figura correcta.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas\n-> **✨ ${xpEarned}** XP${levelUpMessage}`));
+            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Bien visto!\nElegiste la figura correcta.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()

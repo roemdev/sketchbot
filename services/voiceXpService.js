@@ -81,13 +81,14 @@ async function scanVoiceChannels(client) {
 
             // Crear un panel elegante usando Componentes V2
             const COIN = config.emojis.coin || "🪙";
+            const XP = config.emojis.xp || "✨";
             const levelUpContainer = new ContainerBuilder()
               .setAccentColor(0xF1C40F) // Color dorado premium
               .addTextDisplayComponents(t =>
                 t.setContent(
                   `### 🌟 ¡Subida de Nivel! 🌟\n` +
-                  `¡Felicidades <@${member.id}>! Has subido al **nivel ${xpInfo.level}** ✨\n\n` +
-                  `💰 **Premio:** ${COIN}**${coinReward.toLocaleString("es-DO")}** monedas` +
+                  `¡Felicidades <@${member.id}>! Has subido al **nivel ${xpInfo.level}** **${XP}**\n\n` +
+                  `💰 **Premio:** **${COIN}${coinReward.toLocaleString("es-DO")}** monedas` +
                   `${roleAwardedText}`
                 )
               );
@@ -100,13 +101,7 @@ async function scanVoiceChannels(client) {
                 console.error(chalk.red(`[VOICE-XP] No se pudo enviar el anuncio al canal configurado: ${err.message}`));
               });
             } else {
-              // Si no hay canal configurado o no se encuentra, enviar por DM de forma segura
-              await member.send({ 
-                components: [levelUpContainer], 
-                flags: MessageFlags.IsComponentsV2 
-              }).catch(err => {
-                console.log(chalk.gray(`[VOICE-XP] No se pudo enviar DM a ${member.user.username} (DMs cerrados y sin canal alternativo).`));
-              });
+              console.log(chalk.yellow(`[VOICE-XP] No se pudo enviar mensaje público de subida de nivel de ${member.user.username} porque el canal no es válido o no está configurado.`));
             }
           }
         } catch (dbError) {

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder } = require("discord.js");
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
+const XP = config.emojis.xp || "✨";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -46,7 +47,7 @@ module.exports = {
         const baseCoin = config.levels.baseCoinReward || 10000;
         const coinReward = xpInfo.level * baseCoin;
         await userService.addBalance(targetUser.id, coinReward, false);
-        levelUpRewardText = `\n🎉 ¡Subió al **Nivel ${xpInfo.level}**! Recibió **${config.emojis.coin || "🪙"}${coinReward.toLocaleString("es-DO")}** monedas.`;
+        levelUpRewardText = `\n🎉 ¡Subió al **Nivel ${xpInfo.level}** **${XP}**! Recibió **${config.emojis.coin || "🪙"}${coinReward.toLocaleString("es-DO")}** monedas.`;
 
         // Asignar el rol del nivel si corresponde
         const roleId = config.levels.roles[xpInfo.level.toString()];
@@ -68,9 +69,9 @@ module.exports = {
         .addTextDisplayComponents(t =>
           t.setContent(
             `### ✨ XP Añadida\n` +
-            `Se añadieron **${amount} XP** a <@${targetUser.id}>.\n\n` +
-            `🌟 **Nivel Actual:** ${xpInfo.level}\n` +
-            `✨ **XP Actual:** ${xpInfo.xp} / ${xpInfo.level * 100} XP` +
+            `Se añadieron **${XP}${amount.toLocaleString()}** XP a <@${targetUser.id}>.\n\n` +
+            `🌟 **Nivel Actual:** **${xpInfo.level}**\n` +
+            `✨ **XP Actual:** **${XP}${xpInfo.xp.toLocaleString()}** / **${userService.getXpNeededForLevel(xpInfo.level).toLocaleString()}** XP` +
             `${levelUpRewardText}`
           )
         );
@@ -83,7 +84,7 @@ module.exports = {
       const xp = interaction.options.getInteger("xp");
 
       // Validar que el XP no supere el límite del nivel establecido
-      const maxXpForLevel = level * 100;
+      const maxXpForLevel = userService.getXpNeededForLevel(level);
       let finalXp = xp;
       if (xp >= maxXpForLevel) {
         finalXp = maxXpForLevel - 1; // Ajustamos para que no se autogratifique de forma incongruente
@@ -112,8 +113,8 @@ module.exports = {
           t.setContent(
             `### ⚙️ Nivel y XP Establecidos\n` +
             `Se ha configurado manualmente la experiencia de <@${targetUser.id}>.\n\n` +
-            `🌟 **Nivel:** ${xpInfo.level}\n` +
-            `✨ **XP:** ${xpInfo.xp} / ${xpInfo.level * 100} XP` +
+            `🌟 **Nivel:** **${xpInfo.level}**\n` +
+            `✨ **XP:** **${XP}${xpInfo.xp.toLocaleString()}** / **${userService.getXpNeededForLevel(xpInfo.level).toLocaleString()}** XP` +
             `${roleText}`
           )
         );
@@ -130,9 +131,9 @@ module.exports = {
         .addTextDisplayComponents(t =>
           t.setContent(
             `### ➖ XP Removida\n` +
-            `Se redujeron **${amount} XP** a <@${targetUser.id}>.\n\n` +
-            `🌟 **Nivel Actual:** ${xpInfo.level}\n` +
-            `✨ **XP Actual:** ${xpInfo.xp} / ${xpInfo.level * 100} XP`
+            `Se quitaron **${XP}${amount.toLocaleString()}** XP a <@${targetUser.id}>.\n\n` +
+            `🌟 **Nivel Actual:** **${xpInfo.level}**\n` +
+            `✨ **XP Actual:** **${XP}${xpInfo.xp.toLocaleString()}** / **${userService.getXpNeededForLevel(xpInfo.level).toLocaleString()}** XP`
           )
         );
 
