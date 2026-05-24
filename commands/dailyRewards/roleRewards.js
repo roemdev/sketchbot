@@ -13,6 +13,7 @@ module.exports = {
           sub.setName("add").setDescription("Añade o actualiza la recompensa de un rol")
               .addRoleOption(o => o.setName("rol").setDescription("El rol a configurar").setRequired(true))
               .addIntegerOption(o => o.setName("cantidad").setDescription("Monedas diarias").setMinValue(1).setRequired(true))
+              .addIntegerOption(o => o.setName("nivel").setDescription("Nivel requerido para el rol").setMinValue(1).setRequired(true))
       )
       .addSubcommand(sub =>
           sub.setName("remove").setDescription("Elimina la recompensa de un rol")
@@ -25,14 +26,15 @@ module.exports = {
 
     if (subcommand === "add") {
       const amount = interaction.options.getInteger("cantidad");
+      const level = interaction.options.getInteger("nivel");
 
       try {
         await db
             .from("role_rewards")
-            .upsert({ role_id: role.id, ammount: amount }, { onConflict: "role_id" });
+            .upsert({ role_id: role.id, ammount: amount, level: level }, { onConflict: "role_id" });
 
         return interaction.reply({
-          content: `Listo. **${role.name}** ahora otorga **${COIN}${amount.toLocaleString()}** diarias.`,
+          content: `Listo. **${role.name}** ahora otorga **${COIN}${amount.toLocaleString()}** diarias a partir de nivel **${level}**.`,
           flags: MessageFlags.Ephemeral,
         });
       } catch (error) {

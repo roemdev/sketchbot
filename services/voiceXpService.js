@@ -1,6 +1,7 @@
 const { ContainerBuilder, MessageFlags } = require("discord.js");
 const config = require("../utils/config");
 const userService = require("./userService");
+const roleRewardService = require("./roleRewardService");
 const chalk = require("chalk");
 
 let isRunning = false;
@@ -54,20 +55,20 @@ async function scanVoiceChannels(client) {
             const coinReward = xpInfo.level * baseCoin;
             await userService.addBalance(member.id, coinReward, false);
 
-            // 6. Entregar rol de nivel si está configurado
-            const roleId = config.levels.roles[xpInfo.level.toString()];
+            // 6. Sincronizar roles de nivel según la tabla de supabase
             let roleAwardedText = "";
-            
-            if (roleId) {
-              const role = guild.roles.cache.get(roleId);
-              if (role) {
-                try {
-                  await member.roles.add(role);
-                  roleAwardedText = `\n🎖️ ¡Has recibido el rol **${role.name}**!`;
-                } catch (e) {
-                  console.error(chalk.yellow(`[VOICE-XP] Permisos insuficientes para otorgar el rol ${role.name} a ${member.user.username}.`));
+            try {
+              const syncResult = await roleRewardService.syncMemberRoles(member, xpInfo.level);
+              if (syncResult.added.length > 0) {
+                const addedRoleNames = syncResult.added
+                  .map(id => guild.roles.cache.get(id)?.name)
+                  .filter(Boolean);
+                if (addedRoleNames.length > 0) {
+                  roleAwardedText = `\n🎖️ ¡Has recibido los roles: **${addedRoleNames.join(", ")}**!`;
                 }
               }
+            } catch (roleError) {
+              console.error(chalk.red(`[VOICE-XP] Error al sincronizar roles de nivel para ${member.user.username}:`), roleError);
             }
 
             // 7. Enviar mensaje de subida de nivel

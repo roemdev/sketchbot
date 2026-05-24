@@ -50,13 +50,16 @@ module.exports = {
         levelUpRewardText = `\n🎉 ¡Subió al **Nivel ${xpInfo.level}** **${XP}**! Recibió **${config.emojis.coin || "🪙"}${coinReward.toLocaleString("es-DO")}** monedas.`;
 
         // Asignar el rol del nivel si corresponde
-        const roleId = config.levels.roles[xpInfo.level.toString()];
-        if (roleId && interaction.guild) {
+        if (interaction.guild) {
           const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
           if (member) {
             try {
-              await member.roles.add(roleId);
-              levelUpRewardText += `\n🎖️ Se le otorgó el rol del nivel.`;
+              const roleRewardService = require("../../services/roleRewardService");
+              const syncResult = await roleRewardService.syncMemberRoles(member, xpInfo.level);
+              if (syncResult.added.length > 0) {
+                const addedRoleNames = syncResult.added.map(id => interaction.guild.roles.cache.get(id)?.name).filter(Boolean);
+                levelUpRewardText += `\n🎖️ Se le otorgaron los roles: **${addedRoleNames.join(", ")}**.`;
+              }
             } catch (e) {
               console.error("Error al asignar rol administrativo:", e);
             }
@@ -94,13 +97,20 @@ module.exports = {
 
       // Asignar el rol del nivel si corresponde
       let roleText = "";
-      const roleId = config.levels.roles[level.toString()];
-      if (roleId && interaction.guild) {
+      if (interaction.guild) {
         const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
         if (member) {
           try {
-            await member.roles.add(roleId);
-            roleText = `\n🎖️ Se le otorgó el rol correspondiente al nivel **${level}**.`;
+            const roleRewardService = require("../../services/roleRewardService");
+            const syncResult = await roleRewardService.syncMemberRoles(member, xpInfo.level);
+            if (syncResult.added.length > 0) {
+              const addedRoleNames = syncResult.added.map(id => interaction.guild.roles.cache.get(id)?.name).filter(Boolean);
+              roleText = `\n🎖️ Se le otorgaron los roles: **${addedRoleNames.join(", ")}**.`;
+            }
+            if (syncResult.removed.length > 0) {
+              const removedRoleNames = syncResult.removed.map(id => interaction.guild.roles.cache.get(id)?.name).filter(Boolean);
+              roleText += `\n➖ Se le removieron los roles: **${removedRoleNames.join(", ")}**.`;
+            }
           } catch (e) {
             console.error("Error al asignar rol administrativo en SET:", e);
           }
