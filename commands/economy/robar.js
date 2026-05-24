@@ -38,7 +38,7 @@ module.exports = {
     const target = users[Math.floor(Math.random() * users.length)];
     const bankBalance = await userService.getBankBalance(userId);
 
-    const success = Math.random() < 0.70;
+    const success = Math.random() < 0.90;
 
     if (success) {
       const stolen = Math.floor(target.balance * 0.05);
@@ -69,6 +69,7 @@ module.exports = {
                 `💵 **Botín obtenido:** +${COIN}**${stolen.toLocaleString("es-DO")}**`
               )
             )
+            .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
         );
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
