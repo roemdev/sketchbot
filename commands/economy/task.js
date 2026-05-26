@@ -20,7 +20,7 @@ async function grantReward(interaction, userId) {
 module.exports = {
   data: new SlashCommandBuilder()
       .setName("trabajo")
-      .setDescription("Realiza una tarea y gana monedas."),
+      .setDescription("Realiza una tarea interactiva y gana monedas."),
 
   async execute(interaction) {
     try {
@@ -38,17 +38,11 @@ module.exports = {
 
       await userService.createUser(userId, interaction.user.username);
 
-      const taskType = Math.floor(Math.random() * 4);
+      // 5 tipos de tareas interactivas (del 0 al 4)
+      const taskType = Math.floor(Math.random() * 5);
 
       switch (taskType) {
         case 0: {
-          const { earned } = await grantReward(interaction, userId);
-          return interaction.reply({
-            content: `Hoy tocó trabajar de funcionario público. Hiciste nada.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`,
-          });
-        }
-
-        case 1: {
           const a = Math.floor(Math.random() * 90) + 10;
           const b = Math.floor(Math.random() * 90) + 10;
           const sum = a + b;
@@ -80,7 +74,7 @@ module.exports = {
           return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
         }
 
-        case 2: {
+        case 1: {
           const deadline = now + taskDuration;
           const container = new ContainerBuilder()
               .setAccentColor(0x6C3483)
@@ -100,7 +94,7 @@ module.exports = {
           return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
         }
 
-        case 3: {
+        case 2: {
           const shapes = [
             { name: "Círculo", emoji: "🟢", id: "circulo" },
             { name: "Cuadrado", emoji: "⬜", id: "cuadrado" },
@@ -125,6 +119,77 @@ module.exports = {
                               .setEmoji(shape.emoji)
                               .setStyle(ButtonStyle.Secondary)
                       )
+                  )
+              );
+
+          return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        }
+
+        case 3: {
+          const colors = [
+            { emoji: "🔴", id: "rojo" },
+            { emoji: "🔵", id: "azul" },
+            { emoji: "🟢", id: "verde" },
+            { emoji: "🟡", id: "amarillo" }
+          ];
+          const targetSequence = [...colors].sort(() => Math.random() - 0.5);
+          const targetSequenceString = targetSequence.map(c => c.id).join("-");
+          
+          const deadline = now + taskDuration;
+          const container = new ContainerBuilder()
+              .setAccentColor(0x6C3483)
+              .addTextDisplayComponents(t =>
+                  t.setContent(
+                    `### 🤖 Secuencia CAPTCHA\n` +
+                    `Presiona los botones en el orden exacto de la secuencia antes de <t:${deadline}:R>:\n\n` +
+                    `Objetivo: **${targetSequence.map(c => c.emoji).join(" ")}**\n` +
+                    `Tu progreso: **⬜ ⬜ ⬜ ⬜**`
+                  )
+              )
+              .addSeparatorComponents(s => s)
+              .addActionRowComponents(row =>
+                  row.setComponents(
+                    [...colors].sort(() => Math.random() - 0.5).map(c =>
+                      new ButtonBuilder()
+                          .setCustomId(`trabajo_captchaSeq_${c.id}_${targetSequenceString}_0_${userId}`)
+                          .setEmoji(c.emoji)
+                          .setStyle(ButtonStyle.Secondary)
+                    )
+                  )
+              );
+
+          return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        }
+
+        case 4: {
+          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+          const uniqueChars = [];
+          while (uniqueChars.length < 5) {
+            const c = chars.charAt(Math.floor(Math.random() * chars.length));
+            if (!uniqueChars.includes(c)) uniqueChars.push(c);
+          }
+          const targetCode = uniqueChars.join("");
+          
+          const deadline = now + taskDuration;
+          const container = new ContainerBuilder()
+              .setAccentColor(0x6C3483)
+              .addTextDisplayComponents(t =>
+                  t.setContent(
+                    `### 🤖 Teclado CAPTCHA\n` +
+                    `Ingresa el siguiente código de seguridad presionando los botones en orden antes de <t:${deadline}:R>:\n\n` +
+                    `Código Objetivo: **${targetCode}**\n` +
+                    `Tu progreso: **_ _ _ _ _**`
+                  )
+              )
+              .addSeparatorComponents(s => s)
+              .addActionRowComponents(row =>
+                  row.setComponents(
+                    [...uniqueChars].sort(() => Math.random() - 0.5).map(char =>
+                      new ButtonBuilder()
+                          .setCustomId(`trabajo_codeSeq_${char}_${targetCode}_0_${userId}`)
+                          .setLabel(char)
+                          .setStyle(ButtonStyle.Secondary)
+                    )
                   )
               );
 
@@ -223,6 +288,128 @@ module.exports.buttonHandler = async (interaction) => {
         const container = new ContainerBuilder()
             .setAccentColor(0xC0392B)
             .addTextDisplayComponents(t => t.setContent("### ❌ No era esa\nLa vista te falló esta vez. Sin recompensa 👀"));
+        return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      }
+    }
+
+    if (type === "captchaSeq") {
+      const clickedColorId = parts[2];
+      const targetSequenceString = parts[3];
+      let currentIndex = parseInt(parts[4], 10);
+      const userId = parts[5];
+
+      if (interaction.user.id !== userId) {
+        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
+      }
+
+      const targetArr = targetSequenceString.split("-");
+      const correctColorId = targetArr[currentIndex];
+
+      if (clickedColorId === correctColorId) {
+        currentIndex++;
+
+        if (currentIndex === 4) {
+          const { earned } = await grantReward(interaction, userId);
+          const container = new ContainerBuilder()
+              .setAccentColor(0xF4C542)
+              .addTextDisplayComponents(t => t.setContent(`### ✅ Secuencia Exitosa\n¡Excelente memoria! Código secuencial ingresado correctamente.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+          return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        }
+
+        const colorEmojis = { rojo: "🔴", azul: "🔵", verde: "🟢", amarillo: "🟡" };
+        const colors = [
+          { emoji: "🔴", id: "rojo" },
+          { emoji: "🔵", id: "azul" },
+          { emoji: "🟢", id: "verde" },
+          { emoji: "🟡", id: "amarillo" }
+        ];
+
+        const progressDisplay = targetArr.slice(0, currentIndex).map(id => colorEmojis[id]).join(" ") + " " + "⬜ ".repeat(4 - currentIndex);
+
+        const container = new ContainerBuilder()
+            .setAccentColor(0x6C3483)
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### 🤖 Secuencia CAPTCHA\n` +
+                  `Sigue ingresando la secuencia en el orden exacto:\n\n` +
+                  `Objetivo: **${targetArr.map(id => colorEmojis[id]).join(" ")}**\n` +
+                  `Tu progreso: **${progressDisplay}**`
+                )
+            )
+            .addSeparatorComponents(s => s)
+            .addActionRowComponents(row =>
+                row.setComponents(
+                  [...colors].sort(() => Math.random() - 0.5).map(c =>
+                    new ButtonBuilder()
+                        .setCustomId(`trabajo_captchaSeq_${c.id}_${targetSequenceString}_${currentIndex}_${userId}`)
+                        .setEmoji(c.emoji)
+                        .setStyle(ButtonStyle.Secondary)
+                  )
+                )
+            );
+
+        return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      } else {
+        const container = new ContainerBuilder()
+            .setAccentColor(0xC0392B)
+            .addTextDisplayComponents(t => t.setContent("### ❌ Secuencia Fallida\nTe equivocaste en el orden. No se pudo verificar tu trabajo 👀"));
+        return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      }
+    }
+
+    if (type === "codeSeq") {
+      const clickedChar = parts[2];
+      const targetCode = parts[3];
+      let currentIndex = parseInt(parts[4], 10);
+      const userId = parts[5];
+
+      if (interaction.user.id !== userId) {
+        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
+      }
+
+      const correctChar = targetCode.charAt(currentIndex);
+
+      if (clickedChar === correctChar) {
+        currentIndex++;
+
+        if (currentIndex === 5) {
+          const { earned } = await grantReward(interaction, userId);
+          const container = new ContainerBuilder()
+              .setAccentColor(0xF4C542)
+              .addTextDisplayComponents(t => t.setContent(`### ✅ Acceso Concedido\nCódigo verificado con éxito. ¡Trabajo completado!\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+          return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        }
+
+        const uniqueChars = targetCode.split("");
+        const progressDisplay = targetCode.substring(0, currentIndex) + " " + "_ ".repeat(5 - currentIndex);
+
+        const container = new ContainerBuilder()
+            .setAccentColor(0x6C3483)
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### 🤖 Teclado CAPTCHA\n` +
+                  `Sigue ingresando el código de seguridad en el orden exacto:\n\n` +
+                  `Código Objetivo: **${targetCode}**\n` +
+                  `Tu progreso: **${progressDisplay}**`
+                )
+            )
+            .addSeparatorComponents(s => s)
+            .addActionRowComponents(row =>
+                row.setComponents(
+                  [...uniqueChars].sort(() => Math.random() - 0.5).map(char =>
+                    new ButtonBuilder()
+                        .setCustomId(`trabajo_codeSeq_${char}_${targetCode}_${currentIndex}_${userId}`)
+                        .setLabel(char)
+                        .setStyle(ButtonStyle.Secondary)
+                  )
+                )
+            );
+
+        return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      } else {
+        const container = new ContainerBuilder()
+            .setAccentColor(0xC0392B)
+            .addTextDisplayComponents(t => t.setContent("### ❌ Acceso Denegado\nTe equivocaste al ingresar el código de seguridad. Sin recompensa esta vez 👀"));
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
     }

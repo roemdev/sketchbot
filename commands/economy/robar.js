@@ -6,7 +6,7 @@ const supabase = require("../../services/dbService");
 const COIN = config.emojis.coin || "🪙";
 
 module.exports = {
-  cooldown: 300, // 5 minutos de cooldown para evitar spam
+  cooldown: 1800, // 30 minutos de cooldown para evitar spam
   data: new SlashCommandBuilder()
     .setName("robar")
     .setDescription("Intenta robarle el 5% de su cartera a un usuario registrado aleatorio"),
@@ -38,7 +38,7 @@ module.exports = {
     const target = users[Math.floor(Math.random() * users.length)];
     const bankBalance = await userService.getBankBalance(userId);
 
-    const success = Math.random() < 0.90;
+    const success = Math.random() < 0.70;
 
     if (success) {
       const stolen = Math.floor(target.balance * 0.05);
@@ -65,7 +65,7 @@ module.exports = {
           section
             .addTextDisplayComponents(t =>
               t.setContent(
-                `¡Silencioso como el viento! Le has robado el **5%** de la cartera a <@${target.discord_id}>.\n\n` +
+                `Le has robado el **5%** de la cartera a <@${target.discord_id}>.\n` +
                 `💵 **Botín obtenido:** +${COIN}**${stolen.toLocaleString("es-DO")}**`
               )
             )
@@ -74,19 +74,20 @@ module.exports = {
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     } else {
-      // Fracaso: pagar multa de 2% del banco
-      const fine = Math.round(bankBalance * 0.02);
+      // Fracaso: pagar multa del 5% de la cartera (se pone en negativo si no hay suficiente)
+      const robberStats = await userService.getUser(userId);
+      const robberBalance = robberStats ? robberStats.balance : 0;
 
-      if (fine > 0) {
-        const newBankBalance = Math.max(0, bankBalance - fine);
-        await userService.setBankBalance(userId, newBankBalance, username);
-      }
+      const fine = Math.max(500, Math.round(robberBalance * 0.05));
+      const newBalance = robberBalance - fine;
+
+      // Actualizar directamente en Supabase para permitir saldos negativos
+      await supabase
+        .from("user_stats")
+        .update({ balance: newBalance })
+        .eq("discord_id", userId);
 
       const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
-      const fineText = fine > 0
-        ? `Tuviste que pagar una multa del **2%** de tu banco: -${COIN}**${fine.toLocaleString("es-DO")}**.`
-        : `Te salvaste de la multa porque no tienes monedas guardadas en tu banco.`;
-
       const container = new ContainerBuilder()
         .setAccentColor(0xC0392B) // Rojo fracaso/cárcel
         .addTextDisplayComponents(t => t.setContent(`### 🚨 ¡Atrapado por la Ley!`))
@@ -96,7 +97,7 @@ module.exports = {
             .addTextDisplayComponents(t =>
               t.setContent(
                 `Intentaste robarle a <@${target.discord_id}>, pero saltaron las alarmas. ¡Te atraparon con las manos en la masa!\n\n` +
-                `💸 **Sanción:** ${fineText}`
+                `💸 **Sanción:** Tuviste que pagar una multa del **5%** de tu cartera: -${COIN}**${fine.toLocaleString("es-DO")}**.`
               )
             )
             .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
