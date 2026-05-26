@@ -34,4 +34,18 @@ module.exports = {
             { onConflict: "discord_id,command" });
     if (error) throw error;
   },
+
+  resetCooldown: async (discordId, command = null) => {
+    let query = supabase
+        .from("cooldowns")
+        .delete()
+        .eq("discord_id", discordId);
+
+    if (command) {
+      query = query.eq("command", command);
+    }
+
+    const { error } = await query;
+    if (error) throw error;
+  },
 };

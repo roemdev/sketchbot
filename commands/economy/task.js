@@ -4,7 +4,7 @@ const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
 const { logTransaction } = require("../../services/transactionService");
 
-const { minEarn, maxEarn, taskDuration, cooldown } = config.tasks;
+const { minEarn, maxEarn, cooldown } = config.tasks;
 const COIN = config.emojis.coin;
 const XP = config.emojis.xp || "✨";
 
@@ -38,7 +38,10 @@ module.exports = {
 
       await userService.createUser(userId, interaction.user.username);
 
-      // 5 tipos de tareas interactivas (del 0 al 4)
+      // Límite estricto de 20 segundos
+      const deadline = now + 20;
+
+      // 5 tipos de tareas interactivas
       const taskType = Math.floor(Math.random() * 5);
 
       switch (taskType) {
@@ -53,18 +56,22 @@ module.exports = {
           }
           choices.sort(() => Math.random() - 0.5);
 
-          const deadline = now + taskDuration;
           const container = new ContainerBuilder()
-              .setAccentColor(0x6C3483)
+              .setAccentColor(0x3498DB) // Tech Blue
               .addTextDisplayComponents(t =>
-                  t.setContent(`### 🧮 Suma rápida\n**${a} + ${b} = ?**\nTienes hasta <t:${deadline}:R> para responder.`)
+                  t.setContent(
+                    `### 🛠️ Centro de Trabajo - Suma Rápida\n` +
+                    `Demuestra tus habilidades matemáticas resolviendo la siguiente operación:\n\n` +
+                    `🎯 **Operación:** **${a} + ${b} = ?**\n` +
+                    `⏳ **Límite:** Tienes hasta <t:${deadline}:R> para responder.`
+                  )
               )
               .addSeparatorComponents(s => s)
               .addActionRowComponents(row =>
                   row.setComponents(
                       choices.map(val =>
                           new ButtonBuilder()
-                              .setCustomId(`trabajo_sum_${val}_${sum}_${userId}`)
+                              .setCustomId(`trabajo_sum_${val}_${sum}_${userId}_${deadline}`)
                               .setLabel(val.toString())
                               .setStyle(ButtonStyle.Primary)
                       )
@@ -75,18 +82,23 @@ module.exports = {
         }
 
         case 1: {
-          const deadline = now + taskDuration;
           const container = new ContainerBuilder()
-              .setAccentColor(0x6C3483)
+              .setAccentColor(0x3498DB) // Tech Blue
               .addTextDisplayComponents(t =>
-                  t.setContent(`### 👆 Presiona el botón\nPresiónalo 10 veces antes de <t:${deadline}:R>.`)
+                  t.setContent(
+                    `### 🛠️ Centro de Trabajo - Presión Veloz\n` +
+                    `Prueba tus reflejos haciendo clic repetidamente en el botón antes de que expire el tiempo:\n\n` +
+                    `🎯 **Objetivo:** Presiona el botón **10 veces**.\n` +
+                    `📊 **Progreso:** ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ (**0/10**)\n` +
+                    `⏳ **Límite:** Tienes hasta <t:${deadline}:R>.`
+                  )
               )
               .addSeparatorComponents(s => s)
               .addActionRowComponents(row =>
                   row.setComponents(
                       new ButtonBuilder()
-                          .setCustomId(`trabajo_click10_${userId}_10`)
-                          .setLabel("10")
+                          .setCustomId(`trabajo_click10_${userId}_10_${deadline}`)
+                          .setLabel("Presionar (10)")
                           .setStyle(ButtonStyle.Primary)
                   )
               );
@@ -103,19 +115,23 @@ module.exports = {
           ];
           const correct = shapes[Math.floor(Math.random() * shapes.length)];
           const shuffled = [...shapes].sort(() => Math.random() - 0.5);
-          const deadline = now + taskDuration;
 
           const container = new ContainerBuilder()
-              .setAccentColor(0x6C3483)
+              .setAccentColor(0x3498DB) // Tech Blue
               .addTextDisplayComponents(t =>
-                  t.setContent(`### 🔍 Identifica la figura\nSelecciona el **${correct.name}** antes de <t:${deadline}:R>.`)
+                  t.setContent(
+                    `### 🛠️ Centro de Trabajo - Control de Calidad\n` +
+                    `Examina el panel de objetos y selecciona la figura geométrica solicitada:\n\n` +
+                    `🎯 **Figura a buscar:** El **${correct.name}** (${correct.emoji})\n` +
+                    `⏳ **Límite:** Tienes hasta <t:${deadline}:R> para responder.`
+                  )
               )
               .addSeparatorComponents(s => s)
               .addActionRowComponents(row =>
                   row.setComponents(
                       shuffled.map(shape =>
                           new ButtonBuilder()
-                              .setCustomId(`trabajo_shape_${shape.id}_${correct.id}_${userId}`)
+                              .setCustomId(`trabajo_shape_${shape.id}_${correct.id}_${userId}_${deadline}`)
                               .setEmoji(shape.emoji)
                               .setStyle(ButtonStyle.Secondary)
                       )
@@ -135,15 +151,15 @@ module.exports = {
           const targetSequence = [...colors].sort(() => Math.random() - 0.5);
           const targetSequenceString = targetSequence.map(c => c.id).join("-");
           
-          const deadline = now + taskDuration;
           const container = new ContainerBuilder()
-              .setAccentColor(0x6C3483)
+              .setAccentColor(0x3498DB) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
-                    `### 🤖 Secuencia CAPTCHA\n` +
-                    `Presiona los botones en el orden exacto de la secuencia antes de <t:${deadline}:R>:\n\n` +
-                    `Objetivo: **${targetSequence.map(c => c.emoji).join(" ")}**\n` +
-                    `Tu progreso: **⬜ ⬜ ⬜ ⬜**`
+                    `### 🛠️ Centro de Trabajo - Secuencia CAPTCHA\n` +
+                    `Introduce la secuencia de colores presionando los botones en el orden exacto:\n\n` +
+                    `🎯 **Secuencia:** **${targetSequence.map(c => c.emoji).join(" ")}**\n` +
+                    `📊 **Progreso:** ⬜ ⬜ ⬜ ⬜\n` +
+                    `⏳ **Límite:** Tienes hasta <t:${deadline}:R>.`
                   )
               )
               .addSeparatorComponents(s => s)
@@ -151,7 +167,7 @@ module.exports = {
                   row.setComponents(
                     [...colors].sort(() => Math.random() - 0.5).map(c =>
                       new ButtonBuilder()
-                          .setCustomId(`trabajo_captchaSeq_${c.id}_${targetSequenceString}_0_${userId}`)
+                          .setCustomId(`trabajo_captchaSeq_${c.id}_${targetSequenceString}_0_${userId}_${deadline}`)
                           .setEmoji(c.emoji)
                           .setStyle(ButtonStyle.Secondary)
                     )
@@ -170,15 +186,15 @@ module.exports = {
           }
           const targetCode = uniqueChars.join("");
           
-          const deadline = now + taskDuration;
           const container = new ContainerBuilder()
-              .setAccentColor(0x6C3483)
+              .setAccentColor(0x3498DB) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
-                    `### 🤖 Teclado CAPTCHA\n` +
-                    `Ingresa el siguiente código de seguridad presionando los botones en orden antes de <t:${deadline}:R>:\n\n` +
-                    `Código Objetivo: **${targetCode}**\n` +
-                    `Tu progreso: **_ _ _ _ _**`
+                    `### 🛠️ Centro de Trabajo - Teclado CAPTCHA\n` +
+                    `Ingresa el siguiente código de seguridad presionando las letras/números en orden:\n\n` +
+                    `🎯 **Código:** **${targetCode}**\n` +
+                    `📊 **Progreso:** _ _ _ _ _\n` +
+                    `⏳ **Límite:** Tienes hasta <t:${deadline}:R>.`
                   )
               )
               .addSeparatorComponents(s => s)
@@ -186,7 +202,7 @@ module.exports = {
                   row.setComponents(
                     [...uniqueChars].sort(() => Math.random() - 0.5).map(char =>
                       new ButtonBuilder()
-                          .setCustomId(`trabajo_codeSeq_${char}_${targetCode}_0_${userId}`)
+                          .setCustomId(`trabajo_codeSeq_${char}_${targetCode}_0_${userId}_${deadline}`)
                           .setLabel(char)
                           .setStyle(ButtonStyle.Secondary)
                     )
@@ -214,54 +230,110 @@ module.exports.buttonHandler = async (interaction) => {
     const parts = interaction.customId.split("_");
     const type = parts[1];
 
+    let userId = "";
+    let deadline = 0;
+
+    // Extraer userId y deadline según el tipo
+    if (type === "sum") {
+      userId = parts[4];
+      deadline = parseInt(parts[5], 10);
+    } else if (type === "click10") {
+      userId = parts[2];
+      deadline = parseInt(parts[4], 10);
+    } else if (type === "shape") {
+      userId = parts[4];
+      deadline = parseInt(parts[5], 10);
+    } else if (type === "captchaSeq" || type === "codeSeq") {
+      userId = parts[5];
+      deadline = parseInt(parts[6], 10);
+    }
+
+    if (interaction.user.id !== userId) {
+      return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
+    }
+
+    // Verificar límite estricto de tiempo
+    const now = Math.floor(Date.now() / 1000);
+    if (now > deadline) {
+      await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
+      
+      const container = new ContainerBuilder()
+          .setAccentColor(0xC0392B) // Rojo Fracaso
+          .addTextDisplayComponents(t =>
+              t.setContent(
+                `### ⏰ ¡Se acabó el tiempo!\n` +
+                `Tardaste demasiado en realizar la tarea (límite de 20 segundos).\n\n` +
+                `⚠️ *Has perdido la oportunidad y el cooldown de espera ha comenzado.*`
+              )
+          );
+      return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    }
+
     if (type === "sum") {
       const clicked = parseInt(parts[2], 10);
       const correctSum = parseInt(parts[3], 10);
-      const userId = parts[4];
-
-      if (interaction.user.id !== userId) {
-        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
-      }
 
       if (clicked === correctSum) {
         const { earned } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
-            .setAccentColor(0xF4C542)
-            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Correcto!\nSe nota que pasaste matemáticas.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+            .setAccentColor(0x2ECC71) // Verde Éxito
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ✅ ¡Trabajo Completado!\n` +
+                  `Excelente desempeño. Resolviste la operación matemática correctamente.\n\n` +
+                  `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B)
-            .addTextDisplayComponents(t => t.setContent("### ❌ Incorrecto\nEso no era. Sin recompensa esta vez 👀"));
+            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ❌ ¡Tarea Fallida!\n` +
+                  `Cometiste un error al ingresar la respuesta. El turno de trabajo ha terminado.\n\n` +
+                  `⚠️ *Has perdido la oportunidad y el cooldown de espera ha comenzado.*`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
     }
 
     if (type === "click10") {
-      const userId = parts[2];
       let remaining = parseInt(parts[3], 10) - 1;
-
-      if (interaction.user.id !== userId) {
-        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
-      }
 
       if (remaining <= 0) {
         const { earned } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
-            .setAccentColor(0xF4C542)
-            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Lo lograste!\nDedo entrenado.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+            .setAccentColor(0x2ECC71) // Verde Éxito
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ✅ ¡Trabajo Completado!\n` +
+                  `¡Excelente velocidad de reacción! Completaste la pulsación repetida de forma exitosa.\n\n` +
+                  `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
 
+      const progressBlocks = "🟩".repeat(10 - remaining) + "⬜".repeat(remaining);
       const container = new ContainerBuilder()
-          .setAccentColor(0x6C3483)
-          .addTextDisplayComponents(t => t.setContent(`### 👆 Sigue presionando\n**${remaining}** ${remaining === 1 ? "vez más" : "veces más"}.`))
+          .setAccentColor(0x3498DB) // Tech Blue
+          .addTextDisplayComponents(t =>
+              t.setContent(
+                `### 🛠️ Centro de Trabajo - Presión Veloz\n` +
+                `¡Sigue presionando rápidamente!\n\n` +
+                `🎯 **Objetivo:** Presiona el botón **10 veces**.\n` +
+                `📊 **Progreso:** ${progressBlocks} (**${10 - remaining}/10**)\n` +
+                `⏳ **Límite:** Tienes hasta <t:${deadline}:R>.`
+              )
+          )
           .addSeparatorComponents(s => s)
           .addActionRowComponents(row =>
               row.setComponents(
                   new ButtonBuilder()
-                      .setCustomId(`trabajo_click10_${userId}_${remaining}`)
-                      .setLabel(remaining.toString())
+                      .setCustomId(`trabajo_click10_${userId}_${remaining}_${deadline}`)
+                      .setLabel(`Presionar (${remaining})`)
                       .setStyle(ButtonStyle.Primary)
               )
           );
@@ -272,22 +344,29 @@ module.exports.buttonHandler = async (interaction) => {
     if (type === "shape") {
       const clickedId = parts[2];
       const correctId = parts[3];
-      const userId = parts[4];
-
-      if (interaction.user.id !== userId) {
-        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
-      }
 
       if (clickedId === correctId) {
         const { earned } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
-            .setAccentColor(0xF4C542)
-            .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Bien visto!\nElegiste la figura correcta.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+            .setAccentColor(0x2ECC71) // Verde Éxito
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ✅ ¡Trabajo Completado!\n` +
+                  `Excelente agudeza visual. Encontraste la figura geométrica correcta.\n\n` +
+                  `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B)
-            .addTextDisplayComponents(t => t.setContent("### ❌ No era esa\nLa vista te falló esta vez. Sin recompensa 👀"));
+            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ❌ ¡Tarea Fallida!\n` +
+                  `Cometiste un error al ingresar la respuesta. El turno de trabajo ha terminado.\n\n` +
+                  `⚠️ *Has perdido la oportunidad y el cooldown de espera ha comenzado.*`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
     }
@@ -296,11 +375,6 @@ module.exports.buttonHandler = async (interaction) => {
       const clickedColorId = parts[2];
       const targetSequenceString = parts[3];
       let currentIndex = parseInt(parts[4], 10);
-      const userId = parts[5];
-
-      if (interaction.user.id !== userId) {
-        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
-      }
 
       const targetArr = targetSequenceString.split("-");
       const correctColorId = targetArr[currentIndex];
@@ -311,8 +385,14 @@ module.exports.buttonHandler = async (interaction) => {
         if (currentIndex === 4) {
           const { earned } = await grantReward(interaction, userId);
           const container = new ContainerBuilder()
-              .setAccentColor(0xF4C542)
-              .addTextDisplayComponents(t => t.setContent(`### ✅ Secuencia Exitosa\n¡Excelente memoria! Código secuencial ingresado correctamente.\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+              .setAccentColor(0x2ECC71) // Verde Éxito
+              .addTextDisplayComponents(t =>
+                  t.setContent(
+                    `### ✅ ¡Trabajo Completado!\n` +
+                    `¡Excelente memoria y coordinación! Secuencia CAPTCHA de colores completada correctamente.\n\n` +
+                    `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                  )
+              );
           return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
         }
 
@@ -327,13 +407,14 @@ module.exports.buttonHandler = async (interaction) => {
         const progressDisplay = targetArr.slice(0, currentIndex).map(id => colorEmojis[id]).join(" ") + " " + "⬜ ".repeat(4 - currentIndex);
 
         const container = new ContainerBuilder()
-            .setAccentColor(0x6C3483)
+            .setAccentColor(0x3498DB) // Tech Blue
             .addTextDisplayComponents(t =>
                 t.setContent(
-                  `### 🤖 Secuencia CAPTCHA\n` +
-                  `Sigue ingresando la secuencia en el orden exacto:\n\n` +
-                  `Objetivo: **${targetArr.map(id => colorEmojis[id]).join(" ")}**\n` +
-                  `Tu progreso: **${progressDisplay}**`
+                  `### 🛠️ Centro de Trabajo - Secuencia CAPTCHA\n` +
+                  `Sigue ingresando la secuencia de colores en el orden exacto:\n\n` +
+                  `🎯 **Secuencia:** **${targetArr.map(id => colorEmojis[id]).join(" ")}**\n` +
+                  `📊 **Progreso:** ${progressDisplay}\n` +
+                  `⏳ **Límite:** Tienes hasta <t:${deadline}:R>.`
                 )
             )
             .addSeparatorComponents(s => s)
@@ -341,7 +422,7 @@ module.exports.buttonHandler = async (interaction) => {
                 row.setComponents(
                   [...colors].sort(() => Math.random() - 0.5).map(c =>
                     new ButtonBuilder()
-                        .setCustomId(`trabajo_captchaSeq_${c.id}_${targetSequenceString}_${currentIndex}_${userId}`)
+                        .setCustomId(`trabajo_captchaSeq_${c.id}_${targetSequenceString}_${currentIndex}_${userId}_${deadline}`)
                         .setEmoji(c.emoji)
                         .setStyle(ButtonStyle.Secondary)
                   )
@@ -351,8 +432,14 @@ module.exports.buttonHandler = async (interaction) => {
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B)
-            .addTextDisplayComponents(t => t.setContent("### ❌ Secuencia Fallida\nTe equivocaste en el orden. No se pudo verificar tu trabajo 👀"));
+            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ❌ ¡Tarea Fallida!\n` +
+                  `Cometiste un error al ingresar la respuesta. El turno de trabajo ha terminado.\n\n` +
+                  `⚠️ *Has perdido la oportunidad y el cooldown de espera ha comenzado.*`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
     }
@@ -361,11 +448,6 @@ module.exports.buttonHandler = async (interaction) => {
       const clickedChar = parts[2];
       const targetCode = parts[3];
       let currentIndex = parseInt(parts[4], 10);
-      const userId = parts[5];
-
-      if (interaction.user.id !== userId) {
-        return interaction.reply({ content: "Esa no es tu tarea.", flags: MessageFlags.Ephemeral });
-      }
 
       const correctChar = targetCode.charAt(currentIndex);
 
@@ -375,8 +457,14 @@ module.exports.buttonHandler = async (interaction) => {
         if (currentIndex === 5) {
           const { earned } = await grantReward(interaction, userId);
           const container = new ContainerBuilder()
-              .setAccentColor(0xF4C542)
-              .addTextDisplayComponents(t => t.setContent(`### ✅ Acceso Concedido\nCódigo verificado con éxito. ¡Trabajo completado!\n\n**Ganaste:**\n-> **${COIN}${earned.toLocaleString()}** Monedas`));
+              .setAccentColor(0x2ECC71) // Verde Éxito
+              .addTextDisplayComponents(t =>
+                  t.setContent(
+                    `### ✅ ¡Trabajo Completado!\n` +
+                    `¡Acceso Concedido! Código alfanumérico de seguridad verificado correctamente.\n\n` +
+                    `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                  )
+              );
           return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
         }
 
@@ -384,13 +472,14 @@ module.exports.buttonHandler = async (interaction) => {
         const progressDisplay = targetCode.substring(0, currentIndex) + " " + "_ ".repeat(5 - currentIndex);
 
         const container = new ContainerBuilder()
-            .setAccentColor(0x6C3483)
+            .setAccentColor(0x3498DB) // Tech Blue
             .addTextDisplayComponents(t =>
                 t.setContent(
-                  `### 🤖 Teclado CAPTCHA\n` +
+                  `### 🛠️ Centro de Trabajo - Teclado CAPTCHA\n` +
                   `Sigue ingresando el código de seguridad en el orden exacto:\n\n` +
-                  `Código Objetivo: **${targetCode}**\n` +
-                  `Tu progreso: **${progressDisplay}**`
+                  `🎯 **Código:** **${targetCode}**\n` +
+                  `📊 **Progreso:** ${progressDisplay}\n` +
+                  `⏳ **Límite:** Tienes hasta <t:${deadline}:R>.`
                 )
             )
             .addSeparatorComponents(s => s)
@@ -398,7 +487,7 @@ module.exports.buttonHandler = async (interaction) => {
                 row.setComponents(
                   [...uniqueChars].sort(() => Math.random() - 0.5).map(char =>
                     new ButtonBuilder()
-                        .setCustomId(`trabajo_codeSeq_${char}_${targetCode}_${currentIndex}_${userId}`)
+                        .setCustomId(`trabajo_codeSeq_${char}_${targetCode}_${currentIndex}_${userId}_${deadline}`)
                         .setLabel(char)
                         .setStyle(ButtonStyle.Secondary)
                   )
@@ -408,8 +497,14 @@ module.exports.buttonHandler = async (interaction) => {
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B)
-            .addTextDisplayComponents(t => t.setContent("### ❌ Acceso Denegado\nTe equivocaste al ingresar el código de seguridad. Sin recompensa esta vez 👀"));
+            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .addTextDisplayComponents(t =>
+                t.setContent(
+                  `### ❌ ¡Tarea Fallida!\n` +
+                  `Cometiste un error al ingresar la respuesta. El turno de trabajo ha terminado.\n\n` +
+                  `⚠️ *Has perdido la oportunidad y el cooldown de espera ha comenzado.*`
+                )
+            );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
     }
