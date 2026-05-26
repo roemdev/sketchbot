@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord.js");
 const db = require("../../services/dbService");
 const config = require("../../utils/config");
 const { logTransaction } = require("../../services/transactionService");
@@ -10,16 +10,14 @@ const COIN = config.emojis.coin;
 module.exports = {
   data: new SlashCommandBuilder()
       .setName("diario")
-      .setDescription("Reclama tu recompensa diaria según tus roles."),
+      .setDescription("Reclama tu recompensa diaria correspondiente a tu rol más alto."),
 
   async execute(interaction) {
     const userId = interaction.user.id;
     const username = interaction.user.username;
 
-    // Crear usuario si no existe
-    await db
-        .from("user_stats")
-        .upsert({ discord_id: userId, username });
+    // Crear usuario de manera consistente con el resto del bot
+    await userService.createUser(userId, username);
 
     // Cooldown
     const cd = await cooldownService.checkCooldown(userId, "diario");
@@ -40,7 +38,7 @@ module.exports = {
       });
     }
 
-    // Obtener recompensas
+    // Obtener recompensas configuradas
     const { data: rows, error } = await db
         .from("role_rewards")
         .select("role_id, ammount")
@@ -61,18 +59,14 @@ module.exports = {
       });
     }
 
-    let total = 0;
+    // Encontrar el rol que otorga la mayor recompensa (solo se recibe el beneficio de 1 rol)
+    const maxRewardRow = rows.reduce((max, row) => row.ammount > max.ammount ? row : max, rows[0]);
+    const amount = maxRewardRow.ammount;
+    const roleId = maxRewardRow.role_id;
 
-    const breakdown = rows
-        .map(r => {
-          total += r.ammount;
-          return `> <@&${r.role_id}> → **${COIN}${r.ammount.toLocaleString()}**`;
-        })
-        .join("\n");
-
-    // Actualizar balance de manera atómica con userService para evitar condiciones de carrera
+    // Actualizar balance
     try {
-      await userService.addBalance(userId, total, false);
+      await userService.addBalance(userId, amount, false);
     } catch (updateError) {
       console.error(updateError);
       return interaction.reply({
@@ -85,22 +79,31 @@ module.exports = {
     await cooldownService.setCooldown(
         userId,
         "diario",
-        config.dailyClaim.cooldown
+        config.dailyClaim.cooldown || 86400
     );
 
-    // Log
+    // Log de la transacción
     try {
       await logTransaction({
         discordId: userId,
         type: "daily",
-        amount: total,
+        amount: amount,
       });
     } catch (error) {
       console.error(error);
     }
 
-    return interaction.reply({
-      content: `${breakdown}\n\nHoy te llevas **${COIN}${total.toLocaleString()}** en total.`,
-    });
+    // Retornar panel semántico con ContainerBuilder idéntico al de /trabajo
+    const container = new ContainerBuilder()
+        .setAccentColor(0x2ECC71) // Verde Éxito
+        .addTextDisplayComponents(t =>
+            t.setContent(
+              `### 📆 ¡Recompensa Diaria Reclamada!\n` +
+              `Has reclamado tu bonificación diaria correspondiente a tu rol <@&${roleId}>.\n\n` +
+              `💰 **Recompensa:** +${COIN}**${amount.toLocaleString("es-DO")}** monedas`
+            )
+        );
+
+    return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
   },
 };

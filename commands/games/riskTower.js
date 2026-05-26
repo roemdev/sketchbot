@@ -5,7 +5,7 @@ const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
 const COIN = config.emojis.coin;
-const MULTIPLIER = 1.25;
+const MULTIPLIER = 1.15;
 const MAX_BET = 300_000;
 
 function nextValue(current) {
@@ -78,7 +78,7 @@ module.exports.buttonHandler = async (interaction) => {
     }
 
     if (action === "risk") {
-        if (Math.random() < 0.7) {
+        if (Math.random() < 0.80) {
             const next = nextValue(current);
 
             const winContainer = new ContainerBuilder()
