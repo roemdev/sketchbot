@@ -9,7 +9,7 @@
   "tasks": {
     "minEarn": 3000,
     "maxEarn": 10000,
-    "taskDuration": 20,
+    "taskDuration": 30,
     "cooldown": 300
   },
   "dailyClaim": {

@@ -38,8 +38,8 @@ module.exports = {
 
       await userService.createUser(userId, interaction.user.username);
 
-      // Límite estricto de 20 segundos
-      const deadline = now + 20;
+      // Límite estricto de 30 segundos
+      const deadline = now + 30;
 
       // 5 tipos de tareas interactivas
       const taskType = Math.floor(Math.random() * 5);
@@ -262,7 +262,7 @@ module.exports.buttonHandler = async (interaction) => {
           .addTextDisplayComponents(t =>
               t.setContent(
                 `### ⏰ ¡Se acabó el tiempo!\n` +
-                `Tardaste demasiado en realizar la tarea (límite de 20 segundos).\n\n` +
+                `Tardaste demasiado en realizar la tarea (límite de 30 segundos).\n\n` +
                 `⚠️ *Has perdido la oportunidad y el cooldown de espera ha comenzado.*`
               )
           );
