@@ -5,7 +5,7 @@ const transactionService = require("../../services/transactionService");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
 const COIN = config.emojis.coin;
-const MULTIPLIER = 1.15;
+const MULTIPLIER = 0.75;
 const MAX_BET = 300_000;
 
 function nextValue(current) {
