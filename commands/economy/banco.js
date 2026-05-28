@@ -21,13 +21,13 @@ module.exports = {
       const attachment = new AttachmentBuilder(imagePath, { name: "banco.png" });
 
       const container = new ContainerBuilder()
-        .setAccentColor(0x2ECC71) // Verde esmeralda
+        .setAccentColor(0xF1C40F) // Dorado metálico
         .addTextDisplayComponents(t =>
           t.setContent(
             `### 🏛️ Banco del Servidor\n\n` +
             `💰 **Reservas Centrales:**\n` +
             `\`\`\`ansi\n` +
-            `\u001b[1;32m${bankBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
+            `\u001b[0;32m${bankBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
             `\`\`\`\n` +
             `📊 **Impuestos actuales:**\n` +
             `* 💼 Trabajo **${taxPercent}%**\n` +
