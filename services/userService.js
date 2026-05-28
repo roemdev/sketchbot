@@ -16,6 +16,17 @@ module.exports = {
         .eq("discord_id", discordId)
         .single();
     if (error && error.code !== "PGRST116") throw error; // PGRST116 = not found
+
+    if (!data && discordId === "server_bank") {
+      const { data: insertedData, error: insertError } = await supabase
+          .from("user_stats")
+          .upsert({ discord_id: "server_bank", username: "Banco del Servidor" }, { onConflict: "discord_id" })
+          .select()
+          .single();
+      if (insertError) throw insertError;
+      return insertedData;
+    }
+
     return data ?? null;
   },
 
@@ -28,6 +39,9 @@ module.exports = {
     if (amount < 0) {
       return await module.exports.removeBalance(discordId, Math.abs(amount), returnUser);
     }
+    if (discordId === "server_bank") {
+      await module.exports.getUser("server_bank");
+    }
     const { error } = await supabase.rpc("increment_balance", {
       p_discord_id: discordId,
       p_amount: amount,
@@ -37,6 +51,9 @@ module.exports = {
   },
 
   removeBalance: async (discordId, amount, returnUser = true) => {
+    if (discordId === "server_bank") {
+      await module.exports.getUser("server_bank");
+    }
     const { data, error } = await supabase.rpc("decrement_balance", {
       p_discord_id: discordId,
       p_amount: amount,

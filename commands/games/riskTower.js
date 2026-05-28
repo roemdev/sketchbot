@@ -113,13 +113,35 @@ module.exports.buttonHandler = async (interaction) => {
     }
 
     if (action === "cashout") {
-        await userService.addBalance(userId, current, false);
-        await transactionService.logTransaction({ discordId: userId, type: "game", amount: current });
+        let tax = 0;
+        let finalPayout = current;
+        if (current > bet) {
+            tax = Math.floor((current - bet) * 0.1);
+            finalPayout = current - tax;
+        }
+
+        await userService.addBalance(userId, finalPayout, false);
+        await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
+
+        if (tax > 0) {
+            await userService.addBalance("server_bank", tax, false);
+            await transactionService.logTransaction({
+                discordId: "server_bank",
+                type: "bank_tax",
+                amount: tax,
+                itemName: `Impuesto sobre apuesta de <@${userId}>`
+            });
+        }
 
         const cashoutContainer = new ContainerBuilder()
             .setAccentColor(0xF4C542)
             .addTextDisplayComponents(t =>
-                t.setContent(`### 💰 ¡Te retiraste!\nSupiste cuándo parar. Te llevas **${COIN}${current.toLocaleString()}**.`)
+                t.setContent(
+                    `### 💰 ¡Te retiraste!\n` +
+                    `Supiste cuándo parar. Te llevas **${COIN}${finalPayout.toLocaleString()}**` +
+                    (tax > 0 ? ` (Impuesto de 10%: -${COIN}${tax.toLocaleString()})` : "") +
+                    `.`
+                )
             );
 
         return interaction.update({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });

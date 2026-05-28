@@ -178,8 +178,26 @@ module.exports = {
       const winnersTotalBet = winners.reduce((sum, w) => sum + w.amount, 0);
       for (const winner of winners) {
         const payout = Math.floor(prizePool * (winner.amount / winnersTotalBet));
-        await userService.addBalance(winner.uId, payout, false);
-        await logTransaction({ discordId: winner.uId, type: "smash_win", amount: payout });
+        
+        let tax = 0;
+        let finalPayout = payout;
+        if (payout > winner.amount) {
+          tax = Math.floor((payout - winner.amount) * 0.1);
+          finalPayout = payout - tax;
+        }
+
+        await userService.addBalance(winner.uId, finalPayout, false);
+        await logTransaction({ discordId: winner.uId, type: "smash_win", amount: finalPayout });
+
+        if (tax > 0) {
+          await userService.addBalance("server_bank", tax, false);
+          await logTransaction({
+            discordId: "server_bank",
+            type: "bank_tax",
+            amount: tax,
+            itemName: `Impuesto de apuesta Smash de <@${winner.uId}>`
+          });
+        }
       }
 
       sessions.delete(sessionKey);

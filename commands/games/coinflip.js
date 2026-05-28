@@ -61,9 +61,29 @@ module.exports = {
 
     if (won) {
       const reward = bet * 2;
-      await userService.addBalance(userId, reward, false);
-      await transactionService.logTransaction({ discordId: userId, type: "game", amount: reward });
-      await resource.message.edit(`Apostaste ${COIN}${bet.toLocaleString()} a **${choiceLabel}**... salió **${resultLabel}**. Ganaste ${COIN}${reward.toLocaleString()}. Nada mal.`);
+      const profit = reward - bet;
+      const taxAmount = Math.floor(profit * 0.1);
+      const finalReward = reward - taxAmount;
+
+      await userService.addBalance(userId, finalReward, false);
+      await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalReward });
+
+      if (taxAmount > 0) {
+        await userService.addBalance("server_bank", taxAmount, false);
+        await transactionService.logTransaction({
+          discordId: "server_bank",
+          type: "bank_tax",
+          amount: taxAmount,
+          itemName: `Impuesto sobre apuesta de <@${userId}>`
+        });
+      }
+
+      await resource.message.edit(
+        `Apostaste ${COIN}${bet.toLocaleString()} a **${choiceLabel}**... salió **${resultLabel}**. ` +
+        `Ganaste ${COIN}${finalReward.toLocaleString()}` +
+        (taxAmount > 0 ? ` (Impuesto de 10%: -${COIN}${taxAmount.toLocaleString()})` : "") +
+        `. Nada mal.`
+      );
     } else {
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
       await resource.message.edit(`Apostaste ${COIN}${bet.toLocaleString()} a **${choiceLabel}**... salió **${resultLabel}**. Perdiste. Duele.`);

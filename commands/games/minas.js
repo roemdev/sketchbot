@@ -52,7 +52,7 @@ function generateBoard(minesCount) {
 
 // --- GENERADOR DE INTERFAZ DE DISCORD (CONTAINERBUILDER) ---
 
-function buildMinasPanel(userId, session, isGameOver = false, won = false) {
+function buildMinasPanel(userId, session, isGameOver = false, won = false, tax = 0) {
     const container = new ContainerBuilder();
     
     // Asignar color de panel según estado
@@ -75,9 +75,20 @@ function buildMinasPanel(userId, session, isGameOver = false, won = false) {
     let description = "";
     if (isGameOver) {
         if (won) {
-            description = `### 🏆 ¡Victoria Perfecta!\n` +
-                          `¡Encontraste todas las gemas en el campo de minas sin explotar!\n` +
-                          `Ganancia total: **${COIN}${currentPayout.toLocaleString()}** (${currentMult}x)`;
+            const isPerfect = gemsFound === totalGems;
+            description = isPerfect
+                ? `### 🏆 ¡Victoria Perfecta!\n` +
+                  `¡Encontraste todas las gemas en el campo de minas sin explotar!\n` +
+                  `Ganancia total: **${COIN}${currentPayout.toLocaleString()}** (${currentMult}x)`
+                : `### 💰 ¡Te retiraste!\n` +
+                  `Supiste cuándo parar.\n` +
+                  `Ganancia total: **${COIN}${currentPayout.toLocaleString()}** (${currentMult}x)`;
+            
+            if (tax > 0) {
+                const finalProfit = currentPayout - tax;
+                description += `\n🏛️ **Impuesto del Banco (10%):** -${COIN}**${tax.toLocaleString("es-DO")}**\n` +
+                               `Total recibido: **${COIN}${finalProfit.toLocaleString("es-DO")}**`;
+            }
         } else {
             description = `### 💥 ¡BOOM! Pisaste una mina\n` +
                           `El campo de minas explotó y perdiste todo.\n` +
@@ -173,8 +184,25 @@ function resetSessionTimeout(userId, interaction) {
             const currentMult = getMultiplier(s.minesCount, s.gemsFound);
             const payout = Math.floor(s.bet * currentMult);
             
-            await userService.addBalance(userId, payout, false);
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+            let tax = 0;
+            let finalPayout = payout;
+            if (payout > s.bet) {
+                tax = Math.floor((payout - s.bet) * 0.1);
+                finalPayout = payout - tax;
+            }
+            
+            await userService.addBalance(userId, finalPayout, false);
+            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
+            
+            if (tax > 0) {
+                await userService.addBalance("server_bank", tax, false);
+                await transactionService.logTransaction({
+                    discordId: "server_bank",
+                    type: "bank_tax",
+                    amount: tax,
+                    itemName: `Impuesto sobre apuesta de <@${userId}>`
+                });
+            }
             
             sessions.delete(userId);
             
@@ -184,7 +212,12 @@ function resetSessionTimeout(userId, interaction) {
                     const expiredContainer = new ContainerBuilder()
                         .setAccentColor(0x5B7FA6)
                         .addTextDisplayComponents(t =>
-                            t.setContent(`### ⏳ Partida Expirada\nLa partida de minas de <@${userId}> expiró por inactividad. Se retiró automáticamente **${COIN}${payout.toLocaleString()}** (Gemas: **${s.gemsFound}**).`)
+                            t.setContent(
+                                `### ⏳ Partida Expirada\n` +
+                                `La partida de minas de <@${userId}> expiró por inactividad. Se retiró automáticamente **${COIN}${finalPayout.toLocaleString()}** (Gemas: **${s.gemsFound}**)` +
+                                (tax > 0 ? ` (Impuesto de 10%: -${COIN}${tax.toLocaleString()})` : "") +
+                                `.`
+                            )
                         );
                     await msg.edit({ components: [expiredContainer], flags: MessageFlags.IsComponentsV2 });
                 }
@@ -325,10 +358,27 @@ module.exports.buttonHandler = async (interaction) => {
                     const multiplier = getMultiplier(session.minesCount, session.gemsFound);
                     const payout = Math.floor(session.bet * multiplier);
                     
-                    await userService.addBalance(userId, payout, false);
-                    await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+                    let tax = 0;
+                    let finalPayout = payout;
+                    if (payout > session.bet) {
+                        tax = Math.floor((payout - session.bet) * 0.1);
+                        finalPayout = payout - tax;
+                    }
                     
-                    const winContainer = buildMinasPanel(userId, session, true, true);
+                    await userService.addBalance(userId, finalPayout, false);
+                    await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
+                    
+                    if (tax > 0) {
+                        await userService.addBalance("server_bank", tax, false);
+                        await transactionService.logTransaction({
+                            discordId: "server_bank",
+                            type: "bank_tax",
+                            amount: tax,
+                            itemName: `Impuesto sobre apuesta de <@${userId}>`
+                        });
+                    }
+                    
+                    const winContainer = buildMinasPanel(userId, session, true, true, tax);
                     await interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
                     return true;
                 } else {
@@ -356,10 +406,27 @@ module.exports.buttonHandler = async (interaction) => {
             const multiplier = getMultiplier(session.minesCount, session.gemsFound);
             const payout = Math.floor(session.bet * multiplier);
             
-            await userService.addBalance(userId, payout, false);
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+            let tax = 0;
+            let finalPayout = payout;
+            if (payout > session.bet) {
+                tax = Math.floor((payout - session.bet) * 0.1);
+                finalPayout = payout - tax;
+            }
             
-            const cashoutContainer = buildMinasPanel(userId, session, true, true);
+            await userService.addBalance(userId, finalPayout, false);
+            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
+            
+            if (tax > 0) {
+                await userService.addBalance("server_bank", tax, false);
+                await transactionService.logTransaction({
+                    discordId: "server_bank",
+                    type: "bank_tax",
+                    amount: tax,
+                    itemName: `Impuesto sobre apuesta de <@${userId}>`
+                });
+            }
+            
+            const cashoutContainer = buildMinasPanel(userId, session, true, true, tax);
             await interaction.update({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });
             return true;
         }
