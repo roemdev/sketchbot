@@ -32,7 +32,7 @@ module.exports = {
       ).join("\n");
 
       const container = new ContainerBuilder()
-        .setAccentColor(0xF1C40F) // Dorado premium
+        .setAccentColor(0x2F3136) // NotQuiteBlack
         .addTextDisplayComponents(t => t.setContent(`### 🏆 Clasificación por Monedas\n\n${lines}`));
 
       return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -49,7 +49,7 @@ module.exports = {
       ).join("\n");
 
       const container = new ContainerBuilder()
-        .setAccentColor(0x9B59B6) // Morado amatista premium
+        .setAccentColor(0x2F3136) // NotQuiteBlack
         .addTextDisplayComponents(t => t.setContent(`### 🎖️ Clasificación por Nivel\n\n${lines}`));
 
       return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });

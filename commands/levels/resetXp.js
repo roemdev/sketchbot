@@ -25,7 +25,7 @@ module.exports = {
     const avatarUrl = targetUser.displayAvatarURL({ extension: "png", size: 128 });
 
     const panel = new ContainerBuilder()
-      .setAccentColor(0xE74C3C) // Rojo peligro/reseteo
+      .setAccentColor(0xAE3D3D) // Rojo tenue
       .addTextDisplayComponents(t =>
         t.setContent(`### 🧹 Experiencia Reseteada\nLa experiencia y nivel de <@${targetUser.id}> han sido reseteados a cero.`)
       )

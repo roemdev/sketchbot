@@ -21,7 +21,7 @@ const BUTTON_STYLES = {
 
 function buildColorsPanel() {
   const container = new ContainerBuilder()
-    .setAccentColor(0x9b59b6)
+    .setAccentColor(0x2F3136) // NotQuiteBlack
     .addTextDisplayComponents(t =>
       t.setContent(
         "### 🎨 Elige tu color\n" +

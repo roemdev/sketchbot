@@ -26,10 +26,8 @@ module.exports = {
     const maxDepositable = maxBankLimit - bankBalance;
 
     if (maxDepositable <= 0) {
-      const container = new ContainerBuilder()
-        .setAccentColor(0xC0392B) // Rojo error
-        .addTextDisplayComponents(t => t.setContent(`### 🏦 Banco Lleno\nTu banco ya está en el límite máximo de **${COIN}${maxBankLimit.toLocaleString("es-DO")}** monedas.`));
-      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      await interaction.deleteReply();
+      return interaction.followUp({ content: `❌ **Banco Lleno:** Tu banco ya está en el límite máximo de **${COIN}${maxBankLimit.toLocaleString("es-DO")}** monedas.`, flags: MessageFlags.Ephemeral });
     }
 
     let amount = 0;
@@ -38,32 +36,24 @@ module.exports = {
     } else {
       amount = parseInt(input, 10);
       if (isNaN(amount) || amount <= 0) {
-        const container = new ContainerBuilder()
-          .setAccentColor(0xC0392B)
-          .addTextDisplayComponents(t => t.setContent(`### ❌ Cantidad Inválida\nPor favor, ingresa una cantidad numérica válida mayor a 0 o escribe **"todo"**.`));
-        return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        await interaction.deleteReply();
+        return interaction.followUp({ content: `❌ **Cantidad Inválida:** Por favor, ingresa una cantidad numérica válida mayor a 0 o escribe **"todo"**.`, flags: MessageFlags.Ephemeral });
       }
     }
 
     if (amount <= 0) {
-      const container = new ContainerBuilder()
-        .setAccentColor(0xC0392B)
-        .addTextDisplayComponents(t => t.setContent(`### ❌ Sin Fondos\nNo tienes monedas en tu cartera para depositar.`));
-      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      await interaction.deleteReply();
+      return interaction.followUp({ content: `❌ **Sin Fondos:** No tienes monedas en tu cartera para depositar.`, flags: MessageFlags.Ephemeral });
     }
 
     if (dbUser.balance < amount) {
-      const container = new ContainerBuilder()
-        .setAccentColor(0xC0392B)
-        .addTextDisplayComponents(t => t.setContent(`### ❌ Fondos Insuficientes\nNo tienes suficientes monedas en tu cartera. Tienes **${COIN}${dbUser.balance.toLocaleString("es-DO")}**.`));
-      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      await interaction.deleteReply();
+      return interaction.followUp({ content: `❌ **Fondos Insuficientes:** No tienes suficientes monedas en tu cartera. Tienes **${COIN}${dbUser.balance.toLocaleString("es-DO")}**.`, flags: MessageFlags.Ephemeral });
     }
 
     if (bankBalance + amount > maxBankLimit) {
-      const container = new ContainerBuilder()
-        .setAccentColor(0xC0392B)
-        .addTextDisplayComponents(t => t.setContent(`### ❌ Límite Excedido\nNo puedes depositar esa cantidad. Superaría el límite máximo de **${COIN}${maxBankLimit.toLocaleString("es-DO")}** monedas en el banco.`));
-      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      await interaction.deleteReply();
+      return interaction.followUp({ content: `❌ **Límite Excedido:** No puedes depositar esa cantidad. Superaría el límite máximo de **${COIN}${maxBankLimit.toLocaleString("es-DO")}** monedas en el banco.`, flags: MessageFlags.Ephemeral });
     }
 
     // Procesar depósito
@@ -75,7 +65,7 @@ module.exports = {
     const total = (dbUser.balance - amount) + newBankBalance;
 
     const container = new ContainerBuilder()
-      .setAccentColor(0x2ECC71) // Verde éxito
+      .setAccentColor(0x27AE60) // Verde éxito tenue
       .addTextDisplayComponents(t => t.setContent(`### 🏦 ¡Depósito Completado!`))
       .addSeparatorComponents(s => s)
       .addSectionComponents(section =>

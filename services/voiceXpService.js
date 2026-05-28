@@ -84,7 +84,7 @@ async function scanVoiceChannels(client) {
             const COIN = config.emojis.coin || "🪙";
             const XP = config.emojis.xp || "✨";
             const levelUpContainer = new ContainerBuilder()
-              .setAccentColor(0xF1C40F) // Color dorado premium
+              .setAccentColor(0x27AE60) // Verde éxito tenue
               .addTextDisplayComponents(t =>
                 t.setContent(
                   `### 🌟 ¡Subida de Nivel! 🌟\n` +

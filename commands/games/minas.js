@@ -57,9 +57,9 @@ function buildMinasPanel(userId, session, isGameOver = false, won = false, tax =
     
     // Asignar color de panel según estado
     if (isGameOver) {
-        container.setAccentColor(won ? 0xF4C542 : 0xC0392B); // Dorado para victoria, Rojo para derrota
+        container.setAccentColor(won ? 0x27AE60 : 0xAE3D3D); // Verde tenue para victoria, Rojo tenue para derrota
     } else {
-        container.setAccentColor(0x6C3483); // Morado para juego activo (acorde a torre)
+        container.setAccentColor(0x2F3136); // NotQuiteBlack para juego activo
     }
     
     const totalMines = session.minesCount;
@@ -210,7 +210,7 @@ function resetSessionTimeout(userId, interaction) {
                 const msg = await interaction.channel.messages.fetch(s.messageId).catch(() => null);
                 if (msg) {
                     const expiredContainer = new ContainerBuilder()
-                        .setAccentColor(0x5B7FA6)
+                        .setAccentColor(0x2F3136)
                         .addTextDisplayComponents(t =>
                             t.setContent(
                                 `### ⏳ Partida Expirada\n` +

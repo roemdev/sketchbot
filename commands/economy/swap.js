@@ -42,7 +42,7 @@ module.exports = {
     }
 
     const container = new ContainerBuilder()
-        .setAccentColor(0x5B7FA6)
+        .setAccentColor(0x2F3136) // NotQuiteBlack
         .addTextDisplayComponents(t =>
             t.setContent(
                 `### 🔄 Confirmar conversión\n` +
@@ -76,32 +76,23 @@ module.exports.buttonHandler = async (interaction) => {
 
   if (action === "cancel") {
     const cancelContainer = new ContainerBuilder()
-        .setAccentColor(0x5B7FA6)
+        .setAccentColor(0x2F3136) // NotQuiteBlack
         .addTextDisplayComponents(t => t.setContent("### Swap cancelado\nNo se procesó ninguna transacción."));
     return interaction.update({ components: [cancelContainer], flags: MessageFlags.IsComponentsV2 });
   }
 
   if (action === "confirm") {
     if (!isValidMinecraftNick(mcNick)) {
-      const errContainer = new ContainerBuilder()
-          .setAccentColor(0xC0392B)
-          .addTextDisplayComponents(t => t.setContent("### ❌ Nick inválido\nEse nick de Minecraft no es válido."));
-      return interaction.update({ components: [errContainer], flags: MessageFlags.IsComponentsV2 });
+      return interaction.update({ content: "❌ **Nick inválido:** Ese nick de Minecraft no es válido.", components: [] });
     }
 
     const user = await userService.getUser(interaction.user.id);
     if (!user) {
-      const errContainer = new ContainerBuilder()
-          .setAccentColor(0xC0392B)
-          .addTextDisplayComponents(t => t.setContent("### ❌ Sin perfil\nNo tienes un perfil creado todavía."));
-      return interaction.update({ components: [errContainer], flags: MessageFlags.IsComponentsV2 });
+      return interaction.update({ content: "❌ **Sin perfil:** No tienes un perfil creado todavía.", components: [] });
     }
 
     if (user.balance < monedas) {
-      const errContainer = new ContainerBuilder()
-          .setAccentColor(0xC0392B)
-          .addTextDisplayComponents(t => t.setContent("### ❌ Sin monedas\nYa no tienes suficientes monedas para completar este swap."));
-      return interaction.update({ components: [errContainer], flags: MessageFlags.IsComponentsV2 });
+      return interaction.update({ content: "❌ **Sin monedas:** Ya no tienes suficientes monedas para completar este swap.", components: [] });
     }
 
     await userService.removeBalance(interaction.user.id, monedas, false);
@@ -109,16 +100,13 @@ module.exports.buttonHandler = async (interaction) => {
     try {
       await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);
     } catch {
-      const errContainer = new ContainerBuilder()
-          .setAccentColor(0xC0392B)
-          .addTextDisplayComponents(t => t.setContent("### ❌ Error en Minecraft\nNo se pudieron entregar los C$. Contacta a un administrador."));
-      return interaction.update({ components: [errContainer], flags: MessageFlags.IsComponentsV2 });
+      return interaction.update({ content: "❌ **Error en Minecraft:** No se pudieron entregar los C$. Contacta a un administrador.", components: [] });
     }
 
     await transactionService.logTransaction({ discordId: interaction.user.id, type: "swap", mcNick, amount: monedas, totalPrice: cobble });
 
     const successContainer = new ContainerBuilder()
-        .setAccentColor(0xF4C542)
+        .setAccentColor(0x27AE60) // Verde éxito tenue
         .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Swap completado!\n**C$${cobble.toLocaleString()}** enviados a **${mcNick}**.`));
     return interaction.update({ components: [successContainer], flags: MessageFlags.IsComponentsV2 });
   }

@@ -17,7 +17,7 @@ module.exports = {
 
     async execute(interaction) {
         const panel = new ContainerBuilder()
-            .setAccentColor(0x5B7FA6)
+            .setAccentColor(0x2F3136) // NotQuiteBlack
             .addTextDisplayComponents(t =>
                 t.setContent(
                     "### 🎙️ Control de voz\n" +

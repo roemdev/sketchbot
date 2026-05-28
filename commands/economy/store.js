@@ -31,7 +31,7 @@ module.exports = {
     }
 
     const storeContainer = new ContainerBuilder()
-        .setAccentColor(0x1E8449)
+        .setAccentColor(0x2F3136) // NotQuiteBlack
         .addTextDisplayComponents(t => t.setContent(`### 🛒 Tienda\nComprando para: \`${mcNick}\``))
         .addSeparatorComponents(s => s);
 

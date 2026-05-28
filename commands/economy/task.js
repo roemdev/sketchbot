@@ -66,7 +66,7 @@ module.exports = {
           choices.sort(() => Math.random() - 0.5);
 
           const container = new ContainerBuilder()
-              .setAccentColor(0x3498DB) // Tech Blue
+              .setAccentColor(0x2F3136) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### 🛠️ Centro de Trabajo - Suma Rápida\n` +
@@ -92,7 +92,7 @@ module.exports = {
 
         case 1: {
           const container = new ContainerBuilder()
-              .setAccentColor(0x3498DB) // Tech Blue
+              .setAccentColor(0x2F3136) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### 🛠️ Centro de Trabajo - Presión Veloz\n` +
@@ -126,7 +126,7 @@ module.exports = {
           const shuffled = [...shapes].sort(() => Math.random() - 0.5);
 
           const container = new ContainerBuilder()
-              .setAccentColor(0x3498DB) // Tech Blue
+              .setAccentColor(0x2F3136) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### 🛠️ Centro de Trabajo - Control de Calidad\n` +
@@ -161,7 +161,7 @@ module.exports = {
           const targetSequenceString = targetSequence.map(c => c.id).join("-");
           
           const container = new ContainerBuilder()
-              .setAccentColor(0x3498DB) // Tech Blue
+              .setAccentColor(0x2F3136) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### 🛠️ Centro de Trabajo - Secuencia CAPTCHA\n` +
@@ -196,7 +196,7 @@ module.exports = {
           const targetCode = uniqueChars.join("");
           
           const container = new ContainerBuilder()
-              .setAccentColor(0x3498DB) // Tech Blue
+              .setAccentColor(0x2F3136) // Tech Blue
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### 🛠️ Centro de Trabajo - Teclado CAPTCHA\n` +
@@ -267,7 +267,7 @@ module.exports.buttonHandler = async (interaction) => {
       await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
       
       const container = new ContainerBuilder()
-          .setAccentColor(0xC0392B) // Rojo Fracaso
+          .setAccentColor(0xAE3D3D) // Rojo Fracaso
           .addTextDisplayComponents(t =>
               t.setContent(
                 `### ⏰ ¡Se acabó el tiempo!\n` +
@@ -285,7 +285,7 @@ module.exports.buttonHandler = async (interaction) => {
       if (clicked === correctSum) {
         const { earned, taxAmount } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
-            .setAccentColor(0x2ECC71) // Verde Éxito
+            .setAccentColor(0x27AE60) // Verde Éxito
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ✅ ¡Trabajo Completado!\n` +
@@ -297,7 +297,7 @@ module.exports.buttonHandler = async (interaction) => {
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .setAccentColor(0xAE3D3D) // Rojo Fracaso
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ❌ ¡Tarea Fallida!\n` +
@@ -315,7 +315,7 @@ module.exports.buttonHandler = async (interaction) => {
       if (remaining <= 0) {
         const { earned, taxAmount } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
-            .setAccentColor(0x2ECC71) // Verde Éxito
+            .setAccentColor(0x27AE60) // Verde Éxito
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ✅ ¡Trabajo Completado!\n` +
@@ -329,7 +329,7 @@ module.exports.buttonHandler = async (interaction) => {
 
       const progressBlocks = "🟩".repeat(10 - remaining) + "⬜".repeat(remaining);
       const container = new ContainerBuilder()
-          .setAccentColor(0x3498DB) // Tech Blue
+          .setAccentColor(0x2F3136) // Tech Blue
           .addTextDisplayComponents(t =>
               t.setContent(
                 `### 🛠️ Centro de Trabajo - Presión Veloz\n` +
@@ -359,7 +359,7 @@ module.exports.buttonHandler = async (interaction) => {
       if (clickedId === correctId) {
         const { earned, taxAmount } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
-            .setAccentColor(0x2ECC71) // Verde Éxito
+            .setAccentColor(0x27AE60) // Verde Éxito
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ✅ ¡Trabajo Completado!\n` +
@@ -371,7 +371,7 @@ module.exports.buttonHandler = async (interaction) => {
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .setAccentColor(0xAE3D3D) // Rojo Fracaso
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ❌ ¡Tarea Fallida!\n` +
@@ -397,7 +397,7 @@ module.exports.buttonHandler = async (interaction) => {
         if (currentIndex === 4) {
           const { earned, taxAmount } = await grantReward(interaction, userId);
           const container = new ContainerBuilder()
-              .setAccentColor(0x2ECC71) // Verde Éxito
+              .setAccentColor(0x27AE60) // Verde Éxito
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### ✅ ¡Trabajo Completado!\n` +
@@ -420,7 +420,7 @@ module.exports.buttonHandler = async (interaction) => {
         const progressDisplay = targetArr.slice(0, currentIndex).map(id => colorEmojis[id]).join(" ") + " " + "⬜ ".repeat(4 - currentIndex);
 
         const container = new ContainerBuilder()
-            .setAccentColor(0x3498DB) // Tech Blue
+            .setAccentColor(0x2F3136) // Tech Blue
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### 🛠️ Centro de Trabajo - Secuencia CAPTCHA\n` +
@@ -445,7 +445,7 @@ module.exports.buttonHandler = async (interaction) => {
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .setAccentColor(0xAE3D3D) // Rojo Fracaso
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ❌ ¡Tarea Fallida!\n` +
@@ -470,7 +470,7 @@ module.exports.buttonHandler = async (interaction) => {
         if (currentIndex === 5) {
           const { earned, taxAmount } = await grantReward(interaction, userId);
           const container = new ContainerBuilder()
-              .setAccentColor(0x2ECC71) // Verde Éxito
+              .setAccentColor(0x27AE60) // Verde Éxito
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### ✅ ¡Trabajo Completado!\n` +
@@ -486,7 +486,7 @@ module.exports.buttonHandler = async (interaction) => {
         const progressDisplay = targetCode.substring(0, currentIndex) + " " + "_ ".repeat(5 - currentIndex);
 
         const container = new ContainerBuilder()
-            .setAccentColor(0x3498DB) // Tech Blue
+            .setAccentColor(0x2F3136) // Tech Blue
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### 🛠️ Centro de Trabajo - Teclado CAPTCHA\n` +
@@ -511,7 +511,7 @@ module.exports.buttonHandler = async (interaction) => {
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
       } else {
         const container = new ContainerBuilder()
-            .setAccentColor(0xC0392B) // Rojo Fracaso
+            .setAccentColor(0xAE3D3D) // Rojo Fracaso
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ❌ ¡Tarea Fallida!\n` +

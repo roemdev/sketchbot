@@ -33,7 +33,7 @@ module.exports = {
 
       const commandText = command ? `el cooldown del comando **/${command}**` : "todos sus cooldowns activos";
       const container = new ContainerBuilder()
-        .setAccentColor(0x2ECC71) // Verde Éxito
+        .setAccentColor(0x27AE60) // Verde éxito tenue
         .addTextDisplayComponents(t =>
           t.setContent(
             `### ✅ Cooldown Reseteado\n` +

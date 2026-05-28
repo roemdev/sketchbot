@@ -38,7 +38,7 @@ module.exports = {
     const avatarUrl = targetUser.displayAvatarURL({ extension: "png", size: 128 });
 
     const container = new ContainerBuilder()
-      .setAccentColor(0x3498DB) // Azul premium para información y experiencia
+      .setAccentColor(0x2F3136) // NotQuiteBlack
       .addTextDisplayComponents(t =>
         t.setContent(`## Nivel de ${targetUser.username}`)
       ).addSeparatorComponents(s => s)
