@@ -19,5 +19,32 @@
     "betIncrement": 10000,
     "hostCut": 0.05,
     "timeout": 300
+  },
+  "bank": {
+    "taxRate": 0.05
+  },
+  "crimes": {
+    "cooldown": 1800,
+    "robar": {
+      "chance": 0.70,
+      "percentStolen": 0.05,
+      "fineMin": 500,
+      "finePercent": 0.05
+    },
+    "hackear": {
+      "chance": 0.45,
+      "rewardMin": 3000,
+      "rewardMax": 6000,
+      "fineMin": 1000,
+      "finePercent": 0.05
+    },
+    "fraude": {
+      "chance": 0.30,
+      "rewardPercentMin": 0.10,
+      "rewardPercentMax": 0.20,
+      "rewardMin": 2000,
+      "fineMin": 2000,
+      "finePercent": 0.10
+    }
   }
 }

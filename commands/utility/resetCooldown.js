@@ -18,7 +18,7 @@ module.exports = {
         .addChoices(
           { name: "Trabajo (/trabajo)", value: "trabajo" },
           { name: "Diario (/diario)", value: "diario" },
-          { name: "Robar (/robar)", value: "robar" }
+          { name: "Crimen (/crimen)", value: "crimen" }
         )
     ),
 

@@ -25,6 +25,8 @@ module.exports = {
   tasks: eco.tasks || {},
   dailyClaim: eco.dailyClaim || {},
   smash: eco.smash || {},
+  bank: eco.bank || {},
+  crimes: eco.crimes || {},
   levels: lvl.levels || {},
   voiceXp: lvl.voiceXp || {},
   game: set.game || {},

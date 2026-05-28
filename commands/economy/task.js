@@ -7,14 +7,23 @@ const { logTransaction } = require("../../services/transactionService");
 const { minEarn, maxEarn, cooldown } = config.tasks;
 const COIN = config.emojis.coin;
 const XP = config.emojis.xp || "✨";
+const taxRate = (config.bank && config.bank.taxRate) !== undefined ? config.bank.taxRate : 0.05;
 
 async function grantReward(interaction, userId) {
-  const earned = Math.floor(Math.random() * (maxEarn - minEarn + 1)) + minEarn;
+  const rawEarned = Math.floor(Math.random() * (maxEarn - minEarn + 1)) + minEarn;
+  const taxAmount = Math.floor(rawEarned * taxRate);
+  const earned = rawEarned - taxAmount;
+
   await userService.addBalance(userId, earned, false);
+  if (taxAmount > 0) {
+    await userService.addBalance("server_bank", taxAmount, false);
+    await logTransaction({ discordId: "server_bank", type: "bank_tax", amount: taxAmount, itemName: `Impuesto de tarea de <@${userId}>` });
+  }
+
   await logTransaction({ discordId: userId, type: "task", amount: earned });
   await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
 
-  return { earned };
+  return { earned, taxAmount };
 }
 
 module.exports = {
@@ -274,14 +283,15 @@ module.exports.buttonHandler = async (interaction) => {
       const correctSum = parseInt(parts[3], 10);
 
       if (clicked === correctSum) {
-        const { earned } = await grantReward(interaction, userId);
+        const { earned, taxAmount } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
             .setAccentColor(0x2ECC71) // Verde Éxito
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ✅ ¡Trabajo Completado!\n` +
                   `Excelente desempeño. Resolviste la operación matemática correctamente.\n\n` +
-                  `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                  `💰 **Recompensa neta:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas\n` +
+                  `🏛️ **Impuesto del Banco (5%):** -${COIN}**${taxAmount.toLocaleString("es-DO")}**`
                 )
             );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -303,14 +313,15 @@ module.exports.buttonHandler = async (interaction) => {
       let remaining = parseInt(parts[3], 10) - 1;
 
       if (remaining <= 0) {
-        const { earned } = await grantReward(interaction, userId);
+        const { earned, taxAmount } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
             .setAccentColor(0x2ECC71) // Verde Éxito
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ✅ ¡Trabajo Completado!\n` +
                   `¡Excelente velocidad de reacción! Completaste la pulsación repetida de forma exitosa.\n\n` +
-                  `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                  `💰 **Recompensa neta:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas\n` +
+                  `🏛️ **Impuesto del Banco (5%):** -${COIN}**${taxAmount.toLocaleString("es-DO")}**`
                 )
             );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -346,14 +357,15 @@ module.exports.buttonHandler = async (interaction) => {
       const correctId = parts[3];
 
       if (clickedId === correctId) {
-        const { earned } = await grantReward(interaction, userId);
+        const { earned, taxAmount } = await grantReward(interaction, userId);
         const container = new ContainerBuilder()
             .setAccentColor(0x2ECC71) // Verde Éxito
             .addTextDisplayComponents(t =>
                 t.setContent(
                   `### ✅ ¡Trabajo Completado!\n` +
                   `Excelente agudeza visual. Encontraste la figura geométrica correcta.\n\n` +
-                  `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                  `💰 **Recompensa neta:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas\n` +
+                  `🏛️ **Impuesto del Banco (5%):** -${COIN}**${taxAmount.toLocaleString("es-DO")}**`
                 )
             );
         return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -383,14 +395,15 @@ module.exports.buttonHandler = async (interaction) => {
         currentIndex++;
 
         if (currentIndex === 4) {
-          const { earned } = await grantReward(interaction, userId);
+          const { earned, taxAmount } = await grantReward(interaction, userId);
           const container = new ContainerBuilder()
               .setAccentColor(0x2ECC71) // Verde Éxito
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### ✅ ¡Trabajo Completado!\n` +
                     `¡Excelente memoria y coordinación! Secuencia CAPTCHA de colores completada correctamente.\n\n` +
-                    `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                    `💰 **Recompensa neta:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas\n` +
+                    `🏛️ **Impuesto del Banco (5%):** -${COIN}**${taxAmount.toLocaleString("es-DO")}**`
                   )
               );
           return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -455,14 +468,15 @@ module.exports.buttonHandler = async (interaction) => {
         currentIndex++;
 
         if (currentIndex === 5) {
-          const { earned } = await grantReward(interaction, userId);
+          const { earned, taxAmount } = await grantReward(interaction, userId);
           const container = new ContainerBuilder()
               .setAccentColor(0x2ECC71) // Verde Éxito
               .addTextDisplayComponents(t =>
                   t.setContent(
                     `### ✅ ¡Trabajo Completado!\n` +
                     `¡Acceso Concedido! Código alfanumérico de seguridad verificado correctamente.\n\n` +
-                    `💰 **Recompensa:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas`
+                    `💰 **Recompensa neta:** +${COIN}**${earned.toLocaleString("es-DO")}** monedas\n` +
+                    `🏛️ **Impuesto del Banco (5%):** -${COIN}**${taxAmount.toLocaleString("es-DO")}**`
                   )
               );
           return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
