@@ -21,39 +21,42 @@ const BUTTON_STYLES = {
 
 function buildColorsPanel() {
   const container = new ContainerBuilder()
-      .setAccentColor(0x9b59b6)
-      .addTextDisplayComponents(t =>
-          t.setContent(
-              "### 🎨 Elige tu color\n" +
-              "Toca un color para asignártelo. Tócalo de nuevo para quitarlo.\n\n" +
-              "-# Solo puedes tener un color activo a la vez."
-          )
+    .setAccentColor(0x9b59b6)
+    .addTextDisplayComponents(t =>
+      t.setContent(
+        "### 🎨 Elige tu color\n" +
+        "Toca un color para asignártelo. Tócalo de nuevo para quitarlo."
       )
-      .addSeparatorComponents(s => s);
+    )
+    .addSeparatorComponents(s => s);
 
   for (let i = 0; i < COLOR_ROLES.length; i += 5) {
     const chunk = COLOR_ROLES.slice(i, i + 5);
     container.addActionRowComponents(row =>
-        row.setComponents(
-            ...chunk.map(role =>
-                new ButtonBuilder()
-                    .setCustomId(`setup-colors_color_${role.id}`)
-                    .setLabel(role.name)
-                    .setEmoji(role.emoji)
-                    .setStyle(BUTTON_STYLES[role.buttonStyle] ?? ButtonStyle.Secondary)
-            )
+      row.setComponents(
+        ...chunk.map(role =>
+          new ButtonBuilder()
+            .setCustomId(`setup-colors_color_${role.id}`)
+            .setEmoji(role.emoji)
+            .setStyle(BUTTON_STYLES[role.buttonStyle] ?? ButtonStyle.Secondary)
         )
+      )
     );
   }
+
+  container.addSeparatorComponents(s => s)
+    .addTextDisplayComponents(t =>
+      t.setContent("-# ⚠️ Solo puedes tener un color.")
+    );
 
   return container;
 }
 
 module.exports = {
   data: new SlashCommandBuilder()
-      .setName("setup-colors")
-      .setDescription("Envía el panel de selección de roles de color")
-      .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    .setName("setup-colors")
+    .setDescription("Envía el panel de selección de roles de color")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
     await interaction.channel.send({ components: [buildColorsPanel()], flags: MessageFlags.IsComponentsV2 });
@@ -69,17 +72,26 @@ module.exports = {
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const toRemove = [...member.roles.cache.keys()].filter(id => ALL_COLOR_IDS.has(id));
-    const hadRole = member.roles.cache.has(roleId);
+    try {
+      const toRemove = [...member.roles.cache.keys()].filter(id => ALL_COLOR_IDS.has(id));
+      const hadRole = member.roles.cache.has(roleId);
 
-    for (const id of toRemove) await member.roles.remove(id);
+      if (toRemove.length > 0) {
+        await member.roles.remove(toRemove);
+      }
 
-    if (!hadRole) {
-      await member.roles.add(roleId);
-      const role = COLOR_ROLES.find(r => r.id === roleId);
-      return interaction.editReply({ content: `${role.emoji} Ahora tienes el color **${role.name}**.` });
+      if (!hadRole) {
+        await member.roles.add(roleId);
+        const role = COLOR_ROLES.find(r => r.id === roleId);
+        return interaction.editReply({ content: `${role.emoji} Ahora tienes el color **${role.name}**.` });
+      }
+
+      return interaction.editReply({ content: "Color quitado." });
+    } catch (error) {
+      console.error("Error al gestionar roles de color:", error);
+      return interaction.editReply({
+        content: "❌ **Error:** No he podido actualizar tu color. Por favor, contacta con un administrador para revisar mis permisos y jerarquía de roles."
+      });
     }
-
-    return interaction.editReply({ content: "Color quitado." });
   },
 };
