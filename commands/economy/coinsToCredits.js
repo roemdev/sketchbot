@@ -1,7 +1,7 @@
 const { exchangeRate, currency } = require("../../utils/config").economy;
 const { apiKey: PAYMENTER_API_KEY, url: PAYMENTER_URL } = require("../../config.json").paymenter;
 const { coin: COIN } = require("../../utils/config").emojis;
-const { SlashCommandBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, LabelBuilder, CheckboxBuilder } = require("discord.js");
 const userService = require("../../services/userService");
 const { logTransaction } = require("../../services/transactionService");
 
@@ -31,6 +31,16 @@ module.exports = {
                 .setPlaceholder("Ej: 2")
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+            new LabelBuilder()
+                .setLabel("Confirmar correo electrónico")
+                .setDescription("Marcar esta casilla confirma que tu correo está bien escrito")
+                .setCheckboxComponent(
+                    new CheckboxBuilder()
+                        .setCustomId("confirmar_correo")
+                        .setDefault(false)
+                )
         )
     );
 
@@ -38,6 +48,14 @@ module.exports = {
   },
 
   async handleModal(interaction) {
+    const emailConfirmed = interaction.fields.getCheckbox("confirmar_correo");
+    if (!emailConfirmed) {
+      return interaction.reply({
+        content: "❌ **Error:** Debes marcar la casilla confirmando que tu correo de Paymenter es correcto antes de proceder con el canje.",
+        flags: MessageFlags.Ephemeral
+      });
+    }
+
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const targetUser = interaction.user;

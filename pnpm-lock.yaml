@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  axios: ^1.16.1
+  tar: ^7.5.8
+  undici: ^6.23.0
+
 importers:
 
   .:
@@ -15,13 +20,13 @@ importers:
         specifier: ^2.103.2
         version: 2.106.1
       axios:
-        specifier: ^1.6.7
+        specifier: ^1.16.1
         version: 1.16.1
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
       discord.js:
-        specifier: ^14.25.1
+        specifier: ^14.26.4
         version: 14.26.4
       ffmpeg-static:
         specifier: ^5.3.0
@@ -336,9 +341,6 @@ packages:
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
-
-  axios@0.21.4:
-    resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
 
   axios@1.16.1:
     resolution: {integrity: sha512-caYkukvroVPO8KrzuJEb50Hm07KwfBZPEC3VeFHTsqWHvKTsy54hjJz9BS/cdaypROE2rH6xvm9mHX4fgWkr3A==}
@@ -1131,12 +1133,6 @@ snapshots:
 
   asynckit@0.4.0: {}
 
-  axios@0.21.4:
-    dependencies:
-      follow-redirects: 1.16.0
-    transitivePeerDependencies:
-      - debug
-
   axios@1.16.1:
     dependencies:
       follow-redirects: 1.16.0
@@ -1384,9 +1380,10 @@ snapshots:
 
   google-tts-api@2.0.2:
     dependencies:
-      axios: 0.21.4
+      axios: 1.16.1
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   gopd@1.2.0: {}
 

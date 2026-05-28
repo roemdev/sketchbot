@@ -1,2 +1,7 @@
 allowBuilds:
   ffmpeg-static: false
+
+overrides:
+  axios: ^1.16.1
+  tar: ^7.5.8
+  undici: ^6.23.0
