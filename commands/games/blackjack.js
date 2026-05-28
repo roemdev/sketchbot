@@ -2,6 +2,7 @@ const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Container
 const config = require("../../utils/config");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
+const cardEmojis = require("../../data/cards.json");
 
 const GAME_COOLDOWN = config.game.cooldown || 20;
 const COIN = config.emojis.coin;
@@ -57,9 +58,9 @@ function calculateVisibleHandValue(hand, hideFirst = false) {
 
 function formatHand(hand, hideFirst = false) {
     if (hideFirst) {
-        return `\`[ 🎴 Oculta ]\` ` + hand.slice(1).map(c => `\`[ ${c.rank}${c.suit} ]\``).join(" ");
+        return `🎴 ` + hand.slice(1).map(c => cardEmojis[c.rank]?.[c.suit] || `\`[ ${c.rank}${c.suit} ]\``).join(" ");
     }
-    return hand.map(c => `\`[ ${c.rank}${c.suit} ]\``).join(" ");
+    return hand.map(c => cardEmojis[c.rank]?.[c.suit] || `\`[ ${c.rank}${c.suit} ]\``).join(" ");
 }
 
 // --- GENERADOR DE INTERFAZ DE DISCORD (CONTAINERBUILDER) ---
