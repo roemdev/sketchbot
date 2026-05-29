@@ -33,14 +33,14 @@ El banco central actúa como la reserva fiscal del servidor y el sustento de la 
 *   **Subsidio Diario (`/diario`):** Se financia enteramente con las reservas del banco.
     *   **Gestión de Quiebra Real:** Si las reservas del banco descienden por debajo del premio de un usuario, el comando falla informando elegantemente que el banco central está temporalmente en quiebra y motivando a la comunidad a hacer `/trabajo` para restaurar los fondos comunes.
 *   **Premios de Nivel:** Las recompensas financieras por subir de nivel se debitan físicamente del banco central.
-*   **Intrusión delictiva:** El banco es vulnerable a malversación mediante la opción de **Fraude al Banco** de `/crimen`. Las multas por crímenes fallidos se depositan de vuelta en el banco.
+*   **Intrusión delictiva:** El banco es vulnerable a malversación mediante la opción de **Estafa** de `/crimen`. Las multas por crímenes fallidos se depositan de vuelta en el banco.
 
 ### 2. El Casino del Servidor (`/casino`)
 El casino opera de forma independiente y posee su propia bóveda financiera:
 *   **Juegos Incorporados:** Al apostar en `/blackjack`, `/minas`, `/torre`, `/cara-cruz` o `/smash`, la apuesta del jugador se deposita físicamente en el casino.
 *   **Tasa Impositiva sobre Pérdidas:** Cuando un jugador pierde, el casino retiene el 100% de la apuesta, pero tributa un **20% de impuesto de pérdida** que se descuenta del casino y se transfiere al banco central.
 *   **Tasa Impositiva sobre Ganancias:** Cuando un jugador gana, el premio neto se le paga desde la bóveda del casino y se aplica un **10% de impuesto a las ganancias** sobre el profit neto, debitado del casino y transferido al banco.
-*   **Intrusión delictiva:** El casino puede ser hackeado mediante la opción de **Hackear Casino** en `/crimen`. Si no cuenta con fondos suficientes para el botín, se activa el sistema de bancarrota interactivo.
+*   **Intrusión delictiva:** El casino puede ser hackeado mediante la opción de **Hackeo** en `/crimen`. Si no cuenta con fondos suficientes para el botín, se activa el sistema de bancarrota interactivo.
 
 ---
 
@@ -55,7 +55,7 @@ El casino opera de forma independiente y posee su propia bóveda financiera:
 *   `/transfer` [usuario] [cantidad] - Envía monedas de tu efectivo a otro miembro.
 *   `/trabajo` - Realiza tareas del servidor para generar reservas y ganar tu comisión.
 *   `/diario` - Reclama tu recompensa diaria financiada por el banco central.
-*   `/crimen` - Comete actividades ilícitas (Robar jugador, Hackear Casino, Fraude al Banco).
+*   `/crimen` - Comete actividades ilícitas (Robo, Hackeo, Estafa).
 
 ### 🎲 Minijuegos e Interacciones Premium
 *   `/blackjack` [apuesta] - Juega una mano clásica de 21 contra el dealer con botones interactivos y resolución automática anti-AFK.

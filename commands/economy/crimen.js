@@ -16,9 +16,9 @@ const COIN = config.emojis.coin || "🪙";
 
 const defaultCrimesConfig = {
   cooldown: 900, // Bajado a la mitad (15 minutos)
-  robar: { chance: 0.70, percentStolen: 0.05, fineMin: 500, finePercent: 0.05 },
-  hackear: { chance: 0.45, rewardMin: 3000, rewardMax: 6000, fineMin: 1000, finePercent: 0.05 },
-  fraude: { chance: 0.30, rewardPercentMin: 0.10, rewardPercentMax: 0.20, rewardMin: 2000, fineMin: 2000, finePercent: 0.10 }
+  robar: { chance: 0.80, percentStolen: 0.05, fineMin: 0, finePercent: 0.05 },
+  hackear: { chance: 0.60, percentStolen: 0.08, fineMin: 0, finePercent: 0.08 },
+  fraude: { chance: 0.40, percentStolen: 0.12, fineMin: 0, finePercent: 0.12 }
 };
 
 const crimesConfig = {
@@ -61,12 +61,12 @@ module.exports = {
         t.setContent(
           `### 🕵️‍♂️ Planificación del Crimen\n` +
           `Selecciona tu próximo golpe presionando un botón. Cada actividad delictiva tiene su propio nivel de riesgo y ganancia potencial:\n\n` +
-          `1. **🥷 Robar a Jugador**: Hurta el **${(crimesConfig.robar.percentStolen * 100).toFixed(0)}%** de la cartera de un jugador al azar.\n` +
-          `   * Probabilidad de éxito: **${(crimesConfig.robar.chance * 100).toFixed(0)}%** | Multa en caso de fallo.\n\n` +
-          `2. **🖥️ Hackear Casino**: Intenta vulnerar las redes del Casino para transferirte fondos de sus reservas.\n` +
-          `   * Probabilidad de éxito: **${(crimesConfig.hackear.chance * 100).toFixed(0)}%** | Botín: **${COIN}${crimesConfig.hackear.rewardMin.toLocaleString()}-${crimesConfig.hackear.rewardMax.toLocaleString()}**.\n\n` +
-          `3. **🏛️ Fraude al Banco**: Intenta malversar fondos del **Banco del Servidor** (Fondo actual: ${COIN}**${bankBalance.toLocaleString()}**).\n` +
-          `   * Probabilidad de éxito: **${(crimesConfig.fraude.chance * 100).toFixed(0)}%** | Botín: **10%-20%** del banco | Multa severa en caso de fallo.`
+          `🥷 **Robo (a un jugador)**\n` +
+          `* **Éxito:** ${(crimesConfig.robar.chance * 100).toFixed(0)}% | **Ganancia:** ${(crimesConfig.robar.percentStolen * 100).toFixed(0)}% (de su cartera) | **Multa:** ${(crimesConfig.robar.finePercent * 100).toFixed(0)}% (de tu cartera)\n\n` +
+          `🖥️ **Hackeo (al Casino)**\n` +
+          `* **Éxito:** ${(crimesConfig.hackear.chance * 100).toFixed(0)}% | **Ganancia:** ${(crimesConfig.hackear.percentStolen * 100).toFixed(0)}% (de la reserva) | **Multa:** ${(crimesConfig.hackear.finePercent * 100).toFixed(0)}% (de tu cartera)\n\n` +
+          `🏛️ **Estafa (al Banco)**\n` +
+          `* **Éxito:** ${(crimesConfig.fraude.chance * 100).toFixed(0)}% | **Ganancia:** ${(crimesConfig.fraude.percentStolen * 100).toFixed(0)}% (de la reserva) | **Multa:** ${(crimesConfig.fraude.finePercent * 100).toFixed(0)}% (de tu cartera)`
         )
       )
       .addSeparatorComponents(s => s);
@@ -74,17 +74,17 @@ module.exports = {
     const menuRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("crimen_menu_robar")
-        .setLabel("Robar Jugador")
+        .setLabel("Robo")
         .setEmoji("🥷")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId("crimen_menu_hackear")
-        .setLabel("Hackear Casino")
+        .setLabel("Hackeo")
         .setEmoji("🖥️")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId("crimen_menu_fraude")
-        .setLabel("Fraude al Banco")
+        .setLabel("Estafa")
         .setEmoji("🏛️")
         .setStyle(ButtonStyle.Danger)
     );
@@ -209,8 +209,7 @@ module.exports = {
         const success = Math.random() < crimesConfig.hackear.chance;
 
         if (success) {
-          const reward = Math.floor(Math.random() * (crimesConfig.hackear.rewardMax - crimesConfig.hackear.rewardMin + 1)) + crimesConfig.hackear.rewardMin;
-          const finalReward = Math.min(casinoBalance, reward);
+          const finalReward = Math.max(1, Math.floor(casinoBalance * crimesConfig.hackear.percentStolen));
 
           await userService.addBalance("server_casino", -finalReward, false);
           await userService.addBalance(userId, finalReward, false);
@@ -227,6 +226,7 @@ module.exports = {
                 .addTextDisplayComponents(t =>
                   t.setContent(
                     `Ejecutaste un exploit de día cero contra los servidores del Casino y desviaste fondos de la bóveda.\n\n` +
+                    `💰 **Fórmula de Desvío:** ${(crimesConfig.hackear.percentStolen * 100).toFixed(0)}% de las reservas del Casino.\n` +
                     `💵 **Fondos sustraídos:** +${COIN}**${finalReward.toLocaleString("es-DO")}** monedas`
                   )
                 )
@@ -239,7 +239,7 @@ module.exports = {
           const hackerStats = await userService.getUser(userId);
           const hackerBalance = hackerStats ? hackerStats.balance : 0;
 
-          const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(hackerBalance * crimesConfig.hackear.finePercent));
+          const fine = Math.max(crimesConfig.hackear.fineMin || 0, Math.round(hackerBalance * crimesConfig.hackear.finePercent));
           const newBalance = hackerBalance - fine;
 
           await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);
@@ -257,7 +257,7 @@ module.exports = {
                 .addTextDisplayComponents(t =>
                   t.setContent(
                     `El cortafuegos del Casino detectó tus paquetes maliciosos, rastreó tu proxy y bloqueó tu terminal.\n\n` +
-                    `💸 **Multa de Seguridad:** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.\n` +
+                    `💸 **Multa de Seguridad (${(crimesConfig.hackear.finePercent * 100).toFixed(0)}%):** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.\n` +
                     `🏛️ *El Banco del Servidor ha confiscado tus fondos y se los transfirió al Fisco.*`
                   )
                 )
@@ -279,13 +279,7 @@ module.exports = {
         const success = Math.random() < crimesConfig.fraude.chance;
 
         if (success) {
-          // Roba un porcentaje del banco (entre min y max)
-          const randomPercent = Math.random() * (crimesConfig.fraude.rewardPercentMax - crimesConfig.fraude.rewardPercentMin) + crimesConfig.fraude.rewardPercentMin;
-          let stolenFromBank = Math.floor(bankBalance * randomPercent);
-          
-          if (stolenFromBank < crimesConfig.fraude.rewardMin) {
-            stolenFromBank = Math.min(bankBalance, crimesConfig.fraude.rewardMin);
-          }
+          const stolenFromBank = Math.max(1, Math.floor(bankBalance * crimesConfig.fraude.percentStolen));
 
           // Realizar transacción
           await userService.addBalance("server_bank", -stolenFromBank, false);
@@ -302,7 +296,7 @@ module.exports = {
                 .addTextDisplayComponents(t =>
                   t.setContent(
                     `Falsificaste firmas fiscales y creaste cuentas fantasma para desviar capital del Banco del Servidor.\n\n` +
-                    `💰 **Fórmula de Desvío:** ${(randomPercent * 100).toFixed(1)}% de las reservas reales.\n` +
+                    `💰 **Fórmula de Desvío:** ${(crimesConfig.fraude.percentStolen * 100).toFixed(0)}% de las reservas reales.\n` +
                     `💵 **Dinero malversado:** +${COIN}**${stolenFromBank.toLocaleString("es-DO")}** monedas`
                   )
                 )
@@ -315,7 +309,7 @@ module.exports = {
           const userStats = await userService.getUser(userId);
           const balance = userStats ? userStats.balance : 0;
 
-          const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(balance * crimesConfig.fraude.finePercent));
+          const fine = Math.max(crimesConfig.fraude.fineMin || 0, Math.round(balance * crimesConfig.fraude.finePercent));
           const newBalance = balance - fine;
 
           await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);

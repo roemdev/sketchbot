@@ -51,7 +51,7 @@ sketchbot/
 │   ├── economy/
 │   │   ├── banco.js       # Visualización de arcas fiscales (/banco) con color 0x2F3136
 │   │   ├── casino.js      # Visualización de arcas del casino (/casino) con color 0x6C3483
-│   │   ├── crimen.js      # Delitos e infracciones (/crimen) (Robar, Hackear Casino, Fraude)
+│   │   ├── crimen.js      # Delitos e infracciones (/crimen) (Robo, Hackeo, Estafa)
 │   │   └── task.js        # Generación de reservas y comisión del trabajador (/trabajo)
 │   ├── games/
 │   │   ├── blackjack.js   # Blackjack interactivo 21, baraja Fisher-Yates y auto-stand AFK
