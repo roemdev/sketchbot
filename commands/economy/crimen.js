@@ -15,7 +15,7 @@ const supabase = require("../../services/dbService");
 const COIN = config.emojis.coin || "🪙";
 
 const defaultCrimesConfig = {
-  cooldown: 900, // Bajado a la mitad (15 minutos)
+  cooldown: 300, // Bajado a 5 minutos
   robar: { chance: 0.80, percentStolen: 0.05, fineMin: 0, finePercent: 0.05 },
   hackear: { chance: 0.60, percentStolen: 0.08, fineMin: 0, finePercent: 0.08 },
   fraude: { chance: 0.40, percentStolen: 0.12, fineMin: 0, finePercent: 0.12 }
@@ -109,8 +109,8 @@ module.exports = {
       const choice = menuInteraction.customId.replace("crimen_menu_", "");
       const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
 
-      // Establecer cooldown global de crímenes (1800 segundos)
-      await cooldownService.setCooldown(userId, "crimen", crimesConfig.cooldown || 1800);
+      // Establecer cooldown global de crímenes
+      await cooldownService.setCooldown(userId, "crimen", crimesConfig.cooldown || 300);
 
       // ==========================================
       // CRIME: ROBAR (Robar a jugador)

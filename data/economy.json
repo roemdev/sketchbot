@@ -10,10 +10,7 @@
     "minEarn": 3000,
     "maxEarn": 10000,
     "taskDuration": 30,
-    "cooldown": 150
-  },
-  "crimes": {
-    "cooldown": 900
+    "cooldown": 3600
   },
   "dailyClaim": {
     "cooldown": 64800
@@ -27,7 +24,7 @@
     "taxRate": 0.05
   },
   "crimes": {
-    "cooldown": 900,
+    "cooldown": 300,
     "robar": {
       "chance": 0.80,
       "percentStolen": 0.05,

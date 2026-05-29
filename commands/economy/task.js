@@ -10,7 +10,7 @@ const XP = config.emojis.xp || "✨";
 const taxRate = (config.bank && config.bank.taxRate) !== undefined ? config.bank.taxRate : 0.05;
 
 async function grantReward(interaction, userId) {
-  const bankGenerated = Math.floor(Math.random() * (120000 - 50000 + 1)) + 50000;
+  const bankGenerated = Math.floor(Math.random() * (240000 - 100000 + 1)) + 100000;
   const percentage = Math.floor(Math.random() * (20 - 10 + 1)) + 10;
   const earned = Math.floor(bankGenerated * (percentage / 100));
 
