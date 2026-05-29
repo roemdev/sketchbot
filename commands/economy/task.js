@@ -4,7 +4,7 @@ const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
 const { logTransaction } = require("../../services/transactionService");
 
-const { minEarn, maxEarn, cooldown } = config.tasks;
+const { cooldown } = config.tasks;
 const COIN = config.emojis.coin;
 const XP = config.emojis.xp;
 const taxRate = config.bank.taxRate;
@@ -12,11 +12,9 @@ const taxRate = config.bank.taxRate;
 async function grantReward(interaction, userId) {
   const minBank = config.tasks.minBankEarn;
   const maxBank = config.tasks.maxBankEarn;
-  const minPercent = config.tasks.minCommissionPercent;
-  const maxPercent = config.tasks.maxCommissionPercent;
+  const percentage = config.tasks.commissionPercent;
 
   const bankGenerated = Math.floor(Math.random() * (maxBank - minBank + 1)) + minBank;
-  const percentage = Math.floor(Math.random() * (maxPercent - minPercent + 1)) + minPercent;
   const earned = Math.floor(bankGenerated * (percentage / 100));
 
   await userService.addBalance(userId, earned, false);
