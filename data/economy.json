@@ -56,7 +56,7 @@
     },
     "fraude": {
       "chance": 0.40,
-      "percentStolen": 0.8,
+      "percentStolen": 0.08,
       "fineMin": 0,
       "finePercent": 0.12
     }
