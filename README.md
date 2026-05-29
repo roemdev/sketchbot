@@ -1,136 +1,117 @@
 <div align="center">
   <h1>🎨 Sketchbot</h1>
-  <p>Un bot de Discord multifuncional desarrollado en Node.js, impulsado por Supabase y con inteligencia artificial integrada.</p>
+  <p>Un bot de Discord premium multifuncional desarrollado en Node.js, impulsado por Supabase, con inteligencia artificial integrada y un ecosistema macroeconómico cerrado único.</p>
 </div>
 
-**Sketchbot** es un avanzado bot de Discord diseñado para gestionar sistemas de economía, recompensas diarias, minijuegos, una tienda integrada con servidores de Minecraft y ahora, respuestas inteligentes potenciadas por IA.
+**Sketchbot** es una sofisticada plataforma para comunidades de Discord. Cuenta con un sistema de economía cerrado, minijuegos interactivos de azar, niveles y XP por voz, una tienda integrada por RCON con servidores de Minecraft, y un módulo de inteligencia artificial local.
 
 ---
 
-## 🚀 Características Principales
+## 🏛️ El Ecosistema Macroeconómico Cerrado (Suma Cero)
 
-Sketchbot está diseñado para fomentar la actividad y la interacción en tu servidor de Discord. Sus principales capacidades incluyen:
+A diferencia de los bots de economía convencionales que acuñan monedas del aire sin límites, Sketchbot implementa una **macroeconomía circular de circuito cerrado** basada en dos reservas centrales:
 
-*   **🪙 Economía Completa:**
-    *   Consultar balance (`/balance`).
-    *   Ganar monedas realizando tareas (`/task`).
-    *   Transferir monedas entre usuarios (`/transfer`).
-    *   Intercambiar monedas o convertirlas a créditos (`/swap`, `/coinsToCredits`).
-    *   Gestión administrativa de créditos (`/manageCredits`).
-*   **🎁 Recompensas y Fidelización:**
-    *   Recompensas diarias para todos los usuarios (`/dailyClaim`).
-    *   Recompensas exclusivas basadas en roles (`/roleRewards`).
-    *   Lista de recompensas disponibles (`/rewardList`).
-*   **🎲 Minijuegos (Gambling):**
-    *   **Coinflip:** Apuesta cara o cruz para duplicar tu dinero (`/coinflip`).
-    *   **Risk Tower:** Escala una torre de riesgo para multiplicar tus ganancias (`/riskTower`).
-    *   **Smash:** Participa en el juego de "smash" (`/smash`).
-*   **🛒 Tienda y Minecraft:**
-    *   Sistema de tienda virtual (`/store`).
-    *   Configuración de la tienda (`/storeConfig`).
-    *   Integración directa con Minecraft mediante RCON.
-*   **🤖 Inteligencia Artificial:**
-    *   Menciona a `@Sketchbot` en cualquier canal y te responderá inteligentemente gracias a su integración nativa con **Ollama** (ideal para correr modelos locales como `phi4-mini`).
-*   **🎤 Gestión de Voz:**
-    *   Creación automática de canales de voz temporales ("Join to Create").
-    *   Configuración y personalización de utilidades de voz y colores (`/setupVoice`, `/setup-colors`).
-*   **☁️ Base de Datos Moderna:**
-    *   Totalmente migrado a **Supabase** para un rendimiento y escalabilidad óptimos.
+```mermaid
+graph TD
+    A[Trabajo /trabajo] -->|Genera 50k-120k| B(Reservas del Banco Central)
+    B -->|Paga 10%-20% Comisión Limpia| C[Jugador]
+    B -->|Deducción total de diarios| D[Recompensa Diaria /diario]
+    D --> C
+    C -->|Apuestas apuestas/pozos| E(Bóveda del Casino del Servidor)
+    E -->|10% Impuesto de Ganancia Neta| B
+    E -->|20% Impuesto de Pérdida en apuestas| B
+    C -->|Delito: Hackear Casino| E
+    C -->|Delito: Fraude Bancario| B
+    C -->|Subidas de Nivel| F[Premios de Nivel]
+    B -->|Financia Premios de Nivel| F
+    F --> C
+```
 
-## 📋 Requisitos Previos
+### 1. El Banco del Servidor (`/banco`)
+El banco central actúa como la reserva fiscal del servidor y el sustento de la comunidad:
+*   **Aporte de Trabajo (`/trabajo`):** Cada tarea genera entre **50,000 y 120,000 monedas** que se inyectan en el banco. El trabajador recibe una comisión limpia de entre el **10% y el 20%** de ese total.
+*   **Subsidio Diario (`/diario`):** Se financia enteramente con las reservas del banco.
+    *   **Gestión de Quiebra Real:** Si las reservas del banco descienden por debajo del premio de un usuario, el comando falla informando elegantemente que el banco central está temporalmente en quiebra y motivando a la comunidad a hacer `/trabajo` para restaurar los fondos comunes.
+*   **Premios de Nivel:** Las recompensas financieras por subir de nivel se debitan físicamente del banco central.
+*   **Intrusión delictiva:** El banco es vulnerable a malversación mediante la opción de **Fraude al Banco** de `/crimen`. Las multas por crímenes fallidos se depositan de vuelta en el banco.
 
-Para instalar y ejecutar este bot, necesitarás:
+### 2. El Casino del Servidor (`/casino`)
+El casino opera de forma independiente y posee su propia bóveda financiera:
+*   **Juegos Incorporados:** Al apostar en `/blackjack`, `/minas`, `/torre`, `/cara-cruz` o `/smash`, la apuesta del jugador se deposita físicamente en el casino.
+*   **Tasa Impositiva sobre Pérdidas:** Cuando un jugador pierde, el casino retiene el 100% de la apuesta, pero tributa un **20% de impuesto de pérdida** que se descuenta del casino y se transfiere al banco central.
+*   **Tasa Impositiva sobre Ganancias:** Cuando un jugador gana, el premio neto se le paga desde la bóveda del casino y se aplica un **10% de impuesto a las ganancias** sobre el profit neto, debitado del casino y transferido al banco.
+*   **Intrusión delictiva:** El casino puede ser hackeado mediante la opción de **Hackear Casino** en `/crimen`. Si no cuenta con fondos suficientes para el botín, se activa el sistema de bancarrota interactivo.
 
-*   [Node.js](https://nodejs.org/) (v22.22.1 o superior recomendado).
-*   Un proyecto en [Supabase](https://supabase.com/) (para la base de datos PostgreSQL).
-*   Un servidor con [Ollama](https://ollama.com/) (opcional, si deseas habilitar la IA integrada).
-*   Un servidor de Minecraft (opcional, si deseas usar la integración de la tienda).
+---
 
-## 🛠️ Instalación
+## 🚀 Características y Comandos
 
-1.  **Clona el repositorio:**
-    ```bash
-    git clone https://github.com/roemdev/sketchbot.git
-    cd sketchbot
-    ```
+### 🪙 Economía y Macroeconomía
+*   `/balance` - Consulta tu saldo actual de monedas en efectivo.
+*   `/banco` - Visualiza el estado de las arcas del banco central, políticas fiscales e histórico.
+*   `/casino` - Consulta el saldo en bóveda del casino y los impuestos activos.
+*   `/depositar` [cantidad] - Guarda tus monedas en tu cuenta bancaria personal.
+*   `/retirar` [cantidad] - Retira monedas de tu cuenta personal a tu efectivo.
+*   `/transfer` [usuario] [cantidad] - Envía monedas de tu efectivo a otro miembro.
+*   `/trabajo` - Realiza tareas del servidor para generar reservas y ganar tu comisión.
+*   `/diario` - Reclama tu recompensa diaria financiada por el banco central.
+*   `/crimen` - Comete actividades ilícitas (Robar jugador, Hackear Casino, Fraude al Banco).
 
-2.  **Instala las dependencias:**
-    ```bash
-    npm install
-    ```
+### 🎲 Minijuegos e Interacciones Premium
+*   `/blackjack` [apuesta] - Juega una mano clásica de 21 contra el dealer con botones interactivos y resolución automática anti-AFK.
+*   `/minas` [apuesta] [minas] - Encuentra gemas en un tablero de 3x3 evitando las bombas ocultas. Permite retiro manual, victoria perfecta y expiración por inactividad.
+*   `/torre` [apuesta] - Escala una torre donde cada nivel multiplica tu ganancia actual, con riesgo de colapso total.
+*   `/cara-cruz` [apuesta] [elección] - Clásico cara o cruz para duplicar tu dinero.
+*   `/smash` - Sistema de apuestas multijugador hosteadas para partidas de Super Smash Bros.
 
-## ⚙️ Configuración
+### 🌟 Niveles y XP por Voz
+*   **Ganancia en Canales de Voz (`voiceXpService.js`):** El bot otorga XP aleatoria cada minuto a los usuarios activos en los canales de voz.
+*   **Premios por Subida de Nivel:** Al subir de nivel, los usuarios reciben recompensas en monedas pagadas directamente desde `server_bank` y roles temáticos automatizados.
+*   `/manage-xp` - Permite a los administradores añadir, remover o establecer niveles y XP a los usuarios.
 
-### 1. Archivo `config.json`
-Debes crear un archivo llamado `config.json` en la raíz del proyecto. Este archivo contiene las credenciales sensibles, incluyendo las nuevas de Supabase.
+### 🛒 Tienda Minecraft (RCON)
+*   `/store` - Abre la tienda virtual para canjear tus créditos por artículos de Minecraft.
+*   `/storeConfig` - Administra los artículos de la tienda.
+*   `/swap` - Convierte tus monedas a créditos para gastar en la tienda.
 
+---
+
+## 🛠️ Instalación y Configuración
+
+### Requisitos Previos
+*   [Node.js](https://nodejs.org/) (v22 o superior).
+*   Una instancia de [Supabase](https://supabase.com/).
+*   Un servidor de Discord y credenciales de desarrollador.
+
+### 1. Variables de Configuración
+Crea un archivo llamado `config.json` en el directorio raíz del proyecto:
 ```json
 {
-  "token": "TU_TOKEN_DE_DISCORD_AQUI",
-  "clientId": "TU_CLIENT_ID_DE_LA_APLICACION",
-  "guildId": "TU_ID_DEL_SERVIDOR_(GUILD)",
+  "token": "DISCORD_BOT_TOKEN",
+  "clientId": "DISCORD_APPLICATION_CLIENT_ID",
+  "guildId": "DISCORD_GUILD_ID",
   "supabase": {
     "url": "https://TU_PROYECTO.supabase.co",
     "serviceRoleKey": "TU_SERVICE_ROLE_KEY"
   },
   "rcon": {
-    "host": "ip_servidor_minecraft",
+    "host": "IP_MINECRAFT_SERVER",
     "port": 25575,
-    "password": "password_rcon"
+    "password": "RCON_PASSWORD"
   }
 }
 ```
+> [!IMPORTANT]
+> Debes usar la clave `serviceRoleKey` de Supabase para evitar errores de políticas RLS (Row-Level Security) en los procesos de escritura macroeconómica del bot.
 
-### 2. Archivo `core.json`
-Este archivo controla la lógica del juego y la economía. Puedes ajustarlo según tus necesidades:
+### 2. Despliegue de Comandos Slash
+Antes de arrancar el bot, debes registrar los comandos slash en la API de Discord:
+```bash
+node deploy-commands.js
+```
 
-*   **economy:** Tasa de cambio y moneda.
-*   **emojis:** Emojis usados por el bot.
-*   **tasks:** Configuración de ganancias mínimas/máximas, duración y enfriamiento.
-*   **dailyClaim:** Tiempo de espera para la recompensa diaria.
-*   **game:** Cooldown general para juegos.
-*   **voice:** Configuraciones de "Join to Create".
-*   **smash:** Configuraciones del juego Smash.
-
-## ▶️ Ejecución y Uso
-
-1.  **Registrar Comandos:**
-    Antes de iniciar el bot por primera vez (o al añadir nuevos comandos), debes registrarlos en Discord:
-    ```bash
-    node deploy-commands.js
-    ```
-
-2.  **Iniciar el Bot:**
-    ```bash
-    node index.js
-    ```
-    *(Recomendamos usar `pm2` o similar para mantener el bot activo en producción).*
-
-## 📜 Lista de Comandos
-
-### 🪙 Economía
-*   `/balance [user]`: Muestra tu saldo o el de otro usuario.
-*   `/task`: Realiza una tarea para ganar monedas.
-*   `/transfer <user> <amount>`: Transfiere monedas a otro usuario.
-*   `/swap <amount>`: Intercambia monedas.
-*   `/coinsToCredits <amount>`: Convierte tus monedas en créditos.
-*   `/manageCredits <add|remove> <user> <amount>`: (Admin) Añade o quita créditos.
-
-### 🎲 Juegos
-*   `/coinflip <amount> <side>`: Apuesta a cara o cruz.
-*   `/riskTower <amount>`: Juega al Risk Tower.
-*   `/smash`: Inicia una partida de Smash.
-
-### 🛒 Tienda
-*   `/store`: Muestra los ítems disponibles.
-*   `/storeConfig`: (Admin) Configura los ítems de la tienda.
-
-### 🎁 Recompensas
-*   `/dailyClaim`: Reclama tu recompensa diaria.
-*   `/roleRewards`: Reclama recompensas por tus roles.
-*   `/rewardList`: Ve la lista de recompensas.
-
-### 🛠️ Utilidades
-*   `/ping`: Comprueba la latencia del bot.
-*   `/setupVoice`: Configura el canal "Join to Create".
-*   `/setup-colors`: Configura roles de colores en el servidor.
+### 3. Iniciar el Bot
+```bash
+npm install
+npm run dev # o node index.js
+```

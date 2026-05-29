@@ -1,6 +1,7 @@
 const { ContainerBuilder, MessageFlags } = require("discord.js");
 const config = require("../utils/config");
 const userService = require("./userService");
+const transactionService = require("./transactionService");
 const roleRewardService = require("./roleRewardService");
 const chalk = require("chalk");
 
@@ -53,6 +54,8 @@ async function scanVoiceChannels(client) {
             // 5. Entregar premio en monedas
             const baseCoin = config.levels.baseCoinReward || 10000;
             const coinReward = xpInfo.level * baseCoin;
+            await userService.addBalance("server_bank", -coinReward, false);
+            await transactionService.logTransaction({ discordId: "server_bank", type: "bank_withdrawal", amount: -coinReward, itemName: `Premio de nivel (Voz) a <@${member.id}>` });
             await userService.addBalance(member.id, coinReward, false);
 
             // 6. Sincronizar roles de nivel según la tabla de supabase (sin acumulación)
