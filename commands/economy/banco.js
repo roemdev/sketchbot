@@ -29,9 +29,11 @@ module.exports = {
             `\u001b[0;32m🪙 ${bankBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
             `\`\`\`\n` +
             `📊 **Políticas Macroeconómicas:**\n` +
-            `* 💼 **Trabajo (\`/trabajo\`):** Aporta el **100%** de la generación (50k-120k) a la reserva y paga **10%-20%** de comisión limpia al trabajador.\n` +
-            `* 🎲 **Apuestas (Juegos):** Impuesto del **10%** sobre ganancias netas para sustentar el fondo.\n` +
-            `* 📆 **Diario (\`/diario\`):** Financiado en su totalidad por los fondos del banco.\n`
+            `* 💼 **Trabajo (\`/trabajo\`):** Cada tarea genera de **50k a 120k** directamente para las arcas del banco, pagando una comisión limpia del **10% al 20%** al trabajador.\n` +
+            `* 🎲 **Impuestos de Apuestas:** El **10%** de impuesto sobre las ganancias netas de todos los juegos de apuestas se transfiere al banco central.\n` +
+            `* 🎰 **Impuestos del Casino:** El **20%** de todas las apuestas que pierden los jugadores en el casino se cobra como tasa fiscal para sustentar el fondo.\n` +
+            `* 📆 **Subsidio Diario (\`/diario\`):** Recompensas financiadas en su totalidad por el banco. Si los fondos se agotan, el banco entra en quiebra temporal.\n` +
+            `* 🏛️ **Riesgo de Fraude:** El banco es vulnerable a malversaciones de fondos mediante **Fraude al Banco** en \`/crimen\`. Las multas por crímenes fallidos también incrementan estas reservas.\n`
           )
         )
         .addMediaGalleryComponents(
