@@ -23,6 +23,7 @@ module.exports = {
   economy: eco.economy || {},
   emojis: { ...(eco.emojis || {}), ...(lvl.emojis || {}) },
   tasks: eco.tasks || {},
+  crimes: eco.crimes || {},
   dailyClaim: eco.dailyClaim || {},
   smash: eco.smash || {},
   bank: eco.bank || {},

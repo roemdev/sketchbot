@@ -192,10 +192,19 @@ function resetSessionTimeout(userId, interaction) {
             }
             
             await userService.addBalance(userId, finalPayout, false);
+            await userService.addBalance("server_casino", -finalPayout, false);
+            await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Retiro Expiración Minas de <@${userId}>` });
             await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
             
             if (tax > 0) {
+                await userService.addBalance("server_casino", -tax, false);
                 await userService.addBalance("server_bank", tax, false);
+                await transactionService.logTransaction({
+                    discordId: "server_casino",
+                    type: "bank_withdrawal",
+                    amount: -tax,
+                    itemName: `Impuesto del 10% pagado al Banco`
+                });
                 await transactionService.logTransaction({
                     discordId: "server_bank",
                     type: "bank_tax",
@@ -269,8 +278,15 @@ module.exports = {
             return interaction.reply({ content: "No tienes suficientes monedas para esa apuesta.", flags: MessageFlags.Ephemeral });
         }
 
-        // Restar balance inicial
+        // Restar balance inicial y depositar en el casino
         await userService.addBalance(userId, -bet, false);
+        await userService.addBalance("server_casino", bet, false);
+        await transactionService.logTransaction({
+            discordId: "server_casino",
+            type: "bank_deposit",
+            amount: bet,
+            itemName: `Apuesta Campo de Minas de <@${userId}>`
+        });
 
         // Generar estado de juego
         const session = {
@@ -342,6 +358,24 @@ module.exports.buttonHandler = async (interaction) => {
                 
                 await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
                 
+                const casinoTax = Math.floor(session.bet * 0.20);
+                if (casinoTax > 0) {
+                    await userService.addBalance("server_casino", -casinoTax, false);
+                    await userService.addBalance("server_bank", casinoTax, false);
+                    await transactionService.logTransaction({
+                        discordId: "server_bank",
+                        type: "bank_tax",
+                        amount: casinoTax,
+                        itemName: `Impuesto 20% pérdida Minas de <@${userId}>`
+                    });
+                    await transactionService.logTransaction({
+                        discordId: "server_casino",
+                        type: "bank_withdrawal",
+                        amount: -casinoTax,
+                        itemName: `Impuesto del 20% pagado al Banco`
+                    });
+                }
+                
                 const loseContainer = buildMinasPanel(userId, session, true, false);
                 await interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
                 return true;
@@ -366,10 +400,19 @@ module.exports.buttonHandler = async (interaction) => {
                     }
                     
                     await userService.addBalance(userId, finalPayout, false);
+                    await userService.addBalance("server_casino", -finalPayout, false);
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Minas pagado a <@${userId}>` });
                     await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
                     
                     if (tax > 0) {
+                        await userService.addBalance("server_casino", -tax, false);
                         await userService.addBalance("server_bank", tax, false);
+                        await transactionService.logTransaction({
+                            discordId: "server_casino",
+                            type: "bank_withdrawal",
+                            amount: -tax,
+                            itemName: `Impuesto del 10% pagado al Banco`
+                        });
                         await transactionService.logTransaction({
                             discordId: "server_bank",
                             type: "bank_tax",
@@ -414,10 +457,19 @@ module.exports.buttonHandler = async (interaction) => {
             }
             
             await userService.addBalance(userId, finalPayout, false);
+            await userService.addBalance("server_casino", -finalPayout, false);
+            await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Minas pagado a <@${userId}>` });
             await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
             
             if (tax > 0) {
+                await userService.addBalance("server_casino", -tax, false);
                 await userService.addBalance("server_bank", tax, false);
+                await transactionService.logTransaction({
+                    discordId: "server_casino",
+                    type: "bank_withdrawal",
+                    amount: -tax,
+                    itemName: `Impuesto del 10% pagado al Banco`
+                });
                 await transactionService.logTransaction({
                     discordId: "server_bank",
                     type: "bank_tax",

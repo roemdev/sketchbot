@@ -97,11 +97,17 @@ function buildBlackjackPanel(userId, session, isGameOver = false, outcome = null
 
     if (isGameOver) {
         if (outcome === "blackjack") {
-            const reward = Math.floor(session.bet * 2.5); // Paga 3:2 (ej. 100 apuesta -> retorna 250)
-            description += `💥 **¡BLACKJACK NATURAL!** ¡Ganaste **${COIN}${reward.toLocaleString()}**!`;
+            const payout = Math.floor(session.bet * 2.5);
+            const profit = payout - session.bet;
+            const tax = Math.floor(profit * 0.10);
+            const reward = payout - tax;
+            description += `💥 **¡BLACKJACK NATURAL!** ¡Ganaste **${COIN}${reward.toLocaleString()}**! *(Impuesto del banco (10%): ${COIN}${tax.toLocaleString()})*`;
         } else if (outcome === "win") {
-            const reward = session.bet * 2;
-            description += `🏆 **¡Ganaste!** Superaste al dealer. Recibes **${COIN}${reward.toLocaleString()}**.`;
+            const payout = session.bet * 2;
+            const profit = payout - session.bet;
+            const tax = Math.floor(profit * 0.10);
+            const reward = payout - tax;
+            description += `🏆 **¡Ganaste!** Superaste al dealer. Recibes **${COIN}${reward.toLocaleString()}**. *(Impuesto del banco (10%): ${COIN}${tax.toLocaleString()})*`;
         } else if (outcome === "lose") {
             if (playerVal > 21) {
                 description += `💥 **¡Te pasaste! (Bust)** Perdiste tu apuesta de **${COIN}${session.bet.toLocaleString()}**.`;
@@ -120,7 +126,11 @@ function buildBlackjackPanel(userId, session, isGameOver = false, outcome = null
 
             description += `⏳ **Partida Expirada (AFK):** Se plantó tu mano automáticamente.\n`;
             if (playerWin) {
-                description += `🏆 ¡Aun así ganaste! Recibes **${COIN}${(session.bet * 2).toLocaleString()}**.`;
+                const payout = session.bet * 2;
+                const profit = payout - session.bet;
+                const tax = Math.floor(profit * 0.10);
+                const reward = payout - tax;
+                description += `🏆 ¡Aun así ganaste! Recibes **${COIN}${reward.toLocaleString()}**. *(Impuesto del banco: ${COIN}${tax.toLocaleString()})*`;
             } else if (push) {
                 description += `🤝 ¡Quedó en empate! Recuperas tu apuesta de **${COIN}${session.bet.toLocaleString()}**.`;
             } else {
@@ -187,15 +197,41 @@ function resetSessionTimeout(userId, interaction) {
             const push = playerVal <= 21 && playerVal === dealerVal;
             
             let payout = 0;
+            let finalPayout = 0;
             if (playerWin) {
                 payout = s.bet * 2;
-                await userService.addBalance(userId, payout, false);
+                const profit = payout - s.bet;
+                const tax = Math.floor(profit * 0.10);
+                finalPayout = payout - tax;
+                
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Blackjack pagado a <@${userId}>` });
+                
+                if (tax > 0) {
+                    await userService.addBalance("server_casino", -tax, false);
+                    await userService.addBalance("server_bank", tax, false);
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -tax, itemName: `Impuesto del 10% pagado al Banco` });
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: tax, itemName: `Impuesto Blackjack (AFK) de <@${userId}>` });
+                }
             } else if (push) {
                 payout = s.bet;
-                await userService.addBalance(userId, payout, false);
+                finalPayout = s.bet;
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Empate Blackjack devuelto a <@${userId}>` });
+            } else {
+                // Impuesto de pérdida (20%) pagado al banco
+                const casinoTax = Math.floor(s.bet * 0.20);
+                if (casinoTax > 0) {
+                    await userService.addBalance("server_casino", -casinoTax, false);
+                    await userService.addBalance("server_bank", casinoTax, false);
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: casinoTax, itemName: `Impuesto 20% pérdida Blackjack (AFK) de <@${userId}>` });
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del 20% pagado al Banco` });
+                }
             }
             
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
             
             try {
                 const msg = await interaction.channel.messages.fetch(s.messageId).catch(() => null);
@@ -243,8 +279,10 @@ module.exports = {
             return interaction.reply({ content: "No tienes suficientes monedas para esa apuesta.", flags: MessageFlags.Ephemeral });
         }
 
-        // Restar balance inicial
+        // Restar balance inicial y transferirlo al Casino
         await userService.addBalance(userId, -bet, false);
+        await userService.addBalance("server_casino", bet, false);
+        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: bet, itemName: `Apuesta Blackjack de <@${userId}>` });
 
         // Generar estado de juego y baraja clásica
         const deck = createDeck();
@@ -273,16 +311,33 @@ module.exports = {
             sessions.delete(userId);
             let outcome = "blackjack";
             let payout = Math.floor(bet * 2.5);
+            let finalPayout = payout;
 
             if (dealerVal === 21) {
                 outcome = "push";
                 payout = bet;
-                await userService.addBalance(userId, payout, false);
+                finalPayout = bet;
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Empate Blackjack devuelto a <@${userId}>` });
             } else {
-                await userService.addBalance(userId, payout, false);
+                const profit = payout - bet;
+                const tax = Math.floor(profit * 0.10);
+                finalPayout = payout - tax;
+                
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Blackjack Natural pagado a <@${userId}>` });
+                
+                if (tax > 0) {
+                    await userService.addBalance("server_casino", -tax, false);
+                    await userService.addBalance("server_bank", tax, false);
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -tax, itemName: `Impuesto del 10% pagado al Banco` });
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: tax, itemName: `Impuesto Blackjack de <@${userId}>` });
+                }
             }
 
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
             const panel = buildBlackjackPanel(userId, session, true, outcome);
             return interaction.reply({ components: [panel], flags: MessageFlags.IsComponentsV2 });
         }
@@ -339,6 +394,15 @@ module.exports.buttonHandler = async (interaction) => {
 
                 await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
+                // Impuesto de pérdida (20%) pagado al banco
+                const casinoTax = Math.floor(session.bet * 0.20);
+                if (casinoTax > 0) {
+                    await userService.addBalance("server_casino", -casinoTax, false);
+                    await userService.addBalance("server_bank", casinoTax, false);
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: casinoTax, itemName: `Impuesto 20% pérdida Blackjack de <@${userId}>` });
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del 20% pagado al Banco` });
+                }
+
                 const loseContainer = buildBlackjackPanel(userId, session, true, "lose");
                 await interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
                 return true;
@@ -360,8 +424,10 @@ module.exports.buttonHandler = async (interaction) => {
                 return interaction.reply({ content: "No tienes suficientes monedas para doblar tu apuesta.", flags: MessageFlags.Ephemeral });
             }
 
-            // Deducir segunda apuesta
+            // Deducir de la cuenta y transferir al Casino
             await userService.addBalance(userId, -session.bet, false);
+            await userService.addBalance("server_casino", session.bet, false);
+            await transactionService.logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: session.bet, itemName: `Doble Apuesta Blackjack de <@${userId}>` });
             session.bet *= 2;
 
             // Roba exactamente una carta
@@ -374,6 +440,15 @@ module.exports.buttonHandler = async (interaction) => {
                 sessions.delete(userId);
 
                 await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
+
+                // Impuesto de pérdida (20%) pagado al banco
+                const casinoTax = Math.floor(session.bet * 0.20);
+                if (casinoTax > 0) {
+                    await userService.addBalance("server_casino", -casinoTax, false);
+                    await userService.addBalance("server_bank", casinoTax, false);
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: casinoTax, itemName: `Impuesto 20% pérdida Blackjack de <@${userId}>` });
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del 20% pagado al Banco` });
+                }
 
                 const loseContainer = buildBlackjackPanel(userId, session, true, "lose");
                 await interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
@@ -394,17 +469,43 @@ module.exports.buttonHandler = async (interaction) => {
             let outcome = "lose";
             let payout = 0;
 
+            let finalPayout = 0;
             if (dealerVal > 21 || playerVal > dealerVal) {
                 outcome = "win";
                 payout = session.bet * 2;
-                await userService.addBalance(userId, payout, false);
+                const profit = payout - session.bet;
+                const tax = Math.floor(profit * 0.10);
+                finalPayout = payout - tax;
+                
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Blackjack pagado a <@${userId}>` });
+                
+                if (tax > 0) {
+                    await userService.addBalance("server_casino", -tax, false);
+                    await userService.addBalance("server_bank", tax, false);
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -tax, itemName: `Impuesto del 10% pagado al Banco` });
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: tax, itemName: `Impuesto Blackjack de <@${userId}>` });
+                }
             } else if (playerVal === dealerVal) {
                 outcome = "push";
                 payout = session.bet;
-                await userService.addBalance(userId, payout, false);
+                finalPayout = session.bet;
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Empate Blackjack devuelto a <@${userId}>` });
+            } else {
+                // Impuesto de pérdida (20%) pagado al banco
+                const casinoTax = Math.floor(session.bet * 0.20);
+                if (casinoTax > 0) {
+                    await userService.addBalance("server_casino", -casinoTax, false);
+                    await userService.addBalance("server_bank", casinoTax, false);
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: casinoTax, itemName: `Impuesto 20% pérdida Blackjack de <@${userId}>` });
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del 20% pagado al Banco` });
+                }
             }
 
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
 
             const finishContainer = buildBlackjackPanel(userId, session, true, outcome);
             await interaction.update({ components: [finishContainer], flags: MessageFlags.IsComponentsV2 });
@@ -427,17 +528,43 @@ module.exports.buttonHandler = async (interaction) => {
             let outcome = "lose";
             let payout = 0;
 
+            let finalPayout = 0;
             if (dealerVal > 21 || playerVal > dealerVal) {
                 outcome = "win";
                 payout = session.bet * 2;
-                await userService.addBalance(userId, payout, false);
+                const profit = payout - session.bet;
+                const tax = Math.floor(profit * 0.10);
+                finalPayout = payout - tax;
+                
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Blackjack pagado a <@${userId}>` });
+                
+                if (tax > 0) {
+                    await userService.addBalance("server_casino", -tax, false);
+                    await userService.addBalance("server_bank", tax, false);
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -tax, itemName: `Impuesto del 10% pagado al Banco` });
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: tax, itemName: `Impuesto Blackjack de <@${userId}>` });
+                }
             } else if (playerVal === dealerVal) {
                 outcome = "push";
                 payout = session.bet;
-                await userService.addBalance(userId, payout, false);
+                finalPayout = session.bet;
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Empate Blackjack devuelto a <@${userId}>` });
+            } else {
+                // Impuesto de pérdida (20%) pagado al banco
+                const casinoTax = Math.floor(session.bet * 0.20);
+                if (casinoTax > 0) {
+                    await userService.addBalance("server_casino", -casinoTax, false);
+                    await userService.addBalance("server_bank", casinoTax, false);
+                    await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: casinoTax, itemName: `Impuesto 20% pérdida Blackjack de <@${userId}>` });
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del 20% pagado al Banco` });
+                }
             }
 
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: payout });
+            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
 
             const finishContainer = buildBlackjackPanel(userId, session, true, outcome);
             await interaction.update({ components: [finishContainer], flags: MessageFlags.IsComponentsV2 });

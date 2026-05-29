@@ -58,6 +58,13 @@ module.exports = {
         }
 
         await userService.addBalance(userId, -bet, false);
+        await userService.addBalance("server_casino", bet, false);
+        await transactionService.logTransaction({
+            discordId: "server_casino",
+            type: "bank_deposit",
+            amount: bet,
+            itemName: `Apuesta Torre de Riesgo de <@${userId}>`
+        });
 
         return interaction.reply({ components: [buildTowerPanel(userId, bet, bet)], flags: MessageFlags.IsComponentsV2 });
     }
@@ -102,6 +109,24 @@ module.exports.buttonHandler = async (interaction) => {
         } else {
             await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
+            const casinoTax = Math.floor(bet * 0.20);
+            if (casinoTax > 0) {
+                await userService.addBalance("server_casino", -casinoTax, false);
+                await userService.addBalance("server_bank", casinoTax, false);
+                await transactionService.logTransaction({
+                    discordId: "server_bank",
+                    type: "bank_tax",
+                    amount: casinoTax,
+                    itemName: `Impuesto 20% pérdida Torre de Riesgo de <@${userId}>`
+                });
+                await transactionService.logTransaction({
+                    discordId: "server_casino",
+                    type: "bank_withdrawal",
+                    amount: -casinoTax,
+                    itemName: `Impuesto del 20% pagado al Banco`
+                });
+            }
+
             const loseContainer = new ContainerBuilder()
                 .setAccentColor(0xAE3D3D) // Rojo fallo tenue
                 .addTextDisplayComponents(t =>
@@ -121,10 +146,19 @@ module.exports.buttonHandler = async (interaction) => {
         }
 
         await userService.addBalance(userId, finalPayout, false);
+        await userService.addBalance("server_casino", -finalPayout, false);
+        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Torre de Riesgo pagado a <@${userId}>` });
         await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
 
         if (tax > 0) {
+            await userService.addBalance("server_casino", -tax, false);
             await userService.addBalance("server_bank", tax, false);
+            await transactionService.logTransaction({
+                discordId: "server_casino",
+                type: "bank_withdrawal",
+                amount: -tax,
+                itemName: `Impuesto del 10% pagado al Banco`
+            });
             await transactionService.logTransaction({
                 discordId: "server_bank",
                 type: "bank_tax",

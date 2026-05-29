@@ -15,7 +15,6 @@ module.exports = {
 
     try {
       const bankBalance = await userService.getBalance("server_bank");
-      const taxPercent = ((config.bank?.taxRate ?? 0.05) * 100).toFixed(0);
 
       const imagePath = path.join(__dirname, "../../assets/banco.png");
       const attachment = new AttachmentBuilder(imagePath, { name: "banco.png" });
@@ -29,9 +28,10 @@ module.exports = {
             `\`\`\`ansi\n` +
             `\u001b[0;32m🪙 ${bankBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
             `\`\`\`\n` +
-            `📊 **Impuestos actuales:**\n` +
-            `* 💼 Trabajo **${taxPercent}%**\n` +
-            `* 🎲 Apuestas **10%**\n`
+            `📊 **Políticas Macroeconómicas:**\n` +
+            `* 💼 **Trabajo (\`/trabajo\`):** Aporta el **100%** de la generación (50k-120k) a la reserva y paga **10%-20%** de comisión limpia al trabajador.\n` +
+            `* 🎲 **Apuestas (Juegos):** Impuesto del **10%** sobre ganancias netas para sustentar el fondo.\n` +
+            `* 📆 **Diario (\`/diario\`):** Financiado en su totalidad por los fondos del banco.\n`
           )
         )
         .addMediaGalleryComponents(

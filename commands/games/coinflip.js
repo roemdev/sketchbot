@@ -43,6 +43,8 @@ module.exports = {
 
     try {
       await userService.addBalance(userId, -bet, false);
+      await userService.addBalance("server_casino", bet, false);
+      await transactionService.logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: bet, itemName: `Apuesta Cara/Cruz de <@${userId}>` });
     } catch {
       interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
       return interaction.reply({ content: "No tienes suficientes monedas para esa apuesta.", flags: MessageFlags.Ephemeral });
@@ -66,10 +68,19 @@ module.exports = {
       const finalReward = reward - taxAmount;
 
       await userService.addBalance(userId, finalReward, false);
+      await userService.addBalance("server_casino", -finalReward, false);
+      await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalReward, itemName: `Pago Cara/Cruz a <@${userId}>` });
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalReward });
 
       if (taxAmount > 0) {
+        await userService.addBalance("server_casino", -taxAmount, false);
         await userService.addBalance("server_bank", taxAmount, false);
+        await transactionService.logTransaction({
+          discordId: "server_casino",
+          type: "bank_withdrawal",
+          amount: -taxAmount,
+          itemName: `Impuesto del 10% pagado al Banco`
+        });
         await transactionService.logTransaction({
           discordId: "server_bank",
           type: "bank_tax",
@@ -86,6 +97,16 @@ module.exports = {
       );
     } else {
       await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
+
+      // Impuesto de pérdida (20%) pagado al banco central
+      const casinoTax = Math.floor(bet * 0.20);
+      if (casinoTax > 0) {
+        await userService.addBalance("server_casino", -casinoTax, false);
+        await userService.addBalance("server_bank", casinoTax, false);
+        await transactionService.logTransaction({ discordId: "server_bank", type: "bank_tax", amount: casinoTax, itemName: `Impuesto 20% pérdida Cara/Cruz de <@${userId}>` });
+        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del 20% pagado al Banco` });
+      }
+
       await resource.message.edit(`Apostaste ${COIN}${bet.toLocaleString()} a **${choiceLabel}**... salió **${resultLabel}**. Perdiste. Duele.`);
     }
   }

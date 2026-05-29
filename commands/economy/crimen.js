@@ -13,11 +13,20 @@ const config = require("../../utils/config");
 const supabase = require("../../services/dbService");
 
 const COIN = config.emojis.coin || "🪙";
-const crimesConfig = config.crimes || {
-  cooldown: 1800,
+
+const defaultCrimesConfig = {
+  cooldown: 900, // Bajado a la mitad (15 minutos)
   robar: { chance: 0.70, percentStolen: 0.05, fineMin: 500, finePercent: 0.05 },
   hackear: { chance: 0.45, rewardMin: 3000, rewardMax: 6000, fineMin: 1000, finePercent: 0.05 },
   fraude: { chance: 0.30, rewardPercentMin: 0.10, rewardPercentMax: 0.20, rewardMin: 2000, fineMin: 2000, finePercent: 0.10 }
+};
+
+const crimesConfig = {
+  ...defaultCrimesConfig,
+  ...(config.crimes || {}),
+  robar: { ...defaultCrimesConfig.robar, ...(config.crimes?.robar || {}) },
+  hackear: { ...defaultCrimesConfig.hackear, ...(config.crimes?.hackear || {}) },
+  fraude: { ...defaultCrimesConfig.fraude, ...(config.crimes?.fraude || {}) }
 };
 
 module.exports = {
@@ -54,7 +63,7 @@ module.exports = {
           `Selecciona tu próximo golpe presionando un botón. Cada actividad delictiva tiene su propio nivel de riesgo y ganancia potencial:\n\n` +
           `1. **🥷 Robar a Jugador**: Hurta el **${(crimesConfig.robar.percentStolen * 100).toFixed(0)}%** de la cartera de un jugador al azar.\n` +
           `   * Probabilidad de éxito: **${(crimesConfig.robar.chance * 100).toFixed(0)}%** | Multa en caso de fallo.\n\n` +
-          `2. **🖥️ Hackear Bot**: Intenta vulnerar las redes del bot para transferirte fondos del sistema.\n` +
+          `2. **🖥️ Hackear Casino**: Intenta vulnerar las redes del Casino para transferirte fondos de sus reservas.\n` +
           `   * Probabilidad de éxito: **${(crimesConfig.hackear.chance * 100).toFixed(0)}%** | Botín: **${COIN}${crimesConfig.hackear.rewardMin.toLocaleString()}-${crimesConfig.hackear.rewardMax.toLocaleString()}**.\n\n` +
           `3. **🏛️ Fraude al Banco**: Intenta malversar fondos del **Banco del Servidor** (Fondo actual: ${COIN}**${bankBalance.toLocaleString()}**).\n` +
           `   * Probabilidad de éxito: **${(crimesConfig.fraude.chance * 100).toFixed(0)}%** | Botín: **10%-20%** del banco | Multa severa en caso de fallo.`
@@ -70,7 +79,7 @@ module.exports = {
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId("crimen_menu_hackear")
-        .setLabel("Hackear Bot")
+        .setLabel("Hackear Casino")
         .setEmoji("🖥️")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
@@ -192,12 +201,22 @@ module.exports = {
       // CRIME: HACKEAR (Hackear al bot)
       // ==========================================
       if (choice === "hackear") {
+        const casinoBalance = await userService.getBalance("server_casino");
+        if (casinoBalance <= 0) {
+          return menuInteraction.update({ content: `🎰 **Casino en Quiebra:** El Casino del Servidor no tiene fondos actualmente. ¡Espera a que los jugadores pierdan apuestas para realizar un hackeo!`, components: [] });
+        }
+
         const success = Math.random() < crimesConfig.hackear.chance;
 
         if (success) {
           const reward = Math.floor(Math.random() * (crimesConfig.hackear.rewardMax - crimesConfig.hackear.rewardMin + 1)) + crimesConfig.hackear.rewardMin;
-          await userService.addBalance(userId, reward, false);
-          await logTransaction({ discordId: userId, type: "hack_success", amount: reward, itemName: "Hackeo exitoso a la red del bot" });
+          const finalReward = Math.min(casinoBalance, reward);
+
+          await userService.addBalance("server_casino", -finalReward, false);
+          await userService.addBalance(userId, finalReward, false);
+          
+          await logTransaction({ discordId: userId, type: "hack_success", amount: finalReward, itemName: "Hackeo exitoso a la red del Casino" });
+          await logTransaction({ discordId: "server_casino", type: "bank_robbed", amount: -finalReward, itemName: `<@${userId}> hackeó el casino` });
 
           const container = new ContainerBuilder()
             .setAccentColor(0x27AE60) // Verde éxito tenue
@@ -207,8 +226,8 @@ module.exports = {
               section
                 .addTextDisplayComponents(t =>
                   t.setContent(
-                    `Ejecutaste un exploit de día cero contra los servidores del bot y redirigiste fondos del núcleo.\n\n` +
-                    `💵 **Fondos inyectados:** +${COIN}**${reward.toLocaleString("es-DO")}** monedas`
+                    `Ejecutaste un exploit de día cero contra los servidores del Casino y desviaste fondos de la bóveda.\n\n` +
+                    `💵 **Fondos sustraídos:** +${COIN}**${finalReward.toLocaleString("es-DO")}** monedas`
                   )
                 )
                 .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
@@ -226,8 +245,8 @@ module.exports = {
           await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);
           await userService.addBalance("server_bank", fine, false);
 
-          await logTransaction({ discordId: userId, type: "hack_failed", amount: -fine, itemName: "Hackeo fallido al bot (Multa al Banco)" });
-          await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por hackeo fallido` });
+          await logTransaction({ discordId: userId, type: "hack_failed", amount: -fine, itemName: "Hackeo fallido al Casino (Multa al Banco)" });
+          await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por hackeo fallido de casino` });
 
           const container = new ContainerBuilder()
             .setAccentColor(0xAE3D3D) // Rojo fallo tenue
@@ -237,9 +256,9 @@ module.exports = {
               section
                 .addTextDisplayComponents(t =>
                   t.setContent(
-                    `El cortafuegos neuronal del bot detectó tus paquetes maliciosos, rastreó tu proxy y bloqueó tu terminal.\n\n` +
+                    `El cortafuegos del Casino detectó tus paquetes maliciosos, rastreó tu proxy y bloqueó tu terminal.\n\n` +
                     `💸 **Multa de Seguridad:** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.\n` +
-                    `🏛️ *El Banco del Servidor ha confiscado tus fondos para reparar sus defensas.*`
+                    `🏛️ *El Banco del Servidor ha confiscado tus fondos y se los transfirió al Fisco.*`
                   )
                 )
                 .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))

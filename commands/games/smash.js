@@ -164,10 +164,14 @@ module.exports = {
       const prizePool = totalPot - hostEarnings;
 
       await userService.addBalance(hostId, hostEarnings, false);
+      await userService.addBalance("server_casino", -hostEarnings, false);
+      await logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -hostEarnings, itemName: `Comisión Host Smash a <@${hostId}>` });
       await logTransaction({ discordId: hostId, type: "smash_host", amount: hostEarnings });
 
       if (winners.length === 0) {
         await userService.addBalance(hostId, prizePool, false);
+        await userService.addBalance("server_casino", -prizePool, false);
+        await logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -prizePool, itemName: `Pozo Smash sin ganadores a <@${hostId}>` });
         sessions.delete(sessionKey);
         return interaction.editReply({
           components: [new ContainerBuilder().setAccentColor(0x5B7FA6).addTextDisplayComponents(t => t.setContent(`### ${winnerChar.emoji} ${winnerChar.name} ganó\nNadie apostó por él. El bote va al host.`))],
@@ -187,10 +191,19 @@ module.exports = {
         }
 
         await userService.addBalance(winner.uId, finalPayout, false);
+        await userService.addBalance("server_casino", -finalPayout, false);
+        await logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Smash pagado a <@${winner.uId}>` });
         await logTransaction({ discordId: winner.uId, type: "smash_win", amount: finalPayout });
 
         if (tax > 0) {
+          await userService.addBalance("server_casino", -tax, false);
           await userService.addBalance("server_bank", tax, false);
+          await logTransaction({
+            discordId: "server_casino",
+            type: "bank_withdrawal",
+            amount: -tax,
+            itemName: `Impuesto del 10% pagado al Banco`
+          });
           await logTransaction({
             discordId: "server_bank",
             type: "bank_tax",
@@ -227,6 +240,8 @@ module.exports = {
         const bettor = session.bettors.get(interaction.user.id);
         try {
           await userService.removeBalance(interaction.user.id, BET_INCREMENT, false);
+          await userService.addBalance("server_casino", BET_INCREMENT, false);
+          await logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: BET_INCREMENT, itemName: `Apuesta Smash de <@${interaction.user.id}>` });
           bettor.amount += BET_INCREMENT;
           await interaction.message.edit({ components: [buildPanel(session)], flags: MessageFlags.IsComponentsV2 });
           return interaction.reply({ content: `Apuesta aumentada a **${COIN}${bettor.amount.toLocaleString()}**.`, flags: MessageFlags.Ephemeral });
@@ -254,6 +269,8 @@ module.exports = {
 
     try {
       await userService.removeBalance(interaction.user.id, BET_INCREMENT, false);
+      await userService.addBalance("server_casino", BET_INCREMENT, false);
+      await logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: BET_INCREMENT, itemName: `Apuesta Smash de <@${interaction.user.id}>` });
       session.bettors.set(interaction.user.id, { characterId: char.id, amount: BET_INCREMENT });
       await (await interaction.channel.messages.fetch(session.messageId)).edit({ components: [buildPanel(session)], flags: MessageFlags.IsComponentsV2 });
       return interaction.reply({ content: `¡Apuesta registrada por ${char.name}!`, flags: MessageFlags.Ephemeral });

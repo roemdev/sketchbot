@@ -64,13 +64,24 @@ module.exports = {
     const amount = maxRewardRow.ammount;
     const roleId = maxRewardRow.role_id;
 
-    // Actualizar balance
+    // Obtener balance del banco y realizar la transferencia cerrada
     try {
+      const bankBalance = await userService.getBalance("server_bank");
+      if (bankBalance < amount) {
+        return interaction.reply({
+          content: `❌ **El Banco del Servidor está en quiebra:** El banco no tiene suficientes monedas para pagar tu recompensa diaria en este momento (Faltan **${COIN}${(amount - bankBalance).toLocaleString("es-DO")}**). ¡Anima a la comunidad a realizar tareas con \`/trabajo\` para rellenar las arcas del banco!`,
+          flags: MessageFlags.Ephemeral
+        });
+      }
+
+      // Descontar del banco y añadir al usuario
+      await userService.addBalance("server_bank", -amount, false);
+      await logTransaction({ discordId: "server_bank", type: "bank_withdrawal", amount: -amount, itemName: `Pago de diario a <@${userId}>` });
       await userService.addBalance(userId, amount, false);
     } catch (updateError) {
       console.error(updateError);
       return interaction.reply({
-        content: "Error actualizando balance.",
+        content: "Error actualizando balances con el banco.",
         flags: MessageFlags.Ephemeral,
       });
     }
