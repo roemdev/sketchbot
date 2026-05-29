@@ -2,8 +2,8 @@ const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
 
-const COIN = config.emojis.coin || "🪙";
-const XP = config.emojis.xp || "✨";
+const COIN = config.emojis.coin;
+const XP = config.emojis.xp;
 
 module.exports = {
   data: new SlashCommandBuilder()

@@ -3,7 +3,7 @@ const userService = require("../../services/userService");
 const config = require("../../utils/config");
 const path = require("node:path");
 
-const COIN = config.emojis.coin || "🪙";
+const COIN = config.emojis.coin;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,7 +29,7 @@ module.exports = {
             `\u001b[1;35m🪙 ${casinoBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
             `\`\`\`\n` +
             `📊 **Políticas del Casino:**\n` +
-            `* 🏛️ **Impuesto del Fisco:** El **20%** de todas las apuestas perdidas de los jugadores se paga al **Banco del Servidor** (\`/banco\`) para sustentar los diarios.\n` +
+            `* 🏛️ **Impuesto del Fisco:** El **${(config.games.loseTaxRate * 100).toFixed(0)}%** de todas las apuestas perdidas de los jugadores se paga al **Banco del Servidor** (\`/banco\`) para sustentar los diarios.\n` +
             `* 🎰 **Juegos de la Casa:** Apuesta tus monedas en \`/blackjack\`, \`/minas\`, \`/torre\`, o \`/cara-cruz\`.\n` +
             `* 🖥️ **Riesgo de Intrusión:** El Casino es vulnerable a ataques cibernéticos mediante la opción de **Hackear Casino** en \`/crimen\`.\n`
           )

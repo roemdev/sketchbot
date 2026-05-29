@@ -3,10 +3,10 @@ const config = require("../../utils/config");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 
-const GAME_COOLDOWN = config.game.cooldown || 20;
+const GAME_COOLDOWN = config.games.cooldown;
 const COIN = config.emojis.coin;
-const MULTIPLIER = 1.10;
-const MAX_BET = 300_000;
+const MULTIPLIER = config.games.riskTower.multiplier;
+const MAX_BET = config.games.maxBet;
 
 function nextValue(current) {
     return Math.floor(current * MULTIPLIER);
@@ -109,7 +109,7 @@ module.exports.buttonHandler = async (interaction) => {
         } else {
             await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
-            const casinoTax = Math.floor(bet * 0.20);
+            const casinoTax = Math.floor(bet * config.games.loseTaxRate);
             if (casinoTax > 0) {
                 await userService.addBalance("server_casino", -casinoTax, false);
                 await userService.addBalance("server_bank", casinoTax, false);
@@ -117,13 +117,13 @@ module.exports.buttonHandler = async (interaction) => {
                     discordId: "server_bank",
                     type: "bank_tax",
                     amount: casinoTax,
-                    itemName: `Impuesto 20% pérdida Torre de Riesgo de <@${userId}>`
+                    itemName: `Impuesto ${(config.games.loseTaxRate * 100).toFixed(0)}% pérdida Torre de Riesgo de <@${userId}>`
                 });
                 await transactionService.logTransaction({
                     discordId: "server_casino",
                     type: "bank_withdrawal",
                     amount: -casinoTax,
-                    itemName: `Impuesto del 20% pagado al Banco`
+                    itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco`
                 });
             }
 
@@ -141,7 +141,7 @@ module.exports.buttonHandler = async (interaction) => {
         let tax = 0;
         let finalPayout = current;
         if (current > bet) {
-            tax = Math.floor((current - bet) * 0.1);
+            tax = Math.floor((current - bet) * config.games.winTaxRate);
             finalPayout = current - tax;
         }
 
@@ -157,7 +157,7 @@ module.exports.buttonHandler = async (interaction) => {
                 discordId: "server_casino",
                 type: "bank_withdrawal",
                 amount: -tax,
-                itemName: `Impuesto del 10% pagado al Banco`
+                itemName: `Impuesto del ${(config.games.winTaxRate * 100).toFixed(0)}% pagado al Banco`
             });
             await transactionService.logTransaction({
                 discordId: "server_bank",

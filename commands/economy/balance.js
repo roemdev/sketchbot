@@ -17,7 +17,7 @@ function buildBalanceContainer(targetUser, dbUser, bankBalance) {
             `Cartera\n` +
             `**${dbUser.balance.toLocaleString("es-DO")}**\n` +
             `Banco\n` +
-            `**${bankBalance.toLocaleString("es-DO")}** / **${(2000000).toLocaleString("es-DO")}**`
+            `**${bankBalance.toLocaleString("es-DO")}** / **${config.bank.maxLimit.toLocaleString("es-DO")}**`
           )
         )
         .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
@@ -77,7 +77,7 @@ module.exports = {
 
     const dbUser = await userService.getUser(userId);
     const bankBalance = await userService.getBankBalance(userId);
-    const maxBankLimit = 2000000;
+    const maxBankLimit = config.bank.maxLimit;
 
     if (action === "deposit10") {
       let amount = Math.floor(dbUser.balance * 0.1);

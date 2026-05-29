@@ -7,9 +7,9 @@ const {
   MessageFlags,
 } = require("discord.js");
 
-const colorsData = require("../../data/colors.json");
+const config = require("../../utils/config");
 
-const COLOR_ROLES = colorsData.roles;
+const COLOR_ROLES = config.colors;
 const ALL_COLOR_IDS = new Set(COLOR_ROLES.map(r => r.id));
 
 const BUTTON_STYLES = {

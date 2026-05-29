@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
 
-const XP = config.emojis.xp || "✨";
+const XP = config.emojis.xp;
 
 function getProgressBar(current, max, length = 10) {
   const percentage = Math.max(0, Math.min(1, current / max));

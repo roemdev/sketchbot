@@ -6,12 +6,17 @@ const { logTransaction } = require("../../services/transactionService");
 
 const { minEarn, maxEarn, cooldown } = config.tasks;
 const COIN = config.emojis.coin;
-const XP = config.emojis.xp || "✨";
-const taxRate = (config.bank && config.bank.taxRate) !== undefined ? config.bank.taxRate : 0.05;
+const XP = config.emojis.xp;
+const taxRate = config.bank.taxRate;
 
 async function grantReward(interaction, userId) {
-  const bankGenerated = Math.floor(Math.random() * (240000 - 100000 + 1)) + 100000;
-  const percentage = Math.floor(Math.random() * (20 - 10 + 1)) + 10;
+  const minBank = config.tasks.minBankEarn;
+  const maxBank = config.tasks.maxBankEarn;
+  const minPercent = config.tasks.minCommissionPercent;
+  const maxPercent = config.tasks.maxCommissionPercent;
+
+  const bankGenerated = Math.floor(Math.random() * (maxBank - minBank + 1)) + minBank;
+  const percentage = Math.floor(Math.random() * (maxPercent - minPercent + 1)) + minPercent;
   const earned = Math.floor(bankGenerated * (percentage / 100));
 
   await userService.addBalance(userId, earned, false);
@@ -19,7 +24,7 @@ async function grantReward(interaction, userId) {
 
   await logTransaction({ discordId: "server_bank", type: "bank_tax", amount: bankGenerated, itemName: `Generación de trabajo de <@${userId}>` });
   await logTransaction({ discordId: userId, type: "task", amount: earned });
-  await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
+  await cooldownService.setCooldown(userId, "trabajo", cooldown);
 
   return { earned, bankGenerated, percentage };
 }
@@ -262,7 +267,7 @@ module.exports.buttonHandler = async (interaction) => {
     // Verificar límite estricto de tiempo
     const now = Math.floor(Date.now() / 1000);
     if (now > deadline) {
-      await cooldownService.setCooldown(userId, "trabajo", cooldown || 3600);
+      await cooldownService.setCooldown(userId, "trabajo", cooldown);
       
       const container = new ContainerBuilder()
           .setAccentColor(10038562) // Rojo Fracaso

@@ -19,9 +19,9 @@ Toda la economía del servidor se basa en la transferencia física de monedas en
 ### 1. El Banco del Servidor (`server_bank`)
 *   **Propósito:** Actúa como el tesoro público del servidor y financia las recompensas de la comunidad.
 *   **Fuentes de Ingresos (Sinks):**
-    *   **Trabajo (`/trabajo`):** Cada trabajo inyecta entre `50,000` y `120,000` monedas al banco.
-    *   **Impuesto a las Ganancias (10%):** En `/blackjack`, `/minas`, `/torre`, `/cara-cruz` y `/smash`, el 10% de la ganancia neta del ganador se extrae de la bóveda del casino y se deposita en el banco.
-    *   **Impuesto del Casino (20%):** El casino paga al banco el 20% de cada apuesta perdida por los jugadores.
+    *   **Trabajo (`/trabajo`):** Cada trabajo inyecta monedas (entre `100,000` y `240,000` según `economy.json`) al banco.
+    *   **Impuesto a las Ganancias (10%):** En `/blackjack`, `/minas`, `/torre`, `/cara-cruz` y `/smash`, el 10% (dinámico desde `economy.json`) de la ganancia neta del ganador se extrae de la bóveda del casino y se deposita en el banco.
+    *   **Impuesto del Casino (20%):** El casino paga al banco el 20% (dinámico desde `economy.json`) de cada apuesta perdida por los jugadores.
     *   **Multas por Delincuencia:** Las multas cobradas de `/crimen` fallidos (Robos, Fraude o Hackeo) se depositan en el banco.
 *   **Egresos (Sources):**
     *   **Subsidio Diario (`/diario`):** Se deduce íntegramente de `server_bank`. Si el banco tiene menos balance que el premio diario del usuario, se declara en **Quiebra Central** y rechaza la reclamación temporalmente.
@@ -32,9 +32,9 @@ Toda la economía del servidor se basa en la transferencia física de monedas en
 *   **Fuentes de Ingresos (Sinks):**
     *   **Apuestas Iniciales:** El 100% de la apuesta de `/blackjack`, `/minas`, `/torre`, `/cara-cruz` y `/smash` se extrae del jugador y se ingresa en el casino.
 *   **Egresos (Sources):**
-    *   **Pago de Premios:** El 100% del premio bruto ganado se debita del casino (el jugador recibe el premio neto y el 10% de impuesto va al banco).
-    *   **Impuesto del 20% (Pérdidas):** Al perder el jugador, el casino le paga al banco el 20% de la apuesta retenida.
-    *   **Impuesto del 10% (Ganancias):** Al ganar el jugador, el casino paga el 10% de impuesto sobre la ganancia neta al banco.
+    *   **Pago de Premios:** El 100% del premio bruto ganado se debita del casino (el jugador recibe el premio neto y el impuesto del 10% va al banco).
+    *   **Impuesto de Pérdidas:** Al perder el jugador, el casino le paga al banco el 20% de la apuesta retenida.
+    *   **Impuesto de Ganancias:** Al ganar el jugador, el casino paga el impuesto sobre la ganancia neta al banco.
 
 ---
 
@@ -47,35 +47,61 @@ sketchbot/
 │   └── casino.png         # Banner panorámico 16:9 de la bóveda del casino
 ├── commands/              # Comandos de barra (Slash) de Discord
 │   ├── dailyRewards/
-│   │   └── dailyClaim.js  # Reclamación diaria (/diario) con RLS y bancarrota
+│   │   ├── dailyClaim.js  # Reclamación diaria (/diario)
+│   │   ├── rewardList.js  # Listado de premios
+│   │   └── roleRewards.js # Configuración de recompensas por rol
 │   ├── economy/
-│   │   ├── banco.js       # Visualización de arcas fiscales (/banco) con color 0x2F3136
-│   │   ├── casino.js      # Visualización de arcas del casino (/casino) con color 0x6C3483
-│   │   ├── crimen.js      # Delitos e infracciones (/crimen) (Robo, Hackeo, Estafa)
-│   │   └── task.js        # Generación de reservas y comisión del trabajador (/trabajo)
+│   │   ├── balance.js     # Consulta de balance personal
+│   │   ├── banco.js       # Visualización de arcas fiscales (/banco)
+│   │   ├── casino.js      # Visualización de arcas del casino (/casino)
+│   │   ├── crimen.js      # Delitos e infracciones (/crimen)
+│   │   ├── depositar.js   # Depósitos en el banco
+│   │   ├── retirar.js     # Retiros del banco
+│   │   ├── task.js        # Trabajo interactivo (/trabajo)
+│   │   ├── store.js       # Tienda virtual (/store)
+│   │   ├── storeConfig.js # Configuración de la tienda (/storeConfig)
+│   │   ├── swap.js        # Conversión de monedas a créditos (/swap)
+│   │   └── coinsToCredits.js # Conversión de monedas a créditos Paymenter
 │   ├── games/
-│   │   ├── blackjack.js   # Blackjack interactivo 21, baraja Fisher-Yates y auto-stand AFK
-│   │   ├── coinflip.js    # Coinflip / cara-cruz (50% de probabilidad)
-│   │   ├── minas.js       # Campo de minas interactivo 3x3, retiros y expiración AFK
-│   │   ├── riskTower.js   # Torre de riesgo interactiva con multiplicador de nivel 1.10x
+│   │   ├── blackjack.js   # Blackjack interactivo 21 contra el dealer
+│   │   ├── coinflip.js    # Coinflip / cara-cruz de apuestas
+│   │   ├── minas.js       # Campo de minas interactivo 3x3
+│   │   ├── riskTower.js   # Torre de riesgo interactiva
 │   │   └── smash.js       # Apuestas multijugador hosteadas para Smash Bros
-│   └── levels/
-│       └── manageXp.js    # Control administrativo de XP y niveles de usuarios
+│   ├── levels/
+│   │   ├── manageXp.js    # Control administrativo de XP y niveles de usuarios
+│   │   ├── nivel.js       # Visualización del nivel propio o de otro usuario
+│   │   ├── resetXp.js     # Reseteo de nivel y XP
+│   │   └── syncRoles.js   # Sincronización manual de roles de nivel
+│   └── utility/
+│       ├── leave.js       # Salir de un canal de voz
+│       ├── ping.js        # Latencia y latencia de API del bot
+│       ├── resetCooldown.js # Reinicio de enfriamientos de usuarios
+│       ├── setupColors.js # Configuración de roles de colores autogestionados (renombrado a CamelCase)
+│       └── setupVoice.js  # Configuración del canal de creación de voz temporal
 ├── data/                  # Base de datos de configuración local
-│   ├── cards.json         # Mapeo de naipes de poker con 53 emojis dinámicos de Discord
-│   ├── economy.json       # Parámetros de enfriamientos, tasas y economía del bot
+│   ├── cards.json         # Emojis dinámicos de naipes de poker
+│   ├── economy.json       # Centralizado: Parámetros de enfriamientos, tasas de apuestas y economía
+│   ├── levels.json        # Centralizado: Rangos de XP, intervalos de voz y emojis de niveles
+│   ├── settings.json      # Centralizado: Colores semánticos de embeds, canales temp y roles de colores
 │   └── smash.json         # Base de datos de luchadores de Smash Bros con emojis
 ├── services/              # Lógica de negocio y conectores de base de datos
 │   ├── dbService.js       # Conexión nativa a Supabase
 │   ├── userService.js     # Creación, balance, XP y niveles de usuarios
 │   ├── transactionService.js # Historial de transacciones de Supabase
-│   ├── cooldownService.js # Sistema global de enfriamientos en base de datos
-│   └── voiceXpService.js  # Escáner de voz de ganancia de XP y premios financiados por banco
+│   ├── cooldownService.js # Enfriamientos en base de datos
+│   ├── memoryCooldownService.js # Enfriamientos interactivos en memoria
+│   ├── minecraftService.js # Conector RCON de Minecraft
+│   ├── roleRewardService.js # Sincronización automática de roles de nivel
+│   ├── storeService.js    # Lógica de compras en la tienda
+│   └── voiceXpService.js  # Escáner de voz de ganancia de XP y premios
 ├── utils/
+│   ├── validation.js      # Validaciones y sanidad de inputs
+│   ├── voiceController.js # Controlador e interacciones de voz temporal
 │   └── config.js          # Agrupador y mezclador estructurado de configuraciones
-├── config.json            # Credenciales de Discord, Supabase (serviceRoleKey) y Minecraft
+├── config.json            # Credenciales de Discord, Supabase y Minecraft
 ├── index.js               # Punto de entrada principal del bot
-└── deploy-commands.js     # Registrador automatizado de comandos slash con Discord API
+└── deploy-commands.js     # Registrador de comandos slash con Discord API
 ```
 
 ---
@@ -89,7 +115,7 @@ Es imperativo preservar estrictamente los colores semánticos definidos para man
 *   **Éxito / Victoria / Payouts (DarkGreen):** `2067276` (hex: `#1F8B4C` / `0x1F8B4C`). Utilizado para reclamaciones diarias, subidas de nivel, victorias y cobros exitosos.
 *   **Apuestas activas / Juegos (DarkPurple):** `7419530` (hex: `#71368A` / `0x71368A`). Utilizado para el estado activo de juegos en curso (torre, minas, blackjack, smash) y el balance del casino.
 
-Los errores no llevan contenedor, sino texto plano.
+Los errores no llevan contenedor, sino texto plano y se responden en efímero.
 
 ---
 
@@ -99,4 +125,5 @@ Los errores no llevan contenedor, sino texto plano.
 2.  **Seguridad Supabase:** Modifica siempre la base de datos utilizando la llave `serviceRoleKey` en `config.json` para evitar infracciones de RLS (Row-Level Security) en los procesos administrativos del bot.
 3.  **Banners 16:9:** Los banners del banco y el casino deben cargarse desde `assets/banco.png` y `assets/casino.png` respectivamente. Deben ser imágenes con relación de aspecto panorámica **16:9** para evitar estiramientos no deseados en la interfaz de Discord.
 4.  **Registro de Comandos:** Siempre que añadas o modifiques las firmas en `data` de algún comando, ejecuta `node deploy-commands.js` en la consola para reflejarlo en Discord API.
-5.  **Emojis Personalizados:** Utiliza el archivo `data/cards.json` y el objeto `config.emojis` para evitar colocar textos planos o emojis por defecto, garantizando la experiencia visual premium diseñada.
+5.  **Sin Fallbacks en Código:** No utilices valores por defecto en variables de configuración (por ejemplo, `config.tasks.minBankEarn || 100000`). Todas las propiedades de configuración deben cargarse estrictamente desde sus archivos JSON centralizados (`economy.json`, `levels.json`, `settings.json`) para que el bot falle de forma inmediata y controlada si la configuración es incorrecta.
+6.  **Emojis Personalizados:** Utiliza el archivo `data/cards.json` y el objeto `config.emojis` para evitar colocar textos planos o emojis por defecto, garantizando la experiencia visual premium diseñada.

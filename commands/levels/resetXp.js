@@ -2,7 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
 
-const XP = config.emojis.xp || "✨";
+const XP = config.emojis.xp;
 
 module.exports = {
   data: new SlashCommandBuilder()

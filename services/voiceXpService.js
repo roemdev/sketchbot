@@ -12,8 +12,8 @@ function init(client) {
   if (isRunning) return;
   isRunning = true;
 
-  const intervalMs = (config.voiceXp.intervalSeconds || 60) * 1000;
-  console.log(chalk.green(`🎙️ [VOICE-XP] Iniciando sistema de experiencia por voz (Escaneo cada ${config.voiceXp.intervalSeconds || 60} segundos).`));
+  const intervalMs = config.voiceXp.intervalSeconds * 1000;
+  console.log(chalk.green(`🎙️ [VOICE-XP] Iniciando sistema de experiencia por voz (Escaneo cada ${config.voiceXp.intervalSeconds} segundos).`));
 
   xpInterval = setInterval(() => {
     scanVoiceChannels(client);
@@ -42,8 +42,8 @@ async function scanVoiceChannels(client) {
         if (afkChannelId && voiceState.channelId === afkChannelId) continue; // No canal AFK personalizado
 
         // 3. Generar XP aleatoria
-        const minXp = config.levels.minXpEarn || 10;
-        const maxXp = config.levels.maxXpEarn || 30;
+        const minXp = config.levels.minXpEarn;
+        const maxXp = config.levels.maxXpEarn;
         const xpEarned = Math.floor(Math.random() * (maxXp - minXp + 1)) + minXp;
 
         try {
@@ -52,7 +52,7 @@ async function scanVoiceChannels(client) {
           
           if (xpInfo && xpInfo.leveledUp) {
             // 5. Entregar premio en monedas
-            const baseCoin = config.levels.baseCoinReward || 10000;
+            const baseCoin = config.levels.baseCoinReward;
             const coinReward = xpInfo.level * baseCoin;
             await userService.addBalance("server_bank", -coinReward, false);
             await transactionService.logTransaction({ discordId: "server_bank", type: "bank_withdrawal", amount: -coinReward, itemName: `Premio de nivel (Voz) a <@${member.id}>` });
@@ -84,8 +84,8 @@ async function scanVoiceChannels(client) {
             }
 
             // Crear un panel elegante usando Componentes V2
-            const COIN = config.emojis.coin || "🪙";
-            const XP = config.emojis.xp || "✨";
+            const COIN = config.emojis.coin;
+            const XP = config.emojis.xp;
             const levelUpContainer = new ContainerBuilder()
               .setAccentColor(0x27AE60) // Verde éxito tenue
               .addTextDisplayComponents(t =>

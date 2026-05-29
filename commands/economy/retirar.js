@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
 
-const COIN = config.emojis.coin || "🪙";
+const COIN = config.emojis.coin;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -51,7 +51,7 @@ module.exports = {
 
     const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
     const total = (dbUser.balance + amount) + newBankBalance;
-    const maxBankLimit = 2000000;
+    const maxBankLimit = config.bank.maxLimit;
 
     const container = new ContainerBuilder()
       .setAccentColor(2067276) // DarkGreen (éxito)

@@ -2,7 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
 const config = require("../../utils/config");
-const XP = config.emojis.xp || "✨";
+const XP = config.emojis.xp;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -45,12 +45,12 @@ module.exports = {
       let levelUpRewardText = "";
       if (xpInfo && xpInfo.leveledUp) {
         // Otorgar recompensa de monedas por nivel
-        const baseCoin = config.levels.baseCoinReward || 10000;
+        const baseCoin = config.levels.baseCoinReward;
         const coinReward = xpInfo.level * baseCoin;
         await userService.addBalance("server_bank", -coinReward, false);
         await transactionService.logTransaction({ discordId: "server_bank", type: "bank_withdrawal", amount: -coinReward, itemName: `Premio de nivel a <@${targetUser.id}>` });
         await userService.addBalance(targetUser.id, coinReward, false);
-        levelUpRewardText = `\n🎉 ¡Subió al **Nivel ${xpInfo.level}** **${XP}**! Recibió **${config.emojis.coin || "🪙"}${coinReward.toLocaleString("es-DO")}** monedas (pagadas por el Banco).`;
+        levelUpRewardText = `\n🎉 ¡Subió al **Nivel ${xpInfo.level}** **${XP}**! Recibió **${config.emojis.coin}${coinReward.toLocaleString("es-DO")}** monedas (pagadas por el Banco).`;
 
         // Asignar el rol del nivel si corresponde
         if (interaction.guild) {

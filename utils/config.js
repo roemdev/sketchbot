@@ -27,10 +27,11 @@ module.exports = {
   dailyClaim: eco.dailyClaim || {},
   smash: eco.smash || {},
   bank: eco.bank || {},
-  crimes: eco.crimes || {},
   levels: lvl.levels || {},
   voiceXp: lvl.voiceXp || {},
   game: set.game || {},
   embeds: set.embeds || {},
-  voice: set.voice || {}
+  voice: set.voice || {},
+  games: eco.games || {},
+  colors: set.colors || []
 };

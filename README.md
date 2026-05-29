@@ -13,7 +13,7 @@ A diferencia de los bots de economía convencionales que acuñan monedas del air
 
 ```mermaid
 graph TD
-    A[Trabajo /trabajo] -->|Genera 50k-120k| B(Reservas del Banco Central)
+    A[Trabajo /trabajo] -->|Genera 100k-240k| B(Reservas del Banco Central)
     B -->|Paga 10%-20% Comisión Limpia| C[Jugador]
     B -->|Deducción total de diarios| D[Recompensa Diaria /diario]
     D --> C
@@ -29,7 +29,7 @@ graph TD
 
 ### 1. El Banco del Servidor (`/banco`)
 El banco central actúa como la reserva fiscal del servidor y el sustento de la comunidad:
-*   **Aporte de Trabajo (`/trabajo`):** Cada tarea genera entre **50,000 y 120,000 monedas** que se inyectan en el banco. El trabajador recibe una comisión limpia de entre el **10% y el 20%** de ese total.
+*   **Aporte de Trabajo (`/trabajo`):** Cada tarea genera entre **100,000 y 240,000 monedas** que se inyectan en el banco. El trabajador recibe una comisión limpia de entre el **10% y el 20%** de ese total.
 *   **Subsidio Diario (`/diario`):** Se financia enteramente con las reservas del banco.
     *   **Gestión de Quiebra Real:** Si las reservas del banco descienden por debajo del premio de un usuario, el comando falla informando elegantemente que el banco central está temporalmente en quiebra y motivando a la comunidad a hacer `/trabajo` para restaurar los fondos comunes.
 *   **Premios de Nivel:** Las recompensas financieras por subir de nivel se debitan físicamente del banco central.
@@ -38,8 +38,8 @@ El banco central actúa como la reserva fiscal del servidor y el sustento de la 
 ### 2. El Casino del Servidor (`/casino`)
 El casino opera de forma independiente y posee su propia bóveda financiera:
 *   **Juegos Incorporados:** Al apostar en `/blackjack`, `/minas`, `/torre`, `/cara-cruz` o `/smash`, la apuesta del jugador se deposita físicamente en el casino.
-*   **Tasa Impositiva sobre Pérdidas:** Cuando un jugador pierde, el casino retiene el 100% de la apuesta, pero tributa un **20% de impuesto de pérdida** que se descuenta del casino y se transfiere al banco central.
-*   **Tasa Impositiva sobre Ganancias:** Cuando un jugador gana, el premio neto se le paga desde la bóveda del casino y se aplica un **10% de impuesto a las ganancias** sobre el profit neto, debitado del casino y transferido al banco.
+*   **Tasa Impositiva sobre Pérdidas:** Cuando un jugador pierde, el casino retiene el 100% de la apuesta, pero tributa un **20% de impuesto de pérdida** (dinámico desde `economy.json`) que se descuenta del casino y se transfiere al banco central.
+*   **Tasa Impositiva sobre Ganancias:** Cuando un jugador gana, el premio neto se le paga desde la bóveda del casino y se aplica un **10% de impuesto a las ganancias** (dinámico desde `economy.json`) sobre el profit neto, debitado del casino y transferido al banco.
 *   **Intrusión delictiva:** El casino puede ser hackeado mediante la opción de **Hackeo** en `/crimen`. Si no cuenta con fondos suficientes para el botín, se activa el sistema de bancarrota interactivo.
 
 ---
@@ -50,7 +50,7 @@ El casino opera de forma independiente y posee su propia bóveda financiera:
 *   `/balance` - Consulta tu saldo actual de monedas en efectivo.
 *   `/banco` - Visualiza el estado de las arcas del banco central, políticas fiscales e histórico.
 *   `/casino` - Consulta el saldo en bóveda del casino y los impuestos activos.
-*   `/depositar` [cantidad] - Guarda tus monedas en tu cuenta bancaria personal.
+*   `/depositar` [cantidad] - Guarda tus monedas en tu cuenta bancaria personal (máximo límite dinámico).
 *   `/retirar` [cantidad] - Retira monedas de tu cuenta personal a tu efectivo.
 *   `/transfer` [usuario] [cantidad] - Envía monedas de tu efectivo a otro miembro.
 *   `/trabajo` - Realiza tareas del servidor para generar reservas y ganar tu comisión.

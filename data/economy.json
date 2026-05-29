@@ -1,4 +1,8 @@
 {
+  "_comments": [
+    "Configuración del sistema de economía de SketchBot.",
+    "Incluye parámetros para el banco, tareas de trabajo, robos y tasas de juegos de casino."
+  ],
   "economy": {
     "exchangeRate": 500000,
     "currency": "USD"
@@ -10,7 +14,11 @@
     "minEarn": 3000,
     "maxEarn": 10000,
     "taskDuration": 30,
-    "cooldown": 3600
+    "cooldown": 3600,
+    "minBankEarn": 100000,
+    "maxBankEarn": 240000,
+    "minCommissionPercent": 10,
+    "maxCommissionPercent": 20
   },
   "dailyClaim": {
     "cooldown": 64800
@@ -21,7 +29,19 @@
     "timeout": 300
   },
   "bank": {
-    "taxRate": 0.05
+    "taxRate": 0.05,
+    "maxLimit": 2000000
+  },
+  "games": {
+    "maxBet": 300000,
+    "winTaxRate": 0.10,
+    "loseTaxRate": 0.20,
+    "minas": {
+      "rtp": 0.97
+    },
+    "riskTower": {
+      "multiplier": 1.10
+    }
   },
   "crimes": {
     "cooldown": 300,

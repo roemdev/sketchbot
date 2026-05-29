@@ -3,7 +3,7 @@ const userService = require("../../services/userService");
 const config = require("../../utils/config");
 const path = require("node:path");
 
-const COIN = config.emojis.coin || "🪙";
+const COIN = config.emojis.coin;
 
 module.exports = {
   data: new SlashCommandBuilder()

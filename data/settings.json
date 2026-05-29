@@ -1,4 +1,8 @@
 {
+  "_comments": [
+    "Configuración general y de misceláneos de SketchBot, incluyendo diseño de embeds, canales temporales y selección de roles de color.",
+    "La sección colors define los botones de roles autogestionables en el panel de selección de colores."
+  ],
   "game": {
     "cooldown": 10
   },
@@ -11,5 +15,17 @@
   "voice": {
     "vcJoinChannel": "1312872660715175956",
     "vcNameTemplate": "{username}"
-  }
+  },
+  "colors": [
+    { "id": "1492979807162732687", "name": "Negro",    "emoji": "⬛", "buttonStyle": "Secondary" },
+    { "id": "1492979814699896842", "name": "Blanco",   "emoji": "⬜", "buttonStyle": "Secondary" },
+    { "id": "1492979816402780501", "name": "Amarillo", "emoji": "🟨", "buttonStyle": "Secondary" },
+    { "id": "1492979820072796223", "name": "Rosa",     "emoji": "🩷", "buttonStyle": "Secondary" },
+    { "id": "1492979824304849132", "name": "Morado",   "emoji": "🟣", "buttonStyle": "Secondary" },
+    { "id": "1492979832953245816", "name": "Verde",    "emoji": "🟩", "buttonStyle": "Secondary" },
+    { "id": "1492979834656264242", "name": "Azul",     "emoji": "🟦", "buttonStyle": "Secondary" },
+    { "id": "1492979836996554935", "name": "Naranja",  "emoji": "🟧", "buttonStyle": "Secondary" },
+    { "id": "1492979839177850930", "name": "Gris",     "emoji": "🩶", "buttonStyle": "Secondary" },
+    { "id": "1492979841077612606", "name": "Rojo",     "emoji": "🟥", "buttonStyle": "Secondary" }
+  ]
 }

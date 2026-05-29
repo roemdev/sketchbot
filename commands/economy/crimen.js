@@ -12,22 +12,9 @@ const { logTransaction } = require("../../services/transactionService");
 const config = require("../../utils/config");
 const supabase = require("../../services/dbService");
 
-const COIN = config.emojis.coin || "🪙";
+const COIN = config.emojis.coin;
 
-const defaultCrimesConfig = {
-  cooldown: 300, // Bajado a 5 minutos
-  robar: { chance: 0.80, percentStolen: 0.05, fineMin: 0, finePercent: 0.05 },
-  hackear: { chance: 0.60, percentStolen: 0.08, fineMin: 0, finePercent: 0.08 },
-  fraude: { chance: 0.40, percentStolen: 0.12, fineMin: 0, finePercent: 0.12 }
-};
-
-const crimesConfig = {
-  ...defaultCrimesConfig,
-  ...(config.crimes || {}),
-  robar: { ...defaultCrimesConfig.robar, ...(config.crimes?.robar || {}) },
-  hackear: { ...defaultCrimesConfig.hackear, ...(config.crimes?.hackear || {}) },
-  fraude: { ...defaultCrimesConfig.fraude, ...(config.crimes?.fraude || {}) }
-};
+const crimesConfig = config.crimes;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -110,7 +97,7 @@ module.exports = {
       const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
 
       // Establecer cooldown global de crímenes
-      await cooldownService.setCooldown(userId, "crimen", crimesConfig.cooldown || 300);
+      await cooldownService.setCooldown(userId, "crimen", crimesConfig.cooldown);
 
       // ==========================================
       // CRIME: ROBAR (Robar a jugador)
@@ -239,7 +226,7 @@ module.exports = {
           const hackerStats = await userService.getUser(userId);
           const hackerBalance = hackerStats ? hackerStats.balance : 0;
 
-          const fine = Math.max(crimesConfig.hackear.fineMin || 0, Math.round(hackerBalance * crimesConfig.hackear.finePercent));
+          const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(hackerBalance * crimesConfig.hackear.finePercent));
           const newBalance = hackerBalance - fine;
 
           await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);
@@ -309,7 +296,7 @@ module.exports = {
           const userStats = await userService.getUser(userId);
           const balance = userStats ? userStats.balance : 0;
 
-          const fine = Math.max(crimesConfig.fraude.fineMin || 0, Math.round(balance * crimesConfig.fraude.finePercent));
+          const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(balance * crimesConfig.fraude.finePercent));
           const newBalance = balance - fine;
 
           await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);

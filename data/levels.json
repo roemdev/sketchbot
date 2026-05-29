@@ -1,4 +1,8 @@
 {
+  "_comments": [
+    "Configuración del sistema de experiencia (XP) y niveles por chat de texto y canales de voz.",
+    "roles define los identificadores de los roles de Discord otorgados automáticamente al alcanzar ciertos niveles."
+  ],
   "levels": {
     "minXpEarn": 10,
     "maxXpEarn": 30,

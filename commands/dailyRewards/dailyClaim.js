@@ -90,7 +90,7 @@ module.exports = {
     await cooldownService.setCooldown(
         userId,
         "diario",
-        config.dailyClaim.cooldown || 86400
+        config.dailyClaim.cooldown
     );
 
     // Log de la transacción

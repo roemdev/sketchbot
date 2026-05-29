@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
 
-const COIN = config.emojis.coin || "🪙";
+const COIN = config.emojis.coin;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -22,7 +22,7 @@ module.exports = {
 
     const dbUser = await userService.createUser(userId, interaction.user.username);
     const bankBalance = await userService.getBankBalance(userId);
-    const maxBankLimit = 2000000;
+    const maxBankLimit = config.bank.maxLimit;
     const maxDepositable = maxBankLimit - bankBalance;
 
     if (maxDepositable <= 0) {
