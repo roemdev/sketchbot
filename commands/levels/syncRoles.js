@@ -15,7 +15,7 @@ module.exports = {
       const { processed, updated } = await roleRewardService.syncAllMembers(interaction.guild);
 
       const embed = new ContainerBuilder()
-        .setAccentColor(0x27AE60) // Verde éxito tenue
+        .setAccentColor(2067276) // DarkGreen (éxito)
         .addTextDisplayComponents(t =>
           t.setContent(
             `### 🔄 Sincronización Completada\n` +

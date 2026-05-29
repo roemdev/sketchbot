@@ -56,7 +56,7 @@ module.exports = {
 
     // 3. Construir panel de selección interactivo
     const menuContainer = new ContainerBuilder()
-      .setAccentColor(0x2F3136) // NotQuiteBlack
+      .setAccentColor(2303786) // NotQuiteBlack
       .addTextDisplayComponents(t =>
         t.setContent(
           `### 🕵️‍♂️ Planificación del Crimen\n` +
@@ -134,7 +134,7 @@ module.exports = {
 
           if (stolen <= 0) {
             const container = new ContainerBuilder()
-              .setAccentColor(0xCA9F1B) // Amarillo tenue (Alerta)
+              .setAccentColor(10038562) // Amarillo tenue (Alerta)
               .addTextDisplayComponents(t =>
                 t.setContent(`### 🕵️‍♂️ Bolsillos Vacíos\nAcechaste en las sombras a <@${target.discord_id}>, pero sus bolsillos están vacíos. ¡Te vas con las manos vacías! 💨`)
               );
@@ -146,7 +146,7 @@ module.exports = {
           await logTransaction({ discordId: userId, type: "robar_success", amount: stolen, itemName: `Robo a <@${target.discord_id}>` });
 
           const container = new ContainerBuilder()
-            .setAccentColor(0x2ECC71)
+            .setAccentColor(2067276)
             .addTextDisplayComponents(t => t.setContent(`### 🥷 ¡Hurto Exitoso en las Sombras!`))
             .addSeparatorComponents(s => s)
             .addSectionComponents(section =>
@@ -178,7 +178,7 @@ module.exports = {
           await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por robo fallido` });
 
           const container = new ContainerBuilder()
-            .setAccentColor(0xAE3D3D) // Rojo fallo tenue
+            .setAccentColor(10038562) // Rojo fallo tenue
             .addTextDisplayComponents(t => t.setContent(`### 🚨 ¡Atrapado in fraganti!`))
             .addSeparatorComponents(s => s)
             .addSectionComponents(section =>
@@ -219,7 +219,7 @@ module.exports = {
           await logTransaction({ discordId: "server_casino", type: "bank_robbed", amount: -finalReward, itemName: `<@${userId}> hackeó el casino` });
 
           const container = new ContainerBuilder()
-            .setAccentColor(0x27AE60) // Verde éxito tenue
+            .setAccentColor(2067276) // Verde éxito tenue
             .addTextDisplayComponents(t => t.setContent(`### 🖥️ ¡Sistemas Infiltrados! Access Granted`))
             .addSeparatorComponents(s => s)
             .addSectionComponents(section =>
@@ -249,7 +249,7 @@ module.exports = {
           await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por hackeo fallido de casino` });
 
           const container = new ContainerBuilder()
-            .setAccentColor(0xAE3D3D) // Rojo fallo tenue
+            .setAccentColor(10038562) // Rojo fallo tenue
             .addTextDisplayComponents(t => t.setContent(`### 🚨 ¡Intrusión Detectada por el Firewall!`))
             .addSeparatorComponents(s => s)
             .addSectionComponents(section =>
@@ -294,7 +294,7 @@ module.exports = {
           await logTransaction({ discordId: "server_bank", type: "bank_robbed", amount: -stolenFromBank, itemName: `<@${userId}> malversó fondos del banco` });
 
           const container = new ContainerBuilder()
-            .setAccentColor(0x27AE60) // Verde éxito tenue
+            .setAccentColor(2067276) // Verde éxito tenue
             .addTextDisplayComponents(t => t.setContent(`### 🏦 ¡Gran Estafa al Banco completada!`))
             .addSeparatorComponents(s => s)
             .addSectionComponents(section =>
@@ -325,7 +325,7 @@ module.exports = {
           await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por fraude bancario fallido` });
 
           const container = new ContainerBuilder()
-            .setAccentColor(0xAE3D3D) // Rojo fallo tenue
+            .setAccentColor(10038562) // Rojo fallo tenue
             .addTextDisplayComponents(t => t.setContent(`### 🏛️ ¡Fraude Detectado por el Fisco!`))
             .addSeparatorComponents(s => s)
             .addSectionComponents(section =>
@@ -348,7 +348,7 @@ module.exports = {
     menuCollector.on("end", async (collected, reason) => {
       if (!selected && reason === "time") {
         const timeoutContainer = new ContainerBuilder()
-          .setAccentColor(0x2F3136) // NotQuiteBlack
+          .setAccentColor(2303786) // NotQuiteBlack
           .addTextDisplayComponents(t => t.setContent("### ⏱️ Golpe Cancelado\nNo seleccionaste ninguna actividad a tiempo. El plan ha sido archivado."));
 
         await interaction.editReply({

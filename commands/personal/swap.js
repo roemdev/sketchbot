@@ -42,7 +42,7 @@ module.exports = {
     }
 
     const container = new ContainerBuilder()
-        .setAccentColor(0x2F3136) // NotQuiteBlack
+        .setAccentColor(2303786) // NotQuiteBlack
         .addTextDisplayComponents(t =>
             t.setContent(
                 `### 🔄 Confirmar conversión\n` +
@@ -76,7 +76,7 @@ module.exports.buttonHandler = async (interaction) => {
 
   if (action === "cancel") {
     const cancelContainer = new ContainerBuilder()
-        .setAccentColor(0x2F3136) // NotQuiteBlack
+        .setAccentColor(2303786) // NotQuiteBlack
         .addTextDisplayComponents(t => t.setContent("### Swap cancelado\nNo se procesó ninguna transacción."));
     return interaction.update({ components: [cancelContainer], flags: MessageFlags.IsComponentsV2 });
   }
@@ -96,17 +96,33 @@ module.exports.buttonHandler = async (interaction) => {
     }
 
     await userService.removeBalance(interaction.user.id, monedas, false);
+    await userService.addBalance("server_bank", monedas, false);
+    await transactionService.logTransaction({
+      discordId: "server_bank",
+      type: "bank_tax",
+      amount: monedas,
+      itemName: `Ingreso Swap CobbleDollars de <@${interaction.user.id}>`
+    });
 
     try {
       await sendCommand(`cobbledollars give ${mcNick} ${cobble}`);
     } catch {
-      return interaction.update({ content: "❌ **Error en Minecraft:** No se pudieron entregar los C$. Contacta a un administrador.", components: [] });
+      // Revertir balances en caso de error del comando RCON en Minecraft
+      await userService.addBalance(interaction.user.id, monedas, false);
+      await userService.addBalance("server_bank", -monedas, false);
+      await transactionService.logTransaction({
+        discordId: "server_bank",
+        type: "bank_withdrawal",
+        amount: -monedas,
+        itemName: `Reversión Swap Fallido de <@${interaction.user.id}>`
+      });
+      return interaction.update({ content: "❌ **Error en Minecraft:** No se pudieron entregar los C$. Tu saldo ha sido reembolsado.", components: [] });
     }
 
     await transactionService.logTransaction({ discordId: interaction.user.id, type: "swap", mcNick, amount: monedas, totalPrice: cobble });
 
     const successContainer = new ContainerBuilder()
-        .setAccentColor(0x27AE60) // Verde éxito tenue
+        .setAccentColor(2067276) // DarkGreen (éxito)
         .addTextDisplayComponents(t => t.setContent(`### ✅ ¡Swap completado!\n**C$${cobble.toLocaleString()}** enviados a **${mcNick}**.`));
     return interaction.update({ components: [successContainer], flags: MessageFlags.IsComponentsV2 });
   }

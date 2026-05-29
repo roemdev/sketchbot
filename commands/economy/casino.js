@@ -20,7 +20,7 @@ module.exports = {
       const attachment = new AttachmentBuilder(imagePath, { name: "casino.png" });
 
       const container = new ContainerBuilder()
-        .setAccentColor(0x6C3483) // Morado Premium de Juegos/Casino
+        .setAccentColor(7419530) // DarkPurple (apuestas activas/casino)
         .addTextDisplayComponents(t =>
           t.setContent(
             `### 🎰 Casino del Servidor\n\n` +

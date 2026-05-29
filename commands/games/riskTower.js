@@ -14,7 +14,7 @@ function nextValue(current) {
 
 function buildTowerPanel(userId, bet, current) {
     return new ContainerBuilder()
-        .setAccentColor(0x2F3136) // NotQuiteBlack
+        .setAccentColor(7419530) // DarkPurple (apuestas activas)
         .addTextDisplayComponents(t =>
             t.setContent(
                 `### 🏗️ Torre de Riesgo\n` +
@@ -89,7 +89,7 @@ module.exports.buttonHandler = async (interaction) => {
             const next = nextValue(current);
 
             const winContainer = new ContainerBuilder()
-                .setAccentColor(0x27AE60) // Verde éxito tenue
+                .setAccentColor(2067276) // DarkGreen (éxito)
                 .addTextDisplayComponents(t =>
                     t.setContent(
                         `### ⬆️ ¡Subes de nivel!\n` +
@@ -128,7 +128,7 @@ module.exports.buttonHandler = async (interaction) => {
             }
 
             const loseContainer = new ContainerBuilder()
-                .setAccentColor(0xAE3D3D) // Rojo fallo tenue
+                .setAccentColor(10038562) // DarkRed (fail)
                 .addTextDisplayComponents(t =>
                     t.setContent(`### 💥 La torre colapsó\nUn paso de más. Perdiste **${COIN}${current.toLocaleString()}**.`)
                 );
@@ -168,7 +168,7 @@ module.exports.buttonHandler = async (interaction) => {
         }
 
         const cashoutContainer = new ContainerBuilder()
-            .setAccentColor(0x27AE60) // Verde éxito tenue
+            .setAccentColor(2067276) // DarkGreen (éxito)
             .addTextDisplayComponents(t =>
                 t.setContent(
                     `### 💰 ¡Te retiraste!\n` +

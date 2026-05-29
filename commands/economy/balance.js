@@ -6,7 +6,7 @@ function buildBalanceContainer(targetUser, dbUser, bankBalance) {
   const avatarUrl = targetUser.displayAvatarURL({ extension: "png", size: 128 });
 
   return new ContainerBuilder()
-    .setAccentColor(0x2F3136) // NotQuiteBlack
+    .setAccentColor(2303786) // NotQuiteBlack
     .addTextDisplayComponents(t =>
       t.setContent(`## Balance de ${targetUser.username}`)
     ).addSeparatorComponents(s => s)

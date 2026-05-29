@@ -151,6 +151,13 @@ module.exports = {
       }
 
       await userService.removeBalance(targetUser.id, costInCoins, false);
+      await userService.addBalance("server_bank", costInCoins, false);
+      await logTransaction({
+        discordId: "server_bank",
+        type: "bank_tax",
+        amount: costInCoins,
+        itemName: `Ingreso Canje de Créditos de <@${targetUser.id}>`
+      });
       await logTransaction({ discordId: targetUser.id, type: "coins_to_credits", amount: costInCoins, itemName: `${paymenterCredits} crédito(s) Paymenter → ${paymenterEmail}` });
 
       return interaction.editReply(

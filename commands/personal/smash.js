@@ -68,7 +68,7 @@ function buildPanel(session) {
       : `🔒 **Apuestas cerradas** — Bote: ${COIN}${totalPot.toLocaleString()}`;
 
   const container = new ContainerBuilder()
-      .setAccentColor(0x6C3483)
+      .setAccentColor(7419530) // DarkPurple (apuestas activas)
       .addTextDisplayComponents(t => t.setContent(`### 🎮 Smash Bros — Apuestas\nHost: <@${session.hostId}>\n\n${statusLine}\n\n${characterLines.join("\n")}`))
       .addSeparatorComponents(s => s);
 
@@ -174,7 +174,7 @@ module.exports = {
         await logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -prizePool, itemName: `Pozo Smash sin ganadores a <@${hostId}>` });
         sessions.delete(sessionKey);
         return interaction.editReply({
-          components: [new ContainerBuilder().setAccentColor(0x5B7FA6).addTextDisplayComponents(t => t.setContent(`### ${winnerChar.emoji} ${winnerChar.name} ganó\nNadie apostó por él. El bote va al host.`))],
+          components: [new ContainerBuilder().setAccentColor(2303786).addTextDisplayComponents(t => t.setContent(`### ${winnerChar.emoji} ${winnerChar.name} ganó\nNadie apostó por él. El bote va al host.`))],
           flags: MessageFlags.IsComponentsV2
         });
       }
@@ -215,7 +215,7 @@ module.exports = {
 
       sessions.delete(sessionKey);
       return interaction.editReply({
-        components: [new ContainerBuilder().setAccentColor(0xF4C542).addTextDisplayComponents(t => t.setContent(`### 🏆 ¡${winnerChar.name} ganó!\nBote repartido: ${COIN}${prizePool.toLocaleString()}.`))],
+        components: [new ContainerBuilder().setAccentColor(2067276).addTextDisplayComponents(t => t.setContent(`### 🏆 ¡${winnerChar.name} ganó!\nBote repartido: ${COIN}${prizePool.toLocaleString()}.`))],
         flags: MessageFlags.IsComponentsV2
       });
     }

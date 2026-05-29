@@ -20,7 +20,7 @@ module.exports = {
       const attachment = new AttachmentBuilder(imagePath, { name: "banco.png" });
 
       const container = new ContainerBuilder()
-        .setAccentColor(0x2F3136) // NotQuiteBlack
+        .setAccentColor(2303786) // NotQuiteBlack
         .addTextDisplayComponents(t =>
           t.setContent(
             `### 🏛️ Banco del Servidor\n\n` +

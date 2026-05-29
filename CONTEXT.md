@@ -82,13 +82,14 @@ sketchbot/
 
 ## 🎨 Sistema de Colores y Estética Estándar
 
-Es imperativo preservar estrictamente los colores semánticos definidos para mantener la identidad visual en todos los paneles (`ContainerBuilder`):
-*   **Morado Juegos / Casino:** `0x6C3483` (Utilizado en `/blackjack` activo, `/casino`, `/smash` activo).
-*   **Gris Oscuro / Banco:** `0x2F3136` (Utilizado en `/banco`, `/trabajo` activo, `/minas` activo, `/torre` activo).
-*   **Dorado / Éxito / Victoria:** `0xF4C542` (Utilizado en victorias de juegos de azar).
-*   **Rojo / Bust / Derrota:** `0xC0392B` (Utilizado en derrotas de juegos y multas de crímenes).
-*   **Verde / Éxito Seguro:** `0x2ECC71` o `0x27AE60` (Utilizado en `/diario` exitoso, `/trabajo` exitoso, `/minas` retiro exitoso).
-*   **Gris Azulado / Empate / AFK / Timeout:** `0x5B7FA6` (Utilizado en empates de blackjack, empates de smash o expiraciones de juego).
+Es imperativo preservar estrictamente los colores semánticos definidos para mantener la identidad visual en todos los paneles (`ContainerBuilder`). Solo está permitido usar los siguientes cuatro colores:
+
+*   **General-informativo y demás (NotQuiteBlack):** `2303786` (hex: `#23272A` / `0x23272A`). Utilizado para balances, clasificaciones, menús, configuraciones y empates/timeouts neutros.
+*   **Fail / Derrota / Bust (DarkRed):** `10038562` (hex: `#992D22` / `0x992D22`). Utilizado para derrotas de juegos, colapsos, fallos y multas de crímenes.
+*   **Éxito / Victoria / Payouts (DarkGreen):** `2067276` (hex: `#1F8B4C` / `0x1F8B4C`). Utilizado para reclamaciones diarias, subidas de nivel, victorias y cobros exitosos.
+*   **Apuestas activas / Juegos (DarkPurple):** `7419530` (hex: `#71368A` / `0x71368A`). Utilizado para el estado activo de juegos en curso (torre, minas, blackjack, smash) y el balance del casino.
+
+Los errores no llevan contenedor, sino texto plano.
 
 ---
 

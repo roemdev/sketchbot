@@ -31,7 +31,7 @@ module.exports = {
     }
 
     const storeContainer = new ContainerBuilder()
-        .setAccentColor(0x2F3136) // NotQuiteBlack
+        .setAccentColor(2303786) // NotQuiteBlack
         .addTextDisplayComponents(t => t.setContent(`### 🛒 Tienda\nComprando para: \`${mcNick}\``))
         .addSeparatorComponents(s => s);
 
@@ -79,6 +79,14 @@ module.exports = {
         itemName: result.item.name,
         mcNick,
         totalPrice: result.totalPrice,
+      });
+
+      // Registrar ingreso contable en las arcas del banco central
+      await transactionService.logTransaction({
+        discordId: "server_bank",
+        type: "bank_tax",
+        amount: result.totalPrice,
+        itemName: `Ingreso Tienda (Minecraft) de <@${interaction.user.id}>`
       });
 
       return interaction.editReply({ content: `¡Comprado! **${result.item.name}** enviado a **${mcNick}**.` });

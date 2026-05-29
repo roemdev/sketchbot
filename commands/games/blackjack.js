@@ -71,16 +71,16 @@ function buildBlackjackPanel(userId, session, isGameOver = false, outcome = null
     // Asignar color de panel según estado utilizando la paleta estándar de SketchBot
     if (isGameOver) {
         if (outcome === "win" || outcome === "blackjack") {
-            container.setAccentColor(0xF4C542); // Dorado Éxito/Retirada
+            container.setAccentColor(2067276); // DarkGreen (éxito/victoria)
         } else if (outcome === "lose") {
-            container.setAccentColor(0xC0392B); // Rojo Fracaso
+            container.setAccentColor(10038562); // DarkRed (derrota/bust)
         } else if (outcome === "push") {
-            container.setAccentColor(0x5B7FA6); // Gris azulado neutral
+            container.setAccentColor(2303786); // NotQuiteBlack (empate/timeout)
         } else {
-            container.setAccentColor(0x5B7FA6);
+            container.setAccentColor(2303786);
         }
     } else {
-        container.setAccentColor(0x6C3483); // Morado para juego activo (Torre de riesgo/Minas)
+        container.setAccentColor(7419530); // DarkPurple (apuesta activa)
     }
 
     const playerVal = calculateHandValue(session.playerHand);

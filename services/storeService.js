@@ -48,6 +48,13 @@ async function buyItem(discordId, itemIdOrItem, mcNick = null) {
   if (rpcError) throw rpcError;
   if (success === false) throw new Error("No tienes suficientes créditos");
 
+  // Transferencia de suma cero: depositar monedas de la compra en el banco central
+  const { error: bankError } = await supabase.rpc("increment_balance", {
+    p_discord_id: "server_bank",
+    p_amount: item.price,
+  });
+  if (bankError) console.error("[STORE] Fallo al depositar compra en el banco central:", bankError);
+
   if (item.minecraft_item && mcNick) {
     if (!isValidMinecraftNick(mcNick)) throw new Error("El nickname de Minecraft proporcionado no es válido.");
     await sendCommand(`give ${mcNick} ${item.minecraft_item}`);

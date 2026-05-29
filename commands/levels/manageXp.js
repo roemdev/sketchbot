@@ -71,7 +71,7 @@ module.exports = {
       }
 
       const panel = new ContainerBuilder()
-        .setAccentColor(0x27AE60) // Verde éxito tenue
+        .setAccentColor(2067276) // DarkGreen (éxito)
         .addTextDisplayComponents(t =>
           t.setContent(
             `### ✨ XP Añadida\n` +
@@ -121,7 +121,7 @@ module.exports = {
       }
 
       const panel = new ContainerBuilder()
-        .setAccentColor(0x2F3136) // NotQuiteBlack
+        .setAccentColor(2303786) // NotQuiteBlack
         .addTextDisplayComponents(t =>
           t.setContent(
             `### ⚙️ Nivel y XP Establecidos\n` +
@@ -140,7 +140,7 @@ module.exports = {
       const xpInfo = await userService.removeXp(targetUser.id, amount);
 
       const panel = new ContainerBuilder()
-        .setAccentColor(0xAE3D3D) // Rojo tenue
+        .setAccentColor(10038562) // DarkRed (fail/remove)
         .addTextDisplayComponents(t =>
           t.setContent(
             `### ➖ XP Removida\n` +

@@ -65,7 +65,7 @@ module.exports = {
     const total = (dbUser.balance - amount) + newBankBalance;
 
     const container = new ContainerBuilder()
-      .setAccentColor(0x27AE60) // Verde éxito tenue
+      .setAccentColor(2067276) // DarkGreen (éxito)
       .addTextDisplayComponents(t => t.setContent(`### 🏦 ¡Depósito Completado!`))
       .addSeparatorComponents(s => s)
       .addSectionComponents(section =>

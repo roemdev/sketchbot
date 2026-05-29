@@ -106,7 +106,7 @@ module.exports = {
 
     // Retornar panel semántico con ContainerBuilder idéntico al de /trabajo
     const container = new ContainerBuilder()
-        .setAccentColor(0x2ECC71) // Verde Éxito
+        .setAccentColor(2067276) // DarkGreen (éxito)
         .addTextDisplayComponents(t =>
             t.setContent(
               `### 📆 ¡Recompensa Diaria Reclamada!\n` +
