@@ -14,24 +14,24 @@ function sleep(ms) {
 module.exports = {
   cooldown: GAME_COOLDOWN,
   data: new SlashCommandBuilder()
-      .setName("cara-cruz")
-      .setDescription("Cara o cruz. El clásico.")
-      .addIntegerOption(o =>
-          o.setName("amount")
-              .setDescription(`Monedas a apostar (máx ${MAX_BET.toLocaleString()})`)
-              .setRequired(true)
-              .setMinValue(1)
-              .setMaxValue(MAX_BET)
-      )
-      .addStringOption(o =>
-          o.setName("choice")
-              .setDescription("Cara o cruz")
-              .setRequired(true)
-              .addChoices(
-                  { name: "Cara", value: "heads" },
-                  { name: "Cruz", value: "tails" }
-              )
-      ),
+    .setName("cara-cruz")
+    .setDescription("Cara o cruz. El clásico.")
+    .addIntegerOption(o =>
+      o.setName("amount")
+        .setDescription(`Monedas a apostar (máx ${MAX_BET.toLocaleString()})`)
+        .setRequired(true)
+        .setMinValue(1)
+        .setMaxValue(MAX_BET)
+    )
+    .addStringOption(o =>
+      o.setName("choice")
+        .setDescription("Cara o cruz")
+        .setRequired(true)
+        .addChoices(
+          { name: "Cara", value: "heads" },
+          { name: "Cruz", value: "tails" }
+        )
+    ),
 
   async execute(interaction) {
     const userId = interaction.user.id;

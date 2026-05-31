@@ -16,6 +16,12 @@ module.exports = {
     try {
       const bankBalance = await userService.getBalance("server_bank");
 
+      const minBank = (config.tasks.minBankEarn >= 1000 && config.tasks.minBankEarn % 1000 === 0) ? `${config.tasks.minBankEarn / 1000}k` : config.tasks.minBankEarn.toLocaleString("es-DO");
+      const maxBank = (config.tasks.maxBankEarn >= 1000 && config.tasks.maxBankEarn % 1000 === 0) ? `${config.tasks.maxBankEarn / 1000}k` : config.tasks.maxBankEarn.toLocaleString("es-DO");
+      const commission = config.tasks.commissionPercent;
+      const winTax = (config.games.winTaxRate * 100).toFixed(0);
+      const loseTax = (config.games.loseTaxRate * 100).toFixed(0);
+
       const imagePath = path.join(__dirname, "../../assets/banco.png");
       const attachment = new AttachmentBuilder(imagePath, { name: "banco.png" });
 
@@ -29,11 +35,11 @@ module.exports = {
             `\u001b[0;32m🪙 ${bankBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
             `\`\`\`\n` +
             `📊 **Políticas Macroeconómicas:**\n` +
-            `* 💼 **Trabajo (\`/trabajo\`):** Cada tarea genera de **50k a 120k** directamente para las arcas del banco, pagando una comisión limpia del **10% al 20%** al trabajador.\n` +
-            `* 🎲 **Impuestos de Apuestas:** El **10%** de impuesto sobre las ganancias netas de todos los juegos de apuestas se transfiere al banco central.\n` +
-            `* 🎰 **Impuestos del Casino:** El **20%** de todas las apuestas que pierden los jugadores en el casino se cobra como tasa fiscal para sustentar el fondo.\n` +
+            `* 💼 **Trabajo (\`/trabajo\`):** Cada tarea genera de **${minBank} a ${maxBank}** directamente para las arcas del banco, pagando una comisión limpia del **${commission}%** al trabajador.\n` +
+            `* 🎲 **Impuestos de Apuestas:** El **${winTax}%** de impuesto sobre las ganancias netas de todos los juegos de apuestas se transfiere al banco central.\n` +
+            `* 🎰 **Impuestos del Casino:** El **${loseTax}%** de todas las apuestas que pierden los jugadores en el casino se cobra como tasa fiscal para sustentar el fondo.\n` +
             `* 📆 **Subsidio Diario (\`/diario\`):** Recompensas financiadas en su totalidad por el banco. Si los fondos se agotan, el banco entra en quiebra temporal.\n` +
-            `* 🏛️ **Riesgo de Fraude:** El banco es vulnerable a malversaciones de fondos mediante **Fraude al Banco** en \`/crimen\`. Las multas por crímenes fallidos también incrementan estas reservas.\n`
+            `* 🏛️ **Riesgo de Fraude:** El banco es vulnerable a malversaciones de fondos mediante **Estafa** en \`/crimen\`. Las multas por crímenes fallidos también incrementan estas reservas.\n`
           )
         )
         .addMediaGalleryComponents(
