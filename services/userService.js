@@ -106,12 +106,13 @@ module.exports = {
     if (error) throw error;
   },
 
-  getTopUsers: async (limit = 10, sortBy = "balance") => {
+  getTopUsers: async (limit = 10, sortBy = "balance", offset = 0) => {
     let query = supabase
         .from("user_stats")
         .select("discord_id, username, balance, level, xp")
         .not("discord_id", "ilike", "%_bank")
-        .limit(limit);
+        .not("discord_id", "eq", "server_casino")
+        .range(offset, offset + limit - 1);
 
     if (sortBy === "level") {
       query = query.order("level", { ascending: false }).order("xp", { ascending: false });
@@ -187,5 +188,27 @@ module.exports = {
 
     if (error) throw error;
     return { xp: currentXp, level: currentLevel };
+  },
+
+  getBalanceRank: async (discordId, balance) => {
+    const { count, error } = await supabase
+      .from("user_stats")
+      .select("discord_id", { count: "exact", head: true })
+      .not("discord_id", "ilike", "%_bank")
+      .not("discord_id", "eq", "server_casino")
+      .gt("balance", balance);
+    if (error) throw error;
+    return (count ?? 0) + 1;
+  },
+
+  getLevelRank: async (discordId, level, xp) => {
+    const { count, error } = await supabase
+      .from("user_stats")
+      .select("discord_id", { count: "exact", head: true })
+      .not("discord_id", "ilike", "%_bank")
+      .not("discord_id", "eq", "server_casino")
+      .or(`level.gt.${level},and(level.eq.${level},xp.gt.${xp})`);
+    if (error) throw error;
+    return (count ?? 0) + 1;
   }
 };
