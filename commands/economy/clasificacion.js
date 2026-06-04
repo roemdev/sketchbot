@@ -66,7 +66,7 @@ async function buildClasificacionContainer(interaction, page, sortBy, authorId) 
     row.setComponents(
       new ButtonBuilder()
         .setCustomId(`clasificacion_page_${page - 1}_${sortBy}_${authorId}`)
-        .setLabel("<")
+        .setEmoji("◀️")
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(page === 1),
       new ButtonBuilder()
@@ -79,7 +79,7 @@ async function buildClasificacionContainer(interaction, page, sortBy, authorId) 
         .setStyle(sortBy === "balance" ? ButtonStyle.Primary : ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(`clasificacion_page_${page + 1}_${sortBy}_${authorId}`)
-        .setLabel(">")
+        .setEmoji("▶️")
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(!hasNextPage)
     )
@@ -139,11 +139,9 @@ module.exports = {
       return true;
     }
 
-    await interaction.deferUpdate();
-
     try {
       const container = await buildClasificacionContainer(interaction, page, sortBy, authorId);
-      await interaction.editReply({
+      await interaction.update({
         components: [container],
         flags: MessageFlags.IsComponentsV2
       });
