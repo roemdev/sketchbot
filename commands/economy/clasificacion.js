@@ -66,20 +66,20 @@ async function buildClasificacionContainer(interaction, page, sortBy, authorId) 
   container.addActionRowComponents(row =>
     row.setComponents(
       new ButtonBuilder()
-        .setCustomId(`clasificacion_page_${page - 1}_${sortBy}_${authorId}`)
+        .setCustomId(`clasificacion_prev_${page - 1}_${sortBy}_${authorId}`)
         .setEmoji("1512150280358334574") // Emoji personalizado de retroceso
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(page === 1),
       new ButtonBuilder()
-        .setCustomId(`clasificacion_page_1_level_${authorId}`)
+        .setCustomId(`clasificacion_sortLevel_1_level_${authorId}`)
         .setLabel("Experiencia")
         .setStyle(sortBy === "level" ? ButtonStyle.Primary : ButtonStyle.Secondary),
       new ButtonBuilder()
-        .setCustomId(`clasificacion_page_1_balance_${authorId}`)
+        .setCustomId(`clasificacion_sortBalance_1_balance_${authorId}`)
         .setLabel("Balance")
         .setStyle(sortBy === "balance" ? ButtonStyle.Primary : ButtonStyle.Secondary),
       new ButtonBuilder()
-        .setCustomId(`clasificacion_page_${page + 1}_${sortBy}_${authorId}`)
+        .setCustomId(`clasificacion_next_${page + 1}_${sortBy}_${authorId}`)
         .setEmoji("1512150327237808178") // Emoji personalizado de avance
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(!hasNextPage)
