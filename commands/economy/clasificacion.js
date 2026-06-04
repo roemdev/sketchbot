@@ -43,7 +43,8 @@ async function buildClasificacionContainer(interaction, page, sortBy, authorId) 
     const balanceFormatted = u.balance.toLocaleString("es-DO");
     const totalXpFormatted = totalXp.toLocaleString("es-DO");
 
-    const content = `${rank}, <@${u.discord_id}>\n` +
+    // Formato con punto en vez de coma para el número de posición
+    const content = `${rank}. <@${u.discord_id}>\n` +
                     `Balance: ${COIN} **${balanceFormatted}**\n` +
                     `Nivel: **${level}** (${progressPercent}%)\n` +
                     `Total xp: **${totalXpFormatted}**`;
@@ -66,7 +67,7 @@ async function buildClasificacionContainer(interaction, page, sortBy, authorId) 
     row.setComponents(
       new ButtonBuilder()
         .setCustomId(`clasificacion_page_${page - 1}_${sortBy}_${authorId}`)
-        .setEmoji("◀️")
+        .setEmoji("1512150280358334574") // Emoji personalizado de retroceso
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(page === 1),
       new ButtonBuilder()
@@ -79,7 +80,7 @@ async function buildClasificacionContainer(interaction, page, sortBy, authorId) 
         .setStyle(sortBy === "balance" ? ButtonStyle.Primary : ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(`clasificacion_page_${page + 1}_${sortBy}_${authorId}`)
-        .setEmoji("▶️")
+        .setEmoji("1512150327237808178") // Emoji personalizado de avance
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(!hasNextPage)
     )
@@ -126,10 +127,14 @@ module.exports = {
     if (!interaction.isButton()) return false;
     if (!interaction.customId.startsWith("clasificacion_")) return false;
 
+    console.log(`[Clasificacion Debug] Botón clickeado: ${interaction.customId}`);
+
     const parts = interaction.customId.split("_");
     const page = parseInt(parts[2], 10);
     const sortBy = parts[3];
     const authorId = parts[4];
+
+    console.log(`[Clasificacion Debug] Parsed values: page=${page}, sortBy=${sortBy}, authorId=${authorId}, clickerId=${interaction.user.id}`);
 
     if (interaction.user.id !== authorId) {
       await interaction.reply({
@@ -139,14 +144,21 @@ module.exports = {
       return true;
     }
 
+    // Usamos deferUpdate y editReply para evitar el timeout de 3 segundos
+    await interaction.deferUpdate();
+
     try {
+      console.log(`[Clasificacion Debug] Generando contenedor para página ${page}...`);
       const container = await buildClasificacionContainer(interaction, page, sortBy, authorId);
-      await interaction.update({
+      
+      console.log(`[Clasificacion Debug] Editando la respuesta original de la interacción...`);
+      await interaction.editReply({
         components: [container],
         flags: MessageFlags.IsComponentsV2
       });
+      console.log(`[Clasificacion Debug] Clasificación actualizada con éxito.`);
     } catch (error) {
-      console.error("Error al actualizar la clasificación:", error);
+      console.error("[Clasificacion Debug] Error al actualizar la clasificación:", error);
     }
     return true;
   }
