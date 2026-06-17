@@ -1,0 +1,8 @@
+services:
+  sketchbot:
+    build: .
+    container_name: sketchbot
+    restart: unless-stopped
+    # Pasamos el timezone para que las recompensas diarias funcionen bien
+    environment:
+      - TZ=America/Santo_Domingo
