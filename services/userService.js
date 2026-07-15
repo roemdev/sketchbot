@@ -210,5 +210,54 @@ module.exports = {
       .or(`level.gt.${level},and(level.eq.${level},xp.gt.${xp})`);
     if (error) throw error;
     return (count ?? 0) + 1;
+  },
+
+  applyEmergencyTax: async (percentage) => {
+    const { data: users, error: fetchError } = await supabase
+        .from("user_stats")
+        .select("discord_id, username, balance")
+        .not("discord_id", "ilike", "%_bank")
+        .not("discord_id", "eq", "server_casino");
+    if (fetchError) throw fetchError;
+
+    let totalDeducted = 0;
+    const updates = [];
+
+    for (const user of users) {
+      if (user.balance > 0) {
+        const deductAmount = Math.floor(user.balance * (percentage / 100));
+        if (deductAmount > 0) {
+          totalDeducted += deductAmount;
+          updates.push({
+            discord_id: user.discord_id,
+            balance: user.balance - deductAmount
+          });
+        }
+      }
+    }
+
+    if (updates.length > 0) {
+      const { error: updateError } = await supabase
+          .from("user_stats")
+          .upsert(updates);
+      if (updateError) throw updateError;
+    }
+
+    if (totalDeducted > 0) {
+      const bankRecord = await module.exports.getUser("server_bank");
+      const currentBankBalance = bankRecord ? bankRecord.balance : 0;
+      const { error: bankError } = await supabase
+          .from("user_stats")
+          .upsert({
+            discord_id: "server_bank",
+            balance: currentBankBalance + totalDeducted
+          });
+      if (bankError) throw bankError;
+    }
+
+    return {
+      affectedPlayers: updates.length,
+      totalDeducted
+    };
   }
 };
