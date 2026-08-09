@@ -12,12 +12,17 @@ module.exports = {
       status: 'online',
     });
 
-    console.log(chalk.green(`🟢 [ONLINE] Bot conectado como ${chalk.bold(client.user.tag)}`));
+    let dbStatus = chalk.green('CONNECTED');
+    let tempVCsStatus = chalk.gray('None active/empty');
+    let voiceXpStatus = chalk.green('ACTIVE');
 
     // --- LIMPIEZA Y RESTAURACIÓN DE CANALES TEMPORALES ---
     if (!client.tempVCs) {
       client.tempVCs = new Map();
     }
+
+    let eliminados = 0;
+    let restaurados = 0;
 
     try {
       // Migración a Supabase: Obtener todos los canales temporales
@@ -26,9 +31,6 @@ module.exports = {
           .select("*");
 
       if (selectError) throw selectError;
-
-      let eliminados = 0;
-      let restaurados = 0;
 
       if (rows && rows.length > 0) {
         for (const row of rows) {
@@ -55,15 +57,43 @@ module.exports = {
         }
       }
 
-      if (eliminados > 0 || restaurados > 0) {
-        console.log(chalk.blue(`[TEMP-VC] Se restauraron ${restaurados} canales y se limpiaron ${eliminados} canales vacíos.`));
+      if (restaurados > 0 || eliminados > 0) {
+        tempVCsStatus = chalk.green(`Restored: ${restaurados} | Cleaned: ${eliminados}`);
       }
 
     } catch (error) {
+      dbStatus = chalk.red('ERROR');
+      tempVCsStatus = chalk.red('FAILED');
       console.error(chalk.red("Error al limpiar los canales temporales en el arranque (Supabase):"), error);
     }
 
     // --- INICIALIZAR SISTEMA DE EXPERIENCIA POR VOZ ---
-    voiceXpService.init(client);
+    try {
+      voiceXpService.init(client);
+    } catch (xpError) {
+      voiceXpStatus = chalk.red('FAILED');
+      console.error(chalk.red("Error al inicializar el sistema de experiencia por voz:"), xpError);
+    }
+
+    // --- MOSTRAR BANNER Y DIAGNÓSTICO ESTÉTICO ---
+    const banner = chalk.cyan.bold(
+`   __ _        _   _     _           _   
+  / _\\ | _____| |_| |__ | |__   ___ | |_ 
+  \\ \\| |/ / _ \\ __| '_ \\| '_ \\ / _ \\| __|
+  _\\ \\   <  __/ |_| | | | |_) | (_) | |_ 
+  \\__/_|\\_\\___|\\__|_| |_|_.__/ \\___/ \\__|`
+    );
+
+    const separator = chalk.gray('═══════════════════════════════════════════════════');
+
+    console.log('\n' + banner);
+    console.log(separator);
+    console.log(`🤖 ${chalk.bold('IDENTITY')}   ::  ${chalk.yellow(client.user.tag)}`);
+    console.log(`🌐 ${chalk.bold('GUILDS')}     ::  ${chalk.magenta(`${client.guilds.cache.size} server(s)`)}`);
+    console.log(`🔌 ${chalk.bold('DATABASE')}   ::  ${dbStatus}`);
+    console.log(`🎙️  ${chalk.bold('TEMP VCs')}   ::  ${tempVCsStatus}`);
+    console.log(`🔊 ${chalk.bold('VOICE XP')}   ::  ${voiceXpStatus}`);
+    console.log(`🟢 ${chalk.bold('STATUS')}     ::  ${chalk.green('ALL SYSTEMS NOMINAL & OPERATIONAL')}`);
+    console.log(separator + '\n');
   },
 };

@@ -13,7 +13,6 @@ function init(client) {
   isRunning = true;
 
   const intervalMs = config.voiceXp.intervalSeconds * 1000;
-  console.log(chalk.green(`🎙️ [VOICE-XP] Iniciando sistema de experiencia por voz (Escaneo cada ${config.voiceXp.intervalSeconds} segundos).`));
 
   xpInterval = setInterval(() => {
     scanVoiceChannels(client);
