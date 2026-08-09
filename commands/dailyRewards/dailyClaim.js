@@ -16,6 +16,9 @@ module.exports = {
     const userId = interaction.user.id;
     const username = interaction.user.username;
 
+    // Deferir para evitar timeout (Unknown interaction) debido a múltiples consultas de base de datos
+    await interaction.deferReply();
+
     // Crear usuario de manera consistente con el resto del bot
     await userService.createUser(userId, username);
 
@@ -23,7 +26,8 @@ module.exports = {
     const cd = await cooldownService.checkCooldown(userId, "diario");
     if (cd) {
       const resetTimestamp = Math.floor(Date.now() / 1000 + cd);
-      return interaction.reply({
+      await interaction.deleteReply().catch(console.error);
+      return interaction.followUp({
         content: `Ya reclamaste hoy. Vuelve <t:${resetTimestamp}:R> para la siguiente.`,
         flags: MessageFlags.Ephemeral,
       });
@@ -32,7 +36,8 @@ module.exports = {
     const memberRoles = interaction.member.roles.cache.map(r => r.id);
 
     if (!memberRoles.length) {
-      return interaction.reply({
+      await interaction.deleteReply().catch(console.error);
+      return interaction.followUp({
         content: "No tienes ningún rol que otorgue recompensa diaria.",
         flags: MessageFlags.Ephemeral,
       });
@@ -46,14 +51,16 @@ module.exports = {
 
     if (error) {
       console.error(error);
-      return interaction.reply({
+      await interaction.deleteReply().catch(console.error);
+      return interaction.followUp({
         content: "Error obteniendo recompensas.",
         flags: MessageFlags.Ephemeral,
       });
     }
 
     if (!rows || rows.length === 0) {
-      return interaction.reply({
+      await interaction.deleteReply().catch(console.error);
+      return interaction.followUp({
         content: "Ninguno de tus roles otorga monedas diarias.",
         flags: MessageFlags.Ephemeral,
       });
@@ -68,7 +75,8 @@ module.exports = {
     try {
       const bankBalance = await userService.getBalance("server_bank");
       if (bankBalance < amount) {
-        return interaction.reply({
+        await interaction.deleteReply().catch(console.error);
+        return interaction.followUp({
           content: `❌ **El Banco del Servidor está en quiebra:** El banco no tiene suficientes monedas para pagar tu recompensa diaria en este momento (Faltan **${COIN}${(amount - bankBalance).toLocaleString("es-DO")}**). ¡Anima a la comunidad a realizar tareas con \`/trabajo\` para rellenar las arcas del banco!`,
           flags: MessageFlags.Ephemeral
         });
@@ -80,7 +88,8 @@ module.exports = {
       await userService.addBalance(userId, amount, false);
     } catch (updateError) {
       console.error(updateError);
-      return interaction.reply({
+      await interaction.deleteReply().catch(console.error);
+      return interaction.followUp({
         content: "Error actualizando balances con el banco.",
         flags: MessageFlags.Ephemeral,
       });
@@ -115,6 +124,6 @@ module.exports = {
             )
         );
 
-    return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
   },
 };
