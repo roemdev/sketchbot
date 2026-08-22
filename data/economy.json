@@ -65,10 +65,10 @@
     "packPrice": 100000,
     "dailyPurchaseLimit": 2,
     "rarityWeights": {
-      "tier1": 0.70,
-      "tier2": 0.20,
-      "tier3": 0.08,
-      "legendary": 0.02
+      "tier1": 0.82,
+      "tier2": 0.12,
+      "tier3": 0.05,
+      "legendary": 0.01
     }
   }
 }
