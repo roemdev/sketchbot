@@ -60,5 +60,15 @@
       "fineMin": 0,
       "finePercent": 0.12
     }
+  },
+  "cardsMinigame": {
+    "packPrice": 100000,
+    "dailyPurchaseLimit": 2,
+    "rarityWeights": {
+      "tier1": 0.70,
+      "tier2": 0.20,
+      "tier3": 0.08,
+      "legendary": 0.02
+    }
   }
 }
