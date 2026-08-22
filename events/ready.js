@@ -2,6 +2,7 @@ const { Events, ActivityType } = require('discord.js');
 const chalk = require('chalk');
 const supabase = require("../services/dbService"); // Importamos la conexión de Supabase
 const voiceXpService = require("../services/voiceXpService");
+const giveawayService = require("../services/giveawayService");
 
 module.exports = {
   name: Events.ClientReady,
@@ -73,6 +74,13 @@ module.exports = {
     } catch (xpError) {
       voiceXpStatus = chalk.red('FAILED');
       console.error(chalk.red("Error al inicializar el sistema de experiencia por voz:"), xpError);
+    }
+
+    // --- REANUDAR SORTEOS ACTIVOS ---
+    try {
+      giveawayService.resumeActiveGiveaways(client, giveawayService.resolveGiveaway);
+    } catch (gwError) {
+      console.error("[SORTEOS] Error al reanudar los sorteos activos:", gwError);
     }
 
     // --- MOSTRAR BANNER Y DIAGNÓSTICO ESTÉTICO ---
