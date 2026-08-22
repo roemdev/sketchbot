@@ -86,17 +86,22 @@ async function getUserPacks(discordId, username = "") {
     throw error;
   }
 
-  // UTC-4 timezone helper
+  // UTC-4 timezone helper for 12-hour period (00:00 - 11:59:59 and 12:00 - 23:59:59)
   const now = new Date();
-  const getUTC4Day = (d) => {
+  const getUTC4Period = (d) => {
     const utc4 = new Date(d.getTime() - 4 * 60 * 60 * 1000);
-    return utc4.toISOString().split("T")[0];
+    const year = utc4.getUTCFullYear();
+    const month = String(utc4.getUTCMonth() + 1).padStart(2, "0");
+    const date = String(utc4.getUTCDate()).padStart(2, "0");
+    const hours = utc4.getUTCHours();
+    const period = hours < 12 ? "00" : "12";
+    return `${year}-${month}-${date} ${period}`;
   };
 
-  const todayStr = getUTC4Day(now);
-  const lastBuyStr = data.last_buy_pack_at ? getUTC4Day(new Date(data.last_buy_pack_at)) : null;
+  const currentPeriod = getUTC4Period(now);
+  const lastBuyPeriod = data.last_buy_pack_at ? getUTC4Period(new Date(data.last_buy_pack_at)) : null;
 
-  if (todayStr !== lastBuyStr && data.packs_bought_today > 0) {
+  if (currentPeriod !== lastBuyPeriod && data.packs_bought_today > 0) {
     const { data: updated, error: updateError } = await supabase
       .from("user_packs")
       .update({ packs_bought_today: 0 })
@@ -163,7 +168,7 @@ async function buyPacks(discordId, count, username) {
   
   const packs = await getUserPacks(discordId, username);
   if (packs.packs_bought_today + count > dailyLimit) {
-    throw new Error(`Límite de compra diaria alcanzado. Solo puedes comprar hasta ${dailyLimit} sobres por día. Hoy ya has comprado ${packs.packs_bought_today}.`);
+    throw new Error(`Límite de compra alcanzado. Solo puedes comprar hasta ${dailyLimit} sobres cada 12 horas (el reset es a las 00:00 y 12:00 hora UTC-4). En este período ya has comprado ${packs.packs_bought_today}.`);
   }
   
   const totalPrice = packPrice * count;
