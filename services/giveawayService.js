@@ -284,7 +284,7 @@ async function resolveGiveaway(client, messageId) {
   const participants = giveaway.participants || [];
   if (participants.length > 0) {
     const spinContainer = new ContainerBuilder()
-      .setAccentColor(3066993) // Teal/Gold
+      .setAccentColor(7419530) // DarkPurple (Juegos activos/procesos)
       .addTextDisplayComponents(t =>
         t.setContent(`## **${giveaway.prize}**`)
       )
@@ -314,7 +314,7 @@ async function resolveGiveaway(client, messageId) {
 
   // Edit the original message to show ended status
   const container = new ContainerBuilder()
-    .setAccentColor(10038562) // DarkRed (finalizado)
+    .setAccentColor(2303786) // NotQuiteBlack (Finalizado/Neutro)
     .addTextDisplayComponents(t =>
       t.setContent(`## **${result.prize}**`)
     )

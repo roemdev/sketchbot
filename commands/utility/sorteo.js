@@ -35,7 +35,7 @@ function buildActivePanel(messageId, prize, hostedBy, endsAt, winnerCount, entry
   }
 
   const container = new ContainerBuilder()
-    .setAccentColor(3447003) // Blurple
+    .setAccentColor(7419530) // DarkPurple (Juegos activos)
     .addTextDisplayComponents(t =>
       t.setContent(`## **${prize}**`)
     )
@@ -113,7 +113,7 @@ module.exports = {
         
         // 1. Send temporary message to get message ID
         const tempContainer = new ContainerBuilder()
-          .setAccentColor(3447003)
+          .setAccentColor(7419530)
           .addTextDisplayComponents(t => t.setContent("⏳ Preparando sorteo..."));
 
         const sent = await interaction.channel.send({
