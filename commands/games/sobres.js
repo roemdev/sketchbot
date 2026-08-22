@@ -319,11 +319,11 @@ module.exports = {
     }
 
     if (interaction.customId.startsWith("sobres_reveal_")) {
-      const parts = interaction.customId.split("_"); // ["sobres", "reveal", "action", "pageIndex", "cardsSerialized", "userId"]
+      const parts = interaction.customId.split("_");
       const action = parts[2];
       const pageIndex = parseInt(parts[3], 10);
-      const cardsSerialized = parts[4];
-      const userId = parts[5];
+      const userId = parts[parts.length - 1];
+      const cardsSerialized = parts.slice(4, parts.length - 1).join("_");
 
       if (interaction.user.id !== userId) {
         return interaction.reply({
