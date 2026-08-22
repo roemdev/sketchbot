@@ -1,47 +1,35 @@
-const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder, ButtonBuilder, ButtonStyle, MediaGalleryBuilder, MediaGalleryItemBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder, ButtonBuilder, ButtonStyle, MediaGalleryBuilder, MediaGalleryItemBuilder, AttachmentBuilder } = require("discord.js");
 const cardService = require("../../services/cardService");
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
+const cardsData = require("../../data/cards.json");
+const cardRenderer = require("../../services/cardRenderer");
 
 const COIN = config.emojis.coin;
 
 // Helpers to format card tiers and names beautifully
 function getTierFormat(tier) {
   switch (tier) {
-    case 1: return "**Tier 1**";
-    case 2: return "**Tier 2**";
-    case 3: return "**Tier 3**";
+    case 1: return "**Común**";
+    case 2: return "**Rara**";
+    case 3: return "**Épica**";
     case 4: return "**Legendaria**";
     default: return "";
   }
 }
 
 function getCardName(cardKey) {
-  if (cardKey === "joker") return "Joker";
-  const [rank, suit] = cardKey.split("_");
-  const ranksMap = { "A": "As", "J": "Jota", "Q": "Reina", "K": "Rey" };
-  const suitsMap = { "♠️": "Espadas", "♥️": "Corazones", "♦️": "Diamantes", "♣️": "Tréboles" };
-  const rankName = ranksMap[rank] || rank;
-  const suitName = suitsMap[suit] || suit;
-  return `${rankName} de ${suitName}`;
+  return cardsData[cardKey]?.name || cardKey;
 }
 
 // Map full card key to compact code for customId serialization (stores n for new, r for repeated)
 function serializeCard(cardKey, isNew) {
   const status = isNew ? "n" : "r";
-  if (cardKey === "joker") return `jo${status}`;
-  const [rank, suit] = cardKey.split("_");
-  const suitMap = { "♠️": "s", "♥️": "h", "♦️": "d", "♣️": "c" };
-  return `${rank}${suitMap[suit] || "s"}${status}`;
+  return `${cardKey}${status}`;
 }
 
 function deserializeCard(code) {
-  const cleanCode = code.slice(0, -1);
-  if (cleanCode === "jo") return "joker";
-  const rank = cleanCode.slice(0, -1);
-  const suitCode = cleanCode.slice(-1);
-  const suitMap = { "s": "♠️", "h": "♥️", "d": "♦️", "c": "♣️" };
-  return `${rank}_${suitMap[suitCode] || "♠️"}`;
+  return code.slice(0, -1);
 }
 
 function isCardNew(code) {
@@ -49,29 +37,7 @@ function isCardNew(code) {
 }
 
 function getCardTier(cardKey) {
-  if (cardKey === "joker") return 4;
-  const [rank] = cardKey.split("_");
-  if (["2", "3", "4", "5", "6", "7", "8", "9", "10"].includes(rank)) return 1;
-  if (["J", "Q", "K"].includes(rank)) return 2;
-  if (rank === "A") return 3;
-  return 1;
-}
-
-// Generates the raw SVG URL of the card and proxies it through weserv.nl as 200px PNG
-function getCardImageUrl(cardKey) {
-  let filename = "";
-  if (cardKey === "joker") {
-    filename = "joker.svg";
-  } else {
-    const [rank, suit] = cardKey.split("_");
-    const rankMap = { "A": "1", "J": "11", "Q": "12", "K": "13" };
-    const suitMap = { "♠️": "s", "♥️": "h", "♦️": "d", "♣️": "c" };
-    const r = rankMap[rank] || rank;
-    const s = suitMap[suit] || "s";
-    filename = `${r}${s}.svg`;
-  }
-  const rawUrl = `https://raw.githubusercontent.com/younestouati/playing-cards-standard-deck/master/cards/${filename}`;
-  return `https://images.weserv.nl/?url=${encodeURIComponent(rawUrl)}&w=200&output=png`;
+  return cardsData[cardKey]?.tier || 1;
 }
 
 // Panel builders for the card reveal flow
@@ -89,25 +55,22 @@ function buildRevealPanel(userId, cardsSerialized, pageIndex) {
   
   let title = `### 📦 Sobre abierto: Carta ${pageIndex + 1}/3`;
   if (tier === 4) {
-    title = `### ¡DIOS MÍO! ¡CARTA LEGENDARIA! (${pageIndex + 1}/3)`;
+    title = `### 🌌 ¡DIOS MÍO! ¡CARTA LEGENDARIA! (${pageIndex + 1}/3)`;
   } else if (tier === 3) {
-    title = `### ¡Increíble! ¡Carta Tier 3! (${pageIndex + 1}/3)`;
+    title = `### ¡Increíble! ¡Carta Épica! (${pageIndex + 1}/3)`;
   } else if (tier === 2) {
-    title = `### ¡Carta Tier 2! (${pageIndex + 1}/3)`;
+    title = `### ¡Carta Rara! (${pageIndex + 1}/3)`;
   }
 
   const container = new ContainerBuilder()
     .setAccentColor(2067276) // DarkGreen (éxito)
     .addTextDisplayComponents(t => t.setContent(title));
 
-  const imageUrl = getCardImageUrl(cardKey);
-  if (imageUrl) {
-    container.addMediaGalleryComponents(
-      new MediaGalleryBuilder().addItems(
-        new MediaGalleryItemBuilder().setURL(imageUrl)
-      )
-    );
-  }
+  container.addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(
+      new MediaGalleryItemBuilder().setURL("attachment://card.png")
+    )
+  );
 
   container.addTextDisplayComponents(t =>
     t.setContent(
@@ -140,20 +103,19 @@ function buildSummaryPanel(userId, cardsSerialized, packsOwned) {
     const cardKey = deserializeCard(code);
     const isNew = isCardNew(code);
     const tier = getCardTier(cardKey);
-    const emoji = cardService.getCardEmoji(cardKey);
     const name = getCardName(cardKey);
     const tierText = getTierFormat(tier);
     const statusText = isNew ? "✨ **¡NUEVA!**" : "🔄 *Repetida*";
-    return `**${i + 1}.** ${emoji} **${name}** — ${tierText} (${statusText})`;
+    return `**${i + 1}.** **${name}** — ${tierText} (${statusText})`;
   }).join("\n");
 
   const hasLegendary = codes.some(c => getCardTier(deserializeCard(c)) === 4);
   const hasEpic = codes.some(c => getCardTier(deserializeCard(c)) === 3);
   let title = "### 📦 ¡Sobre Abierto!";
   if (hasLegendary) {
-    title = "### ¡DIOS MÍO! ¡SOBRE LEGENDARIO!";
+    title = "### 🌌 ¡SOBRE LEGENDARIO!";
   } else if (hasEpic) {
-    title = "### ¡Sobre Tier 3! Abierto";
+    title = "### ¡Sobre Épico! Abierto";
   }
 
   const container = new ContainerBuilder()
@@ -274,7 +236,15 @@ module.exports = {
         const serialized = drawn.map(c => serializeCard(c.key, c.isNew)).join("-");
         const container = buildRevealPanel(userId, serialized, 0);
 
-        return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        const currentCardKey = deserializeCard(serialized.split("-")[0]);
+        const buffer = await cardRenderer.getCardImageBuffer(currentCardKey);
+        const attachment = new AttachmentBuilder(buffer, { name: "card.png" });
+
+        return interaction.editReply({
+          components: [container],
+          files: [attachment],
+          flags: MessageFlags.IsComponentsV2
+        });
       }
 
       if (subcommand === "regalar") {
@@ -331,7 +301,15 @@ module.exports = {
         const serialized = drawn.map(c => serializeCard(c.key, c.isNew)).join("-");
         const container = buildRevealPanel(userId, serialized, 0);
 
-        return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        const currentCardKey = deserializeCard(serialized.split("-")[0]);
+        const buffer = await cardRenderer.getCardImageBuffer(currentCardKey);
+        const attachment = new AttachmentBuilder(buffer, { name: "card.png" });
+
+        return interaction.editReply({
+          components: [container],
+          files: [attachment],
+          flags: MessageFlags.IsComponentsV2
+        });
       } catch (err) {
         return interaction.editReply({
           components: [],
@@ -365,17 +343,41 @@ module.exports = {
         if (action === "prev") {
           const newPageIndex = pageIndex - 1;
           const container = buildRevealPanel(userId, cardsSerialized, newPageIndex);
-          return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+          
+          const codes = cardsSerialized.split("-");
+          const currentCardKey = deserializeCard(codes[newPageIndex]);
+          const buffer = await cardRenderer.getCardImageBuffer(currentCardKey);
+          const attachment = new AttachmentBuilder(buffer, { name: "card.png" });
+
+          return interaction.editReply({
+            components: [container],
+            files: [attachment],
+            flags: MessageFlags.IsComponentsV2
+          });
         } else if (action === "next") {
           if (pageIndex === 2) {
             // End of opening -> show summary page
             const packsData = await cardService.getUserPacks(userId, interaction.user.username);
             const container = buildSummaryPanel(userId, cardsSerialized, packsData.packs_owned);
-            return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            return interaction.editReply({
+              components: [container],
+              files: [], // Clear attachments
+              flags: MessageFlags.IsComponentsV2
+            });
           } else {
             const newPageIndex = pageIndex + 1;
             const container = buildRevealPanel(userId, cardsSerialized, newPageIndex);
-            return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+            
+            const codes = cardsSerialized.split("-");
+            const currentCardKey = deserializeCard(codes[newPageIndex]);
+            const buffer = await cardRenderer.getCardImageBuffer(currentCardKey);
+            const attachment = new AttachmentBuilder(buffer, { name: "card.png" });
+
+            return interaction.editReply({
+              components: [container],
+              files: [attachment],
+              flags: MessageFlags.IsComponentsV2
+            });
           }
         }
       } catch (err) {

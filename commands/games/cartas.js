@@ -1,8 +1,9 @@
-const { SlashCommandBuilder, MessageFlags, ContainerBuilder } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags, ContainerBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const cardService = require("../../services/cardService");
 const userService = require("../../services/userService");
+const cardsData = require("../../data/cards.json");
 
-function buildCartasPanel(targetUsername, collection) {
+function buildCartasPanel(targetUsername, collection, pageIndex, targetUserId) {
   const container = new ContainerBuilder()
     .setAccentColor(2303786); // NotQuiteBlack (neutral/colección)
 
@@ -14,83 +15,76 @@ function buildCartasPanel(targetUsername, collection) {
 
   let content = "";
 
-  // Tier 1
-  content += `### Tier 1\n`;
-  const ranksT1 = ["2", "3", "4", "5", "6", "7", "8", "9", "10"];
-  const suits = ["♠️", "♥️", "♦️", "♣️"];
+  const list = pageIndex === 1 
+    ? collection.tier1 
+    : pageIndex === 2 
+      ? collection.tier2 
+      : pageIndex === 3
+        ? collection.tier3
+        : collection.legendary;
+
+  const tierNames = { 
+    1: "Comunes", 
+    2: "Raras", 
+    3: "Épicas",
+    4: "Legendarias"
+  };
   
-  for (const rank of ranksT1) {
-    const rowDisplays = [];
-    for (const suit of suits) {
-      const cardKey = `${rank}_${suit}`;
-      const card = collection.tier1.find(c => c.key === cardKey);
-      if (card && card.owned) {
-        const qtySuffix = card.quantity > 1 ? `\`x${card.quantity}\`` : "";
-        rowDisplays.push(`${card.emoji}${qtySuffix}`);
-      } else {
-        rowDisplays.push(`🎴`);
-      }
-    }
-    const label = rank === "10" ? "0" : rank;
-    content += `**${label}:** ${rowDisplays.join(" ")}\n`;
-  }
-  content += `\n`;
+  content += `### 📂 ${tierNames[pageIndex]}\n\n`;
 
-  // Tier 2
-  content += `### Tier 2\n`;
-  const ranksT2 = ["J", "Q", "K"];
-  for (const rank of ranksT2) {
-    const rowDisplays = [];
-    for (const suit of suits) {
-      const cardKey = `${rank}_${suit}`;
-      const card = collection.tier2.find(c => c.key === cardKey);
-      if (card && card.owned) {
-        const qtySuffix = card.quantity > 1 ? `\`x${card.quantity}\`` : "";
-        rowDisplays.push(`${card.emoji}${qtySuffix}`);
-      } else {
-        rowDisplays.push(`🎴`);
-      }
-    }
-    content += `**${rank}:** ${rowDisplays.join(" ")}\n`;
-  }
-  content += `\n`;
-
-  // Tier 3
-  content += `### Tier 3\n`;
-  const rowDisplaysA = [];
-  for (const suit of suits) {
-    const cardKey = `A_${suit}`;
-    const card = collection.tier3.find(c => c.key === cardKey);
-    if (card && card.owned) {
-      const qtySuffix = card.quantity > 1 ? `\`x${card.quantity}\`` : "";
-      rowDisplaysA.push(`${card.emoji}${qtySuffix}`);
+  list.forEach((card, idx) => {
+    const cardDetail = cardsData[card.key];
+    const name = cardDetail?.name || card.key;
+    const anime = cardDetail?.anime || "Anime";
+    
+    if (card.owned) {
+      const qtySuffix = card.quantity > 1 ? ` \`x${card.quantity}\`` : "";
+      content += `**${idx + 1}.** ✅ **${name}** *(${anime})*${qtySuffix}\n`;
     } else {
-      rowDisplaysA.push(`🎴`);
+      content += `**${idx + 1}.** 🔒 *${name}* *(${anime})*\n`;
     }
-  }
-  content += `**A:** ${rowDisplaysA.join(" ")}\n\n`;
+  });
 
-  // Legendaria
-  content += `### Legendaria\n`;
-  const jokerCard = collection.legendary[0];
-  let jokerDisplay = "🎴";
-  if (jokerCard && jokerCard.owned) {
-    const qtySuffix = jokerCard.quantity > 1 ? ` \`x${jokerCard.quantity}\`` : "";
-    jokerDisplay = `${jokerCard.emoji}${qtySuffix}`;
-  }
-  content += `${jokerDisplay} \`Joker\`\n\n`;
-
-  // Footer styling as Discord subtext
-  content += `-# *Usa \`/sobres abrir\` para coleccionar más*`;
+  content += `\n-# *Usa \`/sobres abrir\` para coleccionar más*`;
 
   container.addTextDisplayComponents(t => t.setContent(content));
+
+  // Add navigation row with 4 buttons
+  container.addActionRowComponents(row => {
+    const btn1 = new ButtonBuilder()
+      .setCustomId(`cartas_page_1_${targetUserId}`)
+      .setLabel("Comunes")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(pageIndex === 1);
+
+    const btn2 = new ButtonBuilder()
+      .setCustomId(`cartas_page_2_${targetUserId}`)
+      .setLabel("Raras")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(pageIndex === 2);
+
+    const btn3 = new ButtonBuilder()
+      .setCustomId(`cartas_page_3_${targetUserId}`)
+      .setLabel("Épicas")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(pageIndex === 3);
+
+    const btn4 = new ButtonBuilder()
+      .setCustomId(`cartas_page_4_${targetUserId}`)
+      .setLabel("Legendarias")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(pageIndex === 4);
+
+    return row.setComponents(btn1, btn2, btn3, btn4);
+  });
+
   return container;
 }
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("cartas")
-    .setDescription("Muestra tu colección completa de cartas o la de otro usuario")
+    .setDescription("Muestra tu colección de cartas paginada por rareza")
     .addUserOption(o =>
       o.setName("usuario")
         .setDescription("El usuario de quien ver la colección")
@@ -107,7 +101,8 @@ module.exports = {
 
     try {
       const collection = await cardService.getUserCollection(targetUser.id);
-      const container = buildCartasPanel(targetUser.username, collection);
+      // Page 1 by default (Tier 1)
+      const container = buildCartasPanel(targetUser.username, collection, 1, targetUser.id);
       
       return interaction.editReply({
         components: [container],
@@ -118,5 +113,40 @@ module.exports = {
         content: `❌ **Error obteniendo la colección:** ${err.message}`
       });
     }
+  },
+
+  async buttonHandler(interaction) {
+    if (!interaction.isButton()) return false;
+
+    if (interaction.customId.startsWith("cartas_page_")) {
+      const parts = interaction.customId.split("_"); // ["cartas", "page", pageIndex, targetUserId]
+      const pageIndex = parseInt(parts[2], 10);
+      const targetUserId = parts[3];
+
+      try {
+        await interaction.deferUpdate();
+      } catch (err) {
+        if (err.code === 10062) return true; // Ignore double clicks
+        throw err;
+      }
+
+      try {
+        const targetUser = await interaction.client.users.fetch(targetUserId);
+        const collection = await cardService.getUserCollection(targetUserId);
+        const container = buildCartasPanel(targetUser.username, collection, pageIndex, targetUserId);
+
+        return interaction.editReply({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2
+        });
+      } catch (err) {
+        return interaction.editReply({
+          components: [],
+          content: `❌ **Error al cambiar de página:** ${err.message}`
+        });
+      }
+    }
+
+    return false;
   }
 };

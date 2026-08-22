@@ -154,8 +154,7 @@ async function deliverPrize(winnerId, prizeText) {
     }
   }
 
-  // 3. Custom prize (manual delivery)
-  return { type: "manual", detail: "Entrega manual por los administradores." };
+  return { type: "manual", detail: null };
 }
 
 async function endGiveaway(messageId) {
@@ -238,11 +237,10 @@ async function resumeActiveGiveaways(client, endGiveawayCallback) {
 
   if (error) {
     console.error("[SORTEOS] Error cargando sorteos activos:", error);
-    return;
+    return 0;
   }
 
   const now = Date.now();
-  console.log(`[SORTEOS] Reanudando ${activeGiveaways.length} sorteos activos.`);
 
   for (const gw of activeGiveaways) {
     const endsTime = new Date(gw.ends_at).getTime();
@@ -260,6 +258,8 @@ async function resumeActiveGiveaways(client, endGiveawayCallback) {
       activeTimeouts.set(gw.message_id, timer);
     }
   }
+
+  return activeGiveaways.length;
 }
 
 async function resolveGiveaway(client, messageId) {
@@ -278,28 +278,6 @@ async function resolveGiveaway(client, messageId) {
   if (!message) {
     await supabase.from("giveaways").update({ status: "ended" }).eq("message_id", messageId);
     return;
-  }
-
-  // Live Spin / Roulette Animation if there are participants
-  const participants = giveaway.participants || [];
-  if (participants.length > 0) {
-    const spinContainer = new ContainerBuilder()
-      .setAccentColor(7419530) // DarkPurple (Juegos activos/procesos)
-      .addTextDisplayComponents(t =>
-        t.setContent(`## **${giveaway.prize}**`)
-      )
-      .addSeparatorComponents(s => s)
-      .addTextDisplayComponents(t =>
-        t.setContent(
-          `⏳ **Finalizando:** *Girando la tómbola...*\n` +
-          `👤 **Organizado por:** <@${giveaway.hosted_by}>\n` +
-          `🟢 **Participantes:** **${participants.length}**`
-        )
-      );
-    await message.edit({ components: [spinContainer] }).catch(() => null);
-    
-    // Wait 2.5 seconds for dramatic effect
-    await new Promise(resolve => setTimeout(resolve, 2500));
   }
 
   // End in DB and deliver prizes

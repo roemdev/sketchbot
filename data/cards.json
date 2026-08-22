@@ -1,81 +1,359 @@
 {
-  "A": {
-    "♠️": "<:1s:1509703417860329644>",
-    "♥️": "<:1h:1509703416572674138>",
-    "♦️": "<:1d:1509703415863705662>",
-    "♣️": "<:1c:1509703414223995031>"
+  "goku": {
+    "name": "Goku",
+    "emoji": "🥋",
+    "tier": 4,
+    "anime": "Dragon Ball",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/246-wsRRr6z1kii8.png"
   },
-  "2": {
-    "♠️": "<:2s:1509703422356623412>",
-    "♥️": "<:2h:1509703421601648700>",
-    "♦️": "<:2d:1509703420544815205>",
-    "♣️": "<:2c:1509703418703249509>"
+  "naruto": {
+    "name": "Naruto Uzumaki",
+    "emoji": "🦊",
+    "tier": 4,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b17-phjcWCkRuIhu.png"
   },
-  "3": {
-    "♠️": "<:3s:1509703427377205359>",
-    "♥️": "<:3h:1509703426215383070>",
-    "♦️": "<:3d:1509703424202113044>",
-    "♣️": "<:3c:1509703423069524179>"
+  "luffy": {
+    "name": "Monkey D. Luffy",
+    "emoji": "👒",
+    "tier": 4,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b40-MNypXsxSRb1R.png"
   },
-  "4": {
-    "♠️": "<:4s:1509703437598589069>",
-    "♥️": "<:4h:1509703436764057690>",
-    "♦️": "<:4d:1509703435954553013>",
-    "♣️": "<:4c:1509703434952118414>"
+  "sasuke": {
+    "name": "Sasuke Uchiha",
+    "emoji": "👁️",
+    "tier": 3,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b13-SISLEw1oAD7a.png"
   },
-  "5": {
-    "♠️": "<:5s:1509703442518511777>",
-    "♥️": "<:5h:1509703441788702911>",
-    "♦️": "<:5d:1509703440488464505>",
-    "♣️": "<:5c:1509703439066861598>"
+  "gojo": {
+    "name": "Satoru Gojo",
+    "emoji": "🕶️",
+    "tier": 3,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b127691-9zqh1xpIubn7.png"
   },
-  "6": {
-    "♠️": "<:6s:1509703446016688238>",
-    "♥️": "<:6h:1509703444728909875>",
-    "♦️": "<:6d:1509703443990839406>",
-    "♣️": "<:6c:1509703443256967259>"
+  "vegeta": {
+    "name": "Vegeta",
+    "emoji": "👑",
+    "tier": 3,
+    "anime": "Dragon Ball",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b913-NIFkKazWM8VO.png"
   },
-  "7": {
-    "♠️": "<:7s:1509703456309383299>",
-    "♥️": "<:7h:1509703449074466948>",
-    "♦️": "<:7d:1509703448327622696>",
-    "♣️": "<:7c:1509703447644082230>"
+  "saitama": {
+    "name": "Saitama",
+    "emoji": "👊",
+    "tier": 3,
+    "anime": "One Punch Man",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b73935-ON5d0mAcrItd.jpg"
   },
-  "8": {
-    "♠️": "<:8s:1509703463062212659>",
-    "♥️": "<:8h:1509703461380427947>",
-    "♦️": "<:8d:1509703459711226010>",
-    "♣️": "<:8c:1509703458251472997>"
+  "eren": {
+    "name": "Eren Yeager",
+    "emoji": "🕊️",
+    "tier": 3,
+    "anime": "Attack on Titan",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b40882-dsj7IP943WFF.jpg"
   },
-  "9": {
-    "♠️": "<:9s:1509703480296870049>",
-    "♥️": "<:9h:1509703478212301020>",
-    "♦️": "<:9d:1509703469559316512>",
-    "♣️": "<:9c:1509703464635334766>"
+  "itachi": {
+    "name": "Itachi Uchiha",
+    "emoji": "🐦",
+    "tier": 3,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b14-9Kb1E5oel1ke.png"
   },
-  "10": {
-    "♠️": "<:10s:1509703485447344260>",
-    "♥️": "<:10h:1509703483492798578>",
-    "♦️": "<:10d:1509703482846744576>",
-    "♣️": "<:10c:1509703481089589329>"
+  "kakashi": {
+    "name": "Kakashi Hatake",
+    "emoji": "📖",
+    "tier": 2,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b85-mkVBh2yjxjmx.png"
   },
-  "J": {
-    "♠️": "<:11s:1509703490589691936>",
-    "♥️": "<:11h:1509703489205305364>",
-    "♦️": "<:11d:1509703487997481141>",
-    "♣️": "<:11c:1509703487196364830>"
+  "zoro": {
+    "name": "Roronoa Zoro",
+    "emoji": "⚔️",
+    "tier": 2,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b62-S7oAeA9WInjV.png"
   },
-  "Q": {
-    "♠️": "<:12s:1509703495295570050>",
-    "♥️": "<:12h:1509703493886148799>",
-    "♦️": "<:12d:1509703493206806598>",
-    "♣️": "<:12c:1509703492338585710>"
+  "sanji": {
+    "name": "Sanji",
+    "emoji": "🚬",
+    "tier": 2,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b305-6lisPmHtCnLT.png"
   },
-  "K": {
-    "♠️": "<:13s:1509703499766829107>",
-    "♥️": "<:13h:1509703498722181160>",
-    "♦️": "<:13d:1509703497501773925>",
-    "♣️": "<:13c:1509703496067190904>"
+  "law": {
+    "name": "Trafalgar Law",
+    "emoji": "🎩",
+    "tier": 2,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b13767-U604OJN9dxCn.jpg"
   },
-  "joker": "<:joker:1509703501393956895>"
+  "ace": {
+    "name": "Portgas D. Ace",
+    "emoji": "🔥",
+    "tier": 2,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b2072-Lc6jEdsueJUK.jpg"
+  },
+  "tanjiro": {
+    "name": "Tanjiro Kamado",
+    "emoji": "🎴",
+    "tier": 2,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b126071-BTNEc1nRIv68.png"
+  },
+  "giyu": {
+    "name": "Giyu Tomioka",
+    "emoji": "🌊",
+    "tier": 2,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b130050-qsLThJs5VIbz.png"
+  },
+  "rengoku": {
+    "name": "Kyojuro Rengoku",
+    "emoji": "🔥",
+    "tier": 2,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b129133-VlTPowwt68rJ.png"
+  },
+  "yuji": {
+    "name": "Yuji Itadori",
+    "emoji": "👊",
+    "tier": 2,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b127212-FVm2tD0erQ5B.png"
+  },
+  "sukuna": {
+    "name": "Ryomen Sukuna",
+    "emoji": "💀",
+    "tier": 2,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b133701-rCQuDpHr3UZL.png"
+  },
+  "nanami": {
+    "name": "Kento Nanami",
+    "emoji": "👔",
+    "tier": 2,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b133704-8wLTGjc234q2.png"
+  },
+  "levi": {
+    "name": "Levi Ackerman",
+    "emoji": "🧹",
+    "tier": 2,
+    "anime": "Attack on Titan",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b45627-CR68RyZmddGG.png"
+  },
+  "killua": {
+    "name": "Killua Zoldyck",
+    "emoji": "⚡",
+    "tier": 2,
+    "anime": "Hunter x Hunter",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b27-Z5O02kQUydpT.jpg"
+  },
+  "gon": {
+    "name": "Gon Freecss",
+    "emoji": "🎣",
+    "tier": 2,
+    "anime": "Hunter x Hunter",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b30-lyFExKyDhefc.jpg"
+  },
+  "light": {
+    "name": "Light Yagami",
+    "emoji": "🍎",
+    "tier": 2,
+    "anime": "Death Note",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b80-26EhwSsSqQ50.png"
+  },
+  "todoroki": {
+    "name": "Shoto Todoroki",
+    "emoji": "❄️",
+    "tier": 2,
+    "anime": "My Hero Academia",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b89220-KNBwaVFAR8FD.png"
+  },
+  "hisoka": {
+    "name": "Hisoka Morow",
+    "emoji": "🃏",
+    "tier": 2,
+    "anime": "Hunter x Hunter",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b31-FZckOuu7L1un.png"
+  },
+  "kaneki": {
+    "name": "Ken Kaneki",
+    "emoji": "☕",
+    "tier": 2,
+    "anime": "Tokyo Ghoul",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b87275-mb13EWZBdbh3.png"
+  },
+  "bulma": {
+    "name": "Bulma",
+    "emoji": "🔧",
+    "tier": 1,
+    "anime": "Dragon Ball",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b678-2YCe13F0tFos.jpg"
+  },
+  "piccolo": {
+    "name": "Piccolo",
+    "emoji": "👽",
+    "tier": 1,
+    "anime": "Dragon Ball",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b914-KuS8AWjqBrqa.jpg"
+  },
+  "sakura": {
+    "name": "Sakura Haruno",
+    "emoji": "🌸",
+    "tier": 1,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b145-IorfpI8arxeX.png"
+  },
+  "hinata": {
+    "name": "Hinata Hyuga",
+    "emoji": "💜",
+    "tier": 1,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b1555-Q41GLTV3FvYF.png"
+  },
+  "gaara": {
+    "name": "Gaara",
+    "emoji": "⏳",
+    "tier": 1,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b1662-4E5J0LX9jZKZ.png"
+  },
+  "nami": {
+    "name": "Nami",
+    "emoji": "🍊",
+    "tier": 1,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b723-vp5hPptgnNEC.png"
+  },
+  "robin": {
+    "name": "Nico Robin",
+    "emoji": "👁️",
+    "tier": 1,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b61-ywXUyyocEEqt.png"
+  },
+  "chopper": {
+    "name": "Tony Tony Chopper",
+    "emoji": "🦌",
+    "tier": 1,
+    "anime": "One Piece",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b309-H64NhbJ2ywIQ.jpg"
+  },
+  "nezuko": {
+    "name": "Nezuko Kamado",
+    "emoji": "🎋",
+    "tier": 1,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b127518-NRlq1CQ1v1ro.png"
+  },
+  "zenitsu": {
+    "name": "Zenitsu Agatsuma",
+    "emoji": "⚡",
+    "tier": 1,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b129131-FZrQ7lSlxmEr.png"
+  },
+  "inosuke": {
+    "name": "Inosuke Hashibira",
+    "emoji": "🐗",
+    "tier": 1,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/n129130-SJC0Kn1DU39E.jpg"
+  },
+  "shinobu": {
+    "name": "Shinobu Kocho",
+    "emoji": "🦋",
+    "tier": 1,
+    "anime": "Demon Slayer",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b136070-MC9LLxJsHyHE.png"
+  },
+  "megumi": {
+    "name": "Megumi Fushiguro",
+    "emoji": "🐺",
+    "tier": 1,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b126635-L0y3I92JSUkN.png"
+  },
+  "nobara": {
+    "name": "Nobara Kugisaki",
+    "emoji": "🔨",
+    "tier": 1,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b133700-f6sOO3TcgLV6.png"
+  },
+  "maki": {
+    "name": "Maki Zenin",
+    "emoji": "👓",
+    "tier": 1,
+    "anime": "Jujutsu Kaisen",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b134167-5TCytk45YByD.png"
+  },
+  "trunks": {
+    "name": "Trunks",
+    "emoji": "🗡️",
+    "tier": 1,
+    "anime": "Dragon Ball",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b2707-YKWmn4q87oF8.png"
+  },
+  "gohan": {
+    "name": "Gohan",
+    "emoji": "🎓",
+    "tier": 1,
+    "anime": "Dragon Ball",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b2093-kdFZhqcNSsqW.png"
+  },
+  "jiraiya": {
+    "name": "Jiraiya",
+    "emoji": "🐸",
+    "tier": 1,
+    "anime": "Naruto",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b2423-RO5MyoXSA9OL.png"
+  },
+  "l_lawliet": {
+    "name": "L Lawliet",
+    "emoji": "🧠",
+    "tier": 1,
+    "anime": "Death Note",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b71-1W4panC53vfs.png"
+  },
+  "armin": {
+    "name": "Armin Arlert",
+    "emoji": "🐚",
+    "tier": 1,
+    "anime": "Attack on Titan",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b46494-g7xYYuBtYPnO.png"
+  },
+  "mikasa": {
+    "name": "Mikasa Ackerman",
+    "emoji": "🧣",
+    "tier": 1,
+    "anime": "Attack on Titan",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b40881-F3gr1PkreDvj.png"
+  },
+  "anya": {
+    "name": "Anya Forger",
+    "emoji": "🥜",
+    "tier": 1,
+    "anime": "Spy x Family",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b138100-4Li0tWRCa5bQ.png"
+  },
+  "yor": {
+    "name": "Yor Forger",
+    "emoji": "🔪",
+    "tier": 1,
+    "anime": "Spy x Family",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b138102-ZOAu9jI2d5ke.png"
+  },
+  "megumin": {
+    "name": "Megumin",
+    "emoji": "🧙‍♀️",
+    "tier": 1,
+    "anime": "Konosuba",
+    "imageUrl": "https://s4.anilist.co/file/anilistcdn/character/large/b89361-tq8PQQ4MmF0M.png"
+  }
 }

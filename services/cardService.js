@@ -9,21 +9,18 @@ function getCardsByTier() {
   const tier1 = [];
   const tier2 = [];
   const tier3 = [];
-  const legendary = ["joker"];
+  const legendary = [];
 
-  const suits = ["♠️", "♥️", "♦️", "♣️"];
-
-  for (const rank of Object.keys(cardsData)) {
-    if (rank === "joker") continue;
-    for (const suit of suits) {
-      const cardKey = `${rank}_${suit}`;
-      if (["2", "3", "4", "5", "6", "7", "8", "9", "10"].includes(rank)) {
-        tier1.push(cardKey);
-      } else if (["J", "Q", "K"].includes(rank)) {
-        tier2.push(cardKey);
-      } else if (rank === "A") {
-        tier3.push(cardKey);
-      }
+  for (const cardKey of Object.keys(cardsData)) {
+    const card = cardsData[cardKey];
+    if (card.tier === 1) {
+      tier1.push(cardKey);
+    } else if (card.tier === 2) {
+      tier2.push(cardKey);
+    } else if (card.tier === 3) {
+      tier3.push(cardKey);
+    } else if (card.tier === 4) {
+      legendary.push(cardKey);
     }
   }
 
@@ -61,11 +58,7 @@ function drawCard(cardsByTier) {
 
 // Convert a card key to its Discord emoji string
 function getCardEmoji(cardKey) {
-  if (cardKey === "joker") {
-    return cardsData["joker"];
-  }
-  const [rank, suit] = cardKey.split("_");
-  return cardsData[rank]?.[suit] || `\`[ ${rank}${suit} ]\``;
+  return cardsData[cardKey]?.emoji || "🎴";
 }
 
 // Retrieve or create a user's pack record, applying UTC-4 daily reset for purchases
@@ -313,8 +306,8 @@ async function getUserCollection(discordId) {
     tier3,
     legendary,
     totalUnique,
-    totalCards: 53,
-    progressPercent: Math.round((totalUnique / 53) * 100)
+    totalCards: 51,
+    progressPercent: Math.round((totalUnique / 51) * 100)
   };
 }
 

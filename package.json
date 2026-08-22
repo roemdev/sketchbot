@@ -21,6 +21,7 @@
   "homepage": "https://github.com/roemdev/sketchbot#readme",
   "dependencies": {
     "@discordjs/voice": "^0.19.2",
+    "@napi-rs/canvas": "^1.0.7",
     "@supabase/supabase-js": "^2.103.2",
     "axios": "^1.16.1",
     "chalk": "^4.1.2",

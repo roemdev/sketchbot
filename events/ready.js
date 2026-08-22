@@ -77,10 +77,15 @@ module.exports = {
     }
 
     // --- REANUDAR SORTEOS ACTIVOS ---
+    let giveawaysStatus = chalk.gray('None active');
     try {
-      giveawayService.resumeActiveGiveaways(client, giveawayService.resolveGiveaway);
+      const activeCount = await giveawayService.resumeActiveGiveaways(client, giveawayService.resolveGiveaway);
+      if (activeCount > 0) {
+        giveawaysStatus = chalk.green(`Resumed: ${activeCount} active`);
+      }
     } catch (gwError) {
-      console.error("[SORTEOS] Error al reanudar los sorteos activos:", gwError);
+      giveawaysStatus = chalk.red('FAILED');
+      console.error(chalk.red("[SORTEOS] Error al reanudar los sorteos activos:"), gwError);
     }
 
     // --- MOSTRAR BANNER Y DIAGNÓSTICO ESTÉTICO ---
@@ -101,6 +106,7 @@ module.exports = {
     console.log(`🔌 ${chalk.bold('DATABASE')}   ::  ${dbStatus}`);
     console.log(`🎙️  ${chalk.bold('TEMP VCs')}   ::  ${tempVCsStatus}`);
     console.log(`🔊 ${chalk.bold('VOICE XP')}   ::  ${voiceXpStatus}`);
+    console.log(`🎁 ${chalk.bold('GIVEAWAYS')}  ::  ${giveawaysStatus}`);
     console.log(`🟢 ${chalk.bold('STATUS')}     ::  ${chalk.green('ALL SYSTEMS NOMINAL & OPERATIONAL')}`);
     console.log(separator + '\n');
   },

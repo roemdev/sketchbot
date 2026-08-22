@@ -66,8 +66,8 @@
     "dailyPurchaseLimit": 2,
     "rarityWeights": {
       "tier1": 0.82,
-      "tier2": 0.12,
-      "tier3": 0.05,
+      "tier2": 0.13,
+      "tier3": 0.04,
       "legendary": 0.01
     }
   }
