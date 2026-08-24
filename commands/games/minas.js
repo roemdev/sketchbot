@@ -2,6 +2,7 @@ const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Container
 const config = require("../../utils/config");
 const userService = require("../../services/userService");
 const transactionService = require("../../services/transactionService");
+const { logGameOutcome } = require("../../utils/discordLogger");
 
 const GAME_COOLDOWN = config.games.cooldown;
 const COIN = config.emojis.coin;
@@ -52,101 +53,79 @@ function generateBoard(minesCount) {
 
 // --- GENERADOR DE INTERFAZ DE DISCORD (CONTAINERBUILDER) ---
 
-function buildMinasPanel(userId, session, isGameOver = false, won = false, tax = 0) {
+function buildMinasPanel(userId, session, isGameOver = false, perfectWin = false, tax = 0) {
     const container = new ContainerBuilder();
     
-    // Asignar color de panel según estado
+    // Configurar color de panel según estado
     if (isGameOver) {
-        container.setAccentColor(won ? 2067276 : 10038562); // DarkGreen para victoria, DarkRed para derrota
-    } else {
-        container.setAccentColor(7419530); // DarkPurple para juego activo
-    }
-    
-    const totalMines = session.minesCount;
-    const gemsFound = session.gemsFound;
-    const totalGems = 9 - totalMines;
-    
-    const currentMult = getMultiplier(totalMines, gemsFound);
-    const nextMult = getMultiplier(totalMines, gemsFound + 1);
-    
-    const currentPayout = Math.floor(session.bet * currentMult);
-    const nextPayout = Math.floor(session.bet * nextMult);
-    
-    let description = "";
-    if (isGameOver) {
-        if (won) {
-            const isPerfect = gemsFound === totalGems;
-            description = isPerfect
-                ? `### 🏆 ¡Victoria Perfecta!\n` +
-                  `¡Encontraste todas las gemas en el campo de minas sin explotar!\n` +
-                  `Ganancia total: **${COIN}${currentPayout.toLocaleString()}** (${currentMult}x)`
-                : `### 💰 ¡Te retiraste!\n` +
-                  `Supiste cuándo parar.\n` +
-                  `Ganancia total: **${COIN}${currentPayout.toLocaleString()}** (${currentMult}x)`;
-            
-            if (tax > 0) {
-                const finalProfit = currentPayout - tax;
-                description += `\n🏛️ **Impuesto del Banco (10%):** -${COIN}**${tax.toLocaleString("es-DO")}**\n` +
-                               `Total recibido: **${COIN}${finalProfit.toLocaleString("es-DO")}**`;
-            }
+        if (perfectWin || session.gemsFound > 0) {
+            container.setAccentColor(2067276); // DarkGreen
         } else {
-            description = `### 💥 ¡BOOM! Pisaste una mina\n` +
-                          `El campo de minas explotó y perdiste todo.\n` +
-                          `Apuesta perdida: **${COIN}${session.bet.toLocaleString()}**`;
+            container.setAccentColor(10038562); // DarkRed
         }
     } else {
-        description = `### 💣 Campo de Minas\n` +
-                      `Apuesta inicial: **${COIN}${session.bet.toLocaleString()}** (Minas: **${totalMines}**)\n` +
-                      `Gemas encontradas: **💎 ${gemsFound} / ${totalGems}**\n` +
-                      `Acumulado actual: **${COIN}${currentPayout.toLocaleString()}** (${currentMult}x)\n` +
-                      (gemsFound < totalGems ? `Siguiente gema: **${COIN}${nextPayout.toLocaleString()}** (${nextMult}x)` : `¡Ya no quedan gemas!`);
-        
-        if (gemsFound < 2 && totalGems >= 2) {
-            description += `\n\n⚠️ *Debes encontrar al menos 2 gemas para poder retirarte.*`;
-        }
+        container.setAccentColor(7419530); // DarkPurple
     }
+
+    const currentMultiplier = getMultiplier(session.minesCount, session.gemsFound);
+    const nextMultiplier = getMultiplier(session.minesCount, session.gemsFound + 1);
     
+    const currentPayout = Math.floor(session.bet * currentMultiplier);
+    
+    let description = `### 💣 Campo de Minas\n` +
+                      `Jugador: <@${userId}>\n` +
+                      `Apuesta inicial: **${COIN}${session.bet.toLocaleString()}**\n` +
+                      `Minas ocultas: **${session.minesCount}** | Gemas encontradas: **${session.gemsFound}**\n\n`;
+
+    if (isGameOver) {
+        if (perfectWin) {
+            const profit = currentPayout - session.bet;
+            const finalTax = tax > 0 ? tax : Math.floor(profit * config.games.winTaxRate);
+            const reward = currentPayout - finalTax;
+            description += `🏆 **¡PERFECTO!** Encontraste todas las gemas libres. Te llevas **${COIN}${reward.toLocaleString()}** *(Impuesto del banco (${(config.games.winTaxRate * 100).toFixed(0)}%): -${COIN}${finalTax.toLocaleString()})*`;
+        } else if (session.gemsFound > 0) {
+            const profit = currentPayout - session.bet;
+            const finalTax = tax > 0 ? tax : Math.floor(profit * config.games.winTaxRate);
+            const reward = currentPayout - finalTax;
+            description += `💰 **¡Te retiraste!** Ganaste **${COIN}${reward.toLocaleString()}** con un multiplicador de **${currentMultiplier}x** *(Impuesto de banco: -${COIN}${finalTax.toLocaleString()})*`;
+        } else {
+            description += `💥 **¡PUM!** Pisaste una mina. Perdiste tu apuesta de **${COIN}${session.bet.toLocaleString()}**.`;
+        }
+    } else {
+        description += `Multiplicador actual: **${currentMultiplier}x** (${COIN}${currentPayout.toLocaleString()})\n` +
+                          `Siguiente gema: **${nextMultiplier}x**\n\n` +
+                          `Haz clic en una casilla para revelarla. Debes encontrar al menos 2 gemas para poder retirarte.`;
+    }
+
     container.addTextDisplayComponents(t => t.setContent(description));
     container.addSeparatorComponents(s => s);
-    
-    // Crear el tablero 3x3 de botones
+
+    // Renderizar tablero 3x3
     for (let r = 0; r < 3; r++) {
         container.addActionRowComponents(row => {
             const buttons = [];
             for (let c = 0; c < 3; c++) {
                 const index = r * 3 + c;
-                const isMine = session.board[index];
                 const isRevealed = session.revealed[index];
+                const isMine = session.board[index];
                 
-                const btn = new ButtonBuilder();
+                const btn = new ButtonBuilder()
+                    .setCustomId(`minas_click_${userId}_${index}`);
                 
                 if (isGameOver) {
                     btn.setDisabled(true);
                     if (isMine) {
-                        if (isRevealed) {
-                            btn.setCustomId(`minas_cell_${userId}_${index}`)
-                               .setEmoji("💥")
-                               .setStyle(ButtonStyle.Danger);
-                        } else {
-                            btn.setCustomId(`minas_cell_${userId}_${index}`)
-                               .setEmoji("💣")
-                               .setStyle(ButtonStyle.Secondary);
-                        }
+                        btn.setEmoji("💣").setStyle(ButtonStyle.Danger);
+                    } else if (isRevealed) {
+                        btn.setEmoji("💎").setStyle(ButtonStyle.Success);
                     } else {
-                        btn.setCustomId(`minas_cell_${userId}_${index}`)
-                           .setEmoji("💎")
-                           .setStyle(isRevealed ? ButtonStyle.Success : ButtonStyle.Primary);
+                        btn.setEmoji("⬜").setStyle(ButtonStyle.Secondary);
                     }
                 } else {
                     if (isRevealed) {
-                        btn.setCustomId(`minas_cell_${userId}_${index}`)
-                           .setEmoji("💎")
-                           .setStyle(ButtonStyle.Success)
-                           .setDisabled(true);
+                        btn.setEmoji("💎").setStyle(ButtonStyle.Success).setDisabled(true);
                     } else {
-                        btn.setCustomId(`minas_click_${userId}_${index}`)
-                           .setEmoji("❓")
-                           .setStyle(ButtonStyle.Secondary);
+                        btn.setEmoji("❓").setStyle(ButtonStyle.Secondary);
                     }
                 }
                 buttons.push(btn);
@@ -154,20 +133,25 @@ function buildMinasPanel(userId, session, isGameOver = false, won = false, tax =
             return row.setComponents(buttons);
         });
     }
-    
-    // Fila adicional para el botón de Retirarse
+
+    // Agregar botón de cashout si el juego sigue activo
     if (!isGameOver) {
-        container.addActionRowComponents(row =>
-            row.setComponents(
+        container.addSeparatorComponents(s => s);
+        container.addActionRowComponents(row => {
+            const totalGems = 9 - session.minesCount;
+            // Solo permitir cashout si ha descubierto al menos 2 gemas (o el máximo si hay más de 7 minas)
+            const canCashout = session.gemsFound >= 2 || totalGems < 2;
+            
+            return row.setComponents(
                 new ButtonBuilder()
                     .setCustomId(`minas_cashout_${userId}`)
-                    .setLabel(`💰 Retirarse (${currentPayout.toLocaleString()})`)
+                    .setLabel("💰 Retirar monedas")
                     .setStyle(ButtonStyle.Success)
-                    .setDisabled(gemsFound < 2)
-            )
-        );
+                    .setDisabled(!canCashout)
+            );
+        });
     }
-    
+
     return container;
 }
 
@@ -181,8 +165,9 @@ function resetSessionTimeout(userId, interaction) {
     session.timeout = setTimeout(async () => {
         const s = sessions.get(userId);
         if (s) {
-            const currentMult = getMultiplier(s.minesCount, s.gemsFound);
-            const payout = Math.floor(s.bet * currentMult);
+            // Auto cashout en la última cantidad ganada en caso de expirar
+            const multiplier = getMultiplier(s.minesCount, s.gemsFound);
+            const payout = Math.floor(s.bet * multiplier);
             
             let tax = 0;
             let finalPayout = payout;
@@ -214,27 +199,91 @@ function resetSessionTimeout(userId, interaction) {
             }
             
             sessions.delete(userId);
+
+            // Log a Discord
+            await logGameOutcome(s.interaction || interaction, "Minas (Expirado)", s.bet, finalPayout - s.bet, true);
             
             try {
-                const msg = await interaction.channel.messages.fetch(s.messageId).catch(() => null);
-                if (msg) {
-                    const expiredContainer = new ContainerBuilder()
-                        .setAccentColor(2303786)
-                        .addTextDisplayComponents(t =>
-                            t.setContent(
-                                `### ⏳ Partida Expirada\n` +
-                                `La partida de minas de <@${userId}> expiró por inactividad. Se retiró automáticamente **${COIN}${finalPayout.toLocaleString()}** (Gemas: **${s.gemsFound}**)` +
-                                (tax > 0 ? ` (Impuesto de 10%: -${COIN}${tax.toLocaleString()})` : "") +
-                                `.`
-                            )
-                        );
-                    await msg.edit({ components: [expiredContainer], flags: MessageFlags.IsComponentsV2 });
-                }
+                const expiredContainer = new ContainerBuilder()
+                    .setAccentColor(2303786)
+                    .addTextDisplayComponents(t =>
+                        t.setContent(
+                            `### ⏳ Partida Expirada\n` +
+                            `La partida de minas de <@${userId}> expiró por inactividad. Se retiró automáticamente **${COIN}${finalPayout.toLocaleString()}** (Gemas: **${s.gemsFound}**)` +
+                            (tax > 0 ? ` (Impuesto de 10%: -${COIN}${tax.toLocaleString()})` : "") +
+                            `.`
+                        )
+                    );
+                await s.interaction.editReply({ components: [expiredContainer], flags: MessageFlags.IsComponentsV2 }).catch(() => {});
             } catch (e) {
                 console.error("Error al expirar partida de minas:", e);
             }
         }
     }, 3 * 60 * 1000); // 3 minutos de inactividad
+}
+
+async function initGame(interaction, bet, minesCount, isEphemeral) {
+    const userId = interaction.user.id;
+
+    // Diferir respuesta al principio para evitar el límite de los 3 segundos
+    await interaction.deferReply({ flags: isEphemeral ? MessageFlags.Ephemeral : undefined });
+
+    await userService.createUser(userId, interaction.user.username);
+
+    // Controlar si ya tiene una sesión abierta
+    if (sessions.has(userId)) {
+        if (!isEphemeral) {
+            interaction.client.cooldowns.get("minas")?.delete(userId);
+        }
+        return interaction.editReply({ 
+            content: "Ya tienes una partida de minas en curso. Termínala antes de empezar otra."
+        });
+    }
+
+    const currentBalance = await userService.getBalance(userId);
+    if (currentBalance < bet) {
+        if (!isEphemeral) {
+            interaction.client.cooldowns.get("minas")?.delete(userId);
+        }
+        return interaction.editReply({ 
+            content: "No tienes suficientes monedas para esa apuesta."
+        });
+    }
+
+    // Restar balance inicial y depositar en el casino
+    await userService.addBalance(userId, -bet, false);
+    await userService.addBalance("server_casino", bet, false);
+    await transactionService.logTransaction({
+        discordId: "server_casino",
+        type: "bank_deposit",
+        amount: bet,
+        itemName: `Apuesta Campo de Minas de <@${userId}>`
+    });
+
+    // Generar estado de juego
+    const session = {
+        userId,
+        bet,
+        minesCount,
+        board: generateBoard(minesCount),
+        revealed: Array(9).fill(false),
+        gemsFound: 0,
+        messageId: null,
+        channelId: interaction.channelId,
+        timeout: null,
+        processing: false,
+        interaction,
+        isEphemeral
+    };
+
+    sessions.set(userId, session);
+
+    // Enviar tablero inicial
+    const panel = buildMinasPanel(userId, session);
+    const msg = await interaction.editReply({ components: [panel], flags: MessageFlags.IsComponentsV2 });
+    session.messageId = msg.id;
+
+    resetSessionTimeout(userId, interaction);
 }
 
 // --- COMANDO SLASH ---
@@ -260,180 +309,45 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        const userId = interaction.user.id;
         const bet = interaction.options.getInteger("amount");
         const minesCount = interaction.options.getInteger("mines") || 2;
+        await initGame(interaction, bet, minesCount, false);
+    },
 
-        await userService.createUser(userId, interaction.user.username);
+    async handleModal(interaction) {
+        const betStr = interaction.fields.getTextInputValue("amount");
+        const minesStr = interaction.fields.getTextInputValue("mines") || "2";
 
-        // Controlar si ya tiene una sesión abierta
-        if (sessions.has(userId)) {
-            interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
-            return interaction.reply({ content: "Ya tienes una partida de minas en curso. Termínala antes de empezar otra.", flags: MessageFlags.Ephemeral });
+        const bet = parseInt(betStr, 10);
+        if (isNaN(bet) || bet <= 0 || bet > MAX_BET) {
+            return interaction.reply({ content: `❌ Por favor ingresa una cantidad de apuesta válida entre 1 y ${MAX_BET.toLocaleString()}.`, flags: MessageFlags.Ephemeral });
         }
 
-        const currentBalance = await userService.getBalance(userId);
-        if (currentBalance < bet) {
-            interaction.client.cooldowns.get(module.exports.data.name)?.delete(userId);
-            return interaction.reply({ content: "No tienes suficientes monedas para esa apuesta.", flags: MessageFlags.Ephemeral });
+        const minesCount = parseInt(minesStr, 10);
+        if (isNaN(minesCount) || minesCount < 1 || minesCount > 8) {
+            return interaction.reply({ content: "❌ El número de minas debe estar entre 1 y 8.", flags: MessageFlags.Ephemeral });
         }
 
-        // Restar balance inicial y depositar en el casino
-        await userService.addBalance(userId, -bet, false);
-        await userService.addBalance("server_casino", bet, false);
-        await transactionService.logTransaction({
-            discordId: "server_casino",
-            type: "bank_deposit",
-            amount: bet,
-            itemName: `Apuesta Campo de Minas de <@${userId}>`
-        });
+        await initGame(interaction, bet, minesCount, true);
+    },
 
-        // Generar estado de juego
-        const session = {
-            userId,
-            bet,
-            minesCount,
-            board: generateBoard(minesCount),
-            revealed: Array(9).fill(false),
-            gemsFound: 0,
-            messageId: null,
-            channelId: interaction.channelId,
-            timeout: null,
-            processing: false
-        };
+    // --- HANDLER DE EVENTOS DE BOTONES ---
 
-        sessions.set(userId, session);
+    async buttonHandler(interaction) {
+        if (!interaction.isButton()) return false;
+        if (!interaction.customId.startsWith("minas_")) return false;
 
-        // Enviar tablero inicial
-        const panel = buildMinasPanel(userId, session);
-        await interaction.reply({ components: [panel], flags: MessageFlags.IsComponentsV2 });
-        
-        // Obtener ID del mensaje para el sistema de timeout
-        const msg = await interaction.fetchReply();
-        session.messageId = msg.id;
+        const parts = interaction.customId.split("_");
+        const action = parts[1];
+        const userId = parts[2];
 
-        resetSessionTimeout(userId, interaction);
-    }
-};
+        if (interaction.user.id !== userId) {
+            return interaction.reply({ content: "Esta no es tu partida de minas.", flags: MessageFlags.Ephemeral });
+        }
 
-// --- HANDLER DE EVENTOS DE BOTONES ---
-
-module.exports.buttonHandler = async (interaction) => {
-    if (!interaction.isButton()) return false;
-    if (!interaction.customId.startsWith("minas_")) return false;
-
-    const parts = interaction.customId.split("_");
-    const action = parts[1];
-    const userId = parts[2];
-
-    if (interaction.user.id !== userId) {
-        return interaction.reply({ content: "Esta no es tu partida de minas.", flags: MessageFlags.Ephemeral });
-    }
-
-    const session = sessions.get(userId);
-    if (!session) {
-        return interaction.reply({ content: "Esta partida ya ha terminado o expiró.", flags: MessageFlags.Ephemeral });
-    }
-
-    // Lock de procesamiento antipánico para clics rápidos
-    if (session.processing) {
-        try {
-            await interaction.deferUpdate();
-        } catch {}
-        return true;
-    }
-    session.processing = true;
-
-    try {
-        if (action === "click") {
-            const cellIndex = parseInt(parts[3], 10);
-            session.revealed[cellIndex] = true;
-            
-            const isMine = session.board[cellIndex];
-            
-            if (isMine) {
-                // EXPLO EXPLO! Perdió todo
-                if (session.timeout) clearTimeout(session.timeout);
-                sessions.delete(userId);
-                
-                await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
-                
-                const casinoTax = Math.floor(session.bet * config.games.loseTaxRate);
-                if (casinoTax > 0) {
-                    await userService.addBalance("server_casino", -casinoTax, false);
-                    await userService.addBalance("server_bank", casinoTax, false);
-                    await transactionService.logTransaction({
-                        discordId: "server_bank",
-                        type: "bank_tax",
-                        amount: casinoTax,
-                        itemName: `Impuesto ${(config.games.loseTaxRate * 100).toFixed(0)}% pérdida Minas de <@${userId}>`
-                    });
-                    await transactionService.logTransaction({
-                        discordId: "server_casino",
-                        type: "bank_withdrawal",
-                        amount: -casinoTax,
-                        itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco`
-                    });
-                }
-                
-                const loseContainer = buildMinasPanel(userId, session, true, false);
-                await interaction.update({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
-                return true;
-            } else {
-                // ¡Encontró una gema!
-                session.gemsFound++;
-                const totalGems = 9 - session.minesCount;
-                
-                if (session.gemsFound === totalGems) {
-                    // Victoria perfecta automática
-                    if (session.timeout) clearTimeout(session.timeout);
-                    sessions.delete(userId);
-                    
-                    const multiplier = getMultiplier(session.minesCount, session.gemsFound);
-                    const payout = Math.floor(session.bet * multiplier);
-                    
-                    let tax = 0;
-                    let finalPayout = payout;
-                     if (payout > session.bet) {
-                        tax = Math.floor((payout - session.bet) * config.games.winTaxRate);
-                        finalPayout = payout - tax;
-                    }
-                    
-                    await userService.addBalance(userId, finalPayout, false);
-                    await userService.addBalance("server_casino", -finalPayout, false);
-                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Minas pagado a <@${userId}>` });
-                    await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
-                    
-                    if (tax > 0) {
-                        await userService.addBalance("server_casino", -tax, false);
-                        await userService.addBalance("server_bank", tax, false);
-                        await transactionService.logTransaction({
-                            discordId: "server_casino",
-                            type: "bank_withdrawal",
-                            amount: -tax,
-                            itemName: `Impuesto del ${(config.games.winTaxRate * 100).toFixed(0)}% pagado al Banco`
-                        });
-                        await transactionService.logTransaction({
-                            discordId: "server_bank",
-                            type: "bank_tax",
-                            amount: tax,
-                            itemName: `Impuesto sobre apuesta de <@${userId}>`
-                        });
-                    }
-                    
-                    const winContainer = buildMinasPanel(userId, session, true, true, tax);
-                    await interaction.update({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
-                    return true;
-                } else {
-                    // Sigue jugando
-                    resetSessionTimeout(userId, interaction);
-                    session.processing = false;
-                    
-                    const playContainer = buildMinasPanel(userId, session, false, false);
-                    await interaction.update({ components: [playContainer], flags: MessageFlags.IsComponentsV2 });
-                    return true;
-                }
-            }
+        const session = sessions.get(userId);
+        if (!session) {
+            return interaction.reply({ content: "Esta partida ya ha terminado o expiró.", flags: MessageFlags.Ephemeral });
         }
 
         if (action === "cashout") {
@@ -442,54 +356,170 @@ module.exports.buttonHandler = async (interaction) => {
                 session.processing = false;
                 return interaction.reply({ content: "Debes encontrar al menos 2 gemas antes de poder retirarte.", flags: MessageFlags.Ephemeral });
             }
+        }
 
-            if (session.timeout) clearTimeout(session.timeout);
-            sessions.delete(userId);
-            
-            const multiplier = getMultiplier(session.minesCount, session.gemsFound);
-            const payout = Math.floor(session.bet * multiplier);
-            
-            let tax = 0;
-            let finalPayout = payout;
-             if (payout > session.bet) {
-                 tax = Math.floor((payout - session.bet) * config.games.winTaxRate);
-                 finalPayout = payout - tax;
-             }
-            
-            await userService.addBalance(userId, finalPayout, false);
-            await userService.addBalance("server_casino", -finalPayout, false);
-            await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Minas pagado a <@${userId}>` });
-            await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
-            
-            if (tax > 0) {
-                await userService.addBalance("server_casino", -tax, false);
-                await userService.addBalance("server_bank", tax, false);
-                await transactionService.logTransaction({
-                    discordId: "server_casino",
-                    type: "bank_withdrawal",
-                    amount: -tax,
-                    itemName: `Impuesto del ${(config.games.winTaxRate * 100).toFixed(0)}% pagado al Banco`
-                });
-                await transactionService.logTransaction({
-                    discordId: "server_bank",
-                    type: "bank_tax",
-                    amount: tax,
-                    itemName: `Impuesto sobre apuesta de <@${userId}>`
-                });
-            }
-            
-            const cashoutContainer = buildMinasPanel(userId, session, true, true, tax);
-            await interaction.update({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });
+        // Lock antipánico
+        if (session.processing) {
+            try {
+                await interaction.deferUpdate();
+            } catch {}
             return true;
         }
-    } catch (error) {
-        console.error("Error en minas buttonHandler:", error);
-        session.processing = false;
+        session.processing = true;
+
+        // Diferir la actualización inmediatamente para evitar el límite de los 3 segundos
         try {
-            await interaction.reply({ content: "Ocurrió un error procesando tu movimiento.", flags: MessageFlags.Ephemeral });
+            await interaction.deferUpdate();
         } catch {}
-        return true;
+
+        try {
+            if (action === "click") {
+                const cellIndex = parseInt(parts[3], 10);
+                session.revealed[cellIndex] = true;
+                
+                const isMine = session.board[cellIndex];
+                
+                if (isMine) {
+                    // EXPLO EXPLO! Perdió todo
+                    if (session.timeout) clearTimeout(session.timeout);
+                    sessions.delete(userId);
+                    
+                    await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
+                    
+                    const casinoTax = Math.floor(session.bet * config.games.loseTaxRate);
+                    if (casinoTax > 0) {
+                        await userService.addBalance("server_casino", -casinoTax, false);
+                        await userService.addBalance("server_bank", casinoTax, false);
+                        await transactionService.logTransaction({
+                            discordId: "server_bank",
+                            type: "bank_tax",
+                            amount: casinoTax,
+                            itemName: `Impuesto ${(config.games.loseTaxRate * 100).toFixed(0)}% pérdida Minas de <@${userId}>`
+                        });
+                        await transactionService.logTransaction({
+                            discordId: "server_casino",
+                            type: "bank_withdrawal",
+                            amount: -casinoTax,
+                            itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco`
+                        });
+                    }
+                    
+                    const loseContainer = buildMinasPanel(userId, session, true, false);
+                    await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
+                    
+                    await logGameOutcome(interaction, "Minas", session.bet, session.bet, false);
+                    return true;
+                } else {
+                    // ¡Encontró una gema!
+                    session.gemsFound++;
+                    const totalGems = 9 - session.minesCount;
+                    
+                    if (session.gemsFound === totalGems) {
+                        // Victoria perfecta automática
+                        if (session.timeout) clearTimeout(session.timeout);
+                        sessions.delete(userId);
+                        
+                        const multiplier = getMultiplier(session.minesCount, session.gemsFound);
+                        const payout = Math.floor(session.bet * multiplier);
+                        
+                        let tax = 0;
+                        let finalPayout = payout;
+                         if (payout > session.bet) {
+                            tax = Math.floor((payout - session.bet) * config.games.winTaxRate);
+                            finalPayout = payout - tax;
+                        }
+                        
+                        await userService.addBalance(userId, finalPayout, false);
+                        await userService.addBalance("server_casino", -finalPayout, false);
+                        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Minas pagado a <@${userId}>` });
+                        await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
+                        
+                        if (tax > 0) {
+                            await userService.addBalance("server_casino", -tax, false);
+                            await userService.addBalance("server_bank", tax, false);
+                            await transactionService.logTransaction({
+                                discordId: "server_casino",
+                                type: "bank_withdrawal",
+                                amount: -tax,
+                                itemName: `Impuesto del ${(config.games.winTaxRate * 100).toFixed(0)}% pagado al Banco`
+                            });
+                            await transactionService.logTransaction({
+                                discordId: "server_bank",
+                                type: "bank_tax",
+                                amount: tax,
+                                itemName: `Impuesto sobre apuesta de <@${userId}>`
+                            });
+                        }
+                        
+                        const winContainer = buildMinasPanel(userId, session, true, true, tax);
+                        await interaction.editReply({ components: [winContainer], flags: MessageFlags.IsComponentsV2 });
+                        
+                        await logGameOutcome(interaction, "Minas", session.bet, finalPayout - session.bet, true);
+                        return true;
+                    } else {
+                        // Sigue jugando
+                        resetSessionTimeout(userId, interaction);
+                        session.processing = false;
+                        
+                        const playContainer = buildMinasPanel(userId, session, false, false);
+                        await interaction.editReply({ components: [playContainer], flags: MessageFlags.IsComponentsV2 });
+                        return true;
+                    }
+                }
+            }
+
+            if (action === "cashout") {
+                if (session.timeout) clearTimeout(session.timeout);
+                sessions.delete(userId);
+                
+                const multiplier = getMultiplier(session.minesCount, session.gemsFound);
+                const payout = Math.floor(session.bet * multiplier);
+                
+                let tax = 0;
+                let finalPayout = payout;
+                 if (payout > session.bet) {
+                     tax = Math.floor((payout - session.bet) * config.games.winTaxRate);
+                     finalPayout = payout - tax;
+                 }
+                
+                await userService.addBalance(userId, finalPayout, false);
+                await userService.addBalance("server_casino", -finalPayout, false);
+                await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Premio Minas pagado a <@${userId}>` });
+                await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
+                
+                if (tax > 0) {
+                    await userService.addBalance("server_casino", -tax, false);
+                    await userService.addBalance("server_bank", tax, false);
+                    await transactionService.logTransaction({
+                        discordId: "server_casino",
+                        type: "bank_withdrawal",
+                        amount: -tax,
+                        itemName: `Impuesto del ${(config.games.winTaxRate * 100).toFixed(0)}% pagado al Banco`
+                    });
+                    await transactionService.logTransaction({
+                        discordId: "server_bank",
+                        type: "bank_tax",
+                        amount: tax,
+                        itemName: `Impuesto sobre apuesta de <@${userId}>`
+                    });
+                }
+                
+                const cashoutContainer = buildMinasPanel(userId, session, true, false, tax);
+                await interaction.editReply({ components: [cashoutContainer], flags: MessageFlags.IsComponentsV2 });
+                
+                await logGameOutcome(interaction, "Minas", session.bet, finalPayout - session.bet, true);
+                return true;
+            }
+
+        } catch (error) {
+            console.error("Error en minas buttonHandler:", error);
+            session.processing = false;
+            try {
+                await interaction.editReply({ content: "Ocurrió un error procesando tu jugada." });
+            } catch {}
+            return true;
+        }
+        
+        return false;
     }
-    
-    return false;
 };

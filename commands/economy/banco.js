@@ -35,11 +35,11 @@ module.exports = {
             `\u001b[0;32m🪙 ${bankBalance.toLocaleString("es-DO")} monedas\u001b[0m\n` +
             `\`\`\`\n` +
             `📊 **Políticas Macroeconómicas:**\n` +
-            `* 💼 **Trabajo (\`/trabajo\`):** Cada tarea genera de **${minBank} a ${maxBank}** directamente para las arcas del banco, pagando una comisión limpia del **${commission}%** al trabajador.\n` +
+            `* 💼 **Trabajo:** Cada tarea genera de **${minBank} a ${maxBank}** directamente para las arcas del banco, pagando una comisión limpia del **${commission}%** al trabajador.\n` +
             `* 🎲 **Impuestos de Apuestas:** El **${winTax}%** de impuesto sobre las ganancias netas de todos los juegos de apuestas se transfiere al banco central.\n` +
             `* 🎰 **Impuestos del Casino:** El **${loseTax}%** de todas las apuestas que pierden los jugadores en el casino se cobra como tasa fiscal para sustentar el fondo.\n` +
-            `* 📆 **Subsidio Diario (\`/diario\`):** Recompensas financiadas en su totalidad por el banco. Si los fondos se agotan, el banco entra en quiebra temporal.\n` +
-            `* 🏛️ **Riesgo de Fraude:** El banco es vulnerable a malversaciones de fondos mediante **Estafa** en \`/crimen\`. Las multas por crímenes fallidos también incrementan estas reservas.\n`
+            `* 📆 **Subsidio Diario:** Recompensas financiadas en su totalidad por el banco. Si los fondos se agotan, el banco entra en quiebra temporal.\n` +
+            `* 🏛️ **Riesgo de Hackeo:** El banco es vulnerable a desvíos de fondos mediante hackeos en el panel. Las multas por crímenes fallidos también incrementan estas reservas.\n`
           )
         )
         .addMediaGalleryComponents(

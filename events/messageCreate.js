@@ -11,6 +11,14 @@ module.exports = {
   async execute(message) {
     if (message.author.bot) return;
 
+    // --- ESCUCHA DE TAREAS ROTATIVAS DIARIAS ---
+    try {
+      const taskTracker = require('../services/taskTracker');
+      await taskTracker.handleMessage(message);
+    } catch (err) {
+      console.error("Error in task tracker message listener:", err);
+    }
+
     // Check if the message is in the specific channels
     const allowedChannels = ['1479545547806347415', '1310722470596317194'];
     if (!allowedChannels.includes(message.channel.id)) return;

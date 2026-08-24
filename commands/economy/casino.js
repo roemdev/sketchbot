@@ -30,8 +30,8 @@ module.exports = {
             `\`\`\`\n` +
             `📊 **Políticas del Casino:**\n` +
             `* 🏛️ **Impuesto del Fisco:** El **${(config.games.loseTaxRate * 100).toFixed(0)}%** de todas las apuestas perdidas de los jugadores se paga al **Banco del Servidor** (\`/banco\`) para sustentar los diarios.\n` +
-            `* 🎰 **Juegos de la Casa:** Apuesta tus monedas en \`/blackjack\`, \`/minas\`, \`/torre\`, o \`/cara-cruz\`.\n` +
-            `* 🖥️ **Riesgo de Intrusión:** El Casino es vulnerable a ataques cibernéticos mediante la opción de **Hackear Casino** en \`/crimen\`.\n`
+            `* 🎰 **Juegos de la Casa:** Apuesta tus monedas en los diferentes minijuegos interactivos de cartas, minas o azar desde el panel.\n` +
+            `* 🏛️ **Riesgo de Estafa:** El Casino es vulnerable a desvíos de fondos mediante estafas en el panel.\n`
           )
         )
         .addMediaGalleryComponents(
