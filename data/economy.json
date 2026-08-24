@@ -20,14 +20,9 @@
   "dailyClaim": {
     "cooldown": 64800
   },
-  "smash": {
-    "betIncrement": 10000,
-    "hostCut": 0.05,
-    "timeout": 300
-  },
   "bank": {
     "taxRate": 0.05,
-    "maxLimit": 2000000
+    "maxLimit": 6000000
   },
   "games": {
     "maxBet": 300000,

@@ -290,17 +290,23 @@ async function runSpecificCrime(interaction, choice) {
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     } else {
       const stats = await userService.getUser(userId);
-      const balance = stats ? stats.balance : 0;
+      const walletBalance = stats ? stats.balance : 0;
+      const bankBalance2 = await userService.getBankBalance(userId);
+      const totalBalance = walletBalance + bankBalance2;
 
-      const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(balance * crimesConfig.hackear.finePercent));
-      const newBalance = balance - fine;
+      const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(totalBalance * crimesConfig.hackear.finePercent));
+      const newWalletBalance = walletBalance - fine; // Puede ser negativo (deuda)
 
-      await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);
+      await supabase.from("user_stats").update({ balance: newWalletBalance }).eq("discord_id", userId);
       await userService.addBalance("server_bank", fine, false);
 
       await logTransaction({ discordId: userId, type: "hack_failed", amount: -fine, itemName: "Hackeo fallido al Banco Central (Multa al Banco)" });
       await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por hackeo bancario fallido` });
       await logGameOutcome(interaction, "Crimen (Hackeo)", fine, 0, false).catch(console.error);
+
+      const debtLine = newWalletBalance < 0
+        ? `\n⚠️ **Deuda activa:** Tu cartera quedó en ${COIN}**${newWalletBalance.toLocaleString("es-DO")}**. La deuda se cubrirá automáticamente con tus próximas ganancias.`
+        : "";
 
       const container = new ContainerBuilder()
         .setAccentColor(10038562) // Rojo fallo tenue
@@ -311,7 +317,8 @@ async function runSpecificCrime(interaction, choice) {
             .addTextDisplayComponents(t =>
               t.setContent(
                 `El cortafuegos del Banco Central detectó tus paquetes maliciosos, rastreó tu terminal y bloqueó tus cuentas.\n\n` +
-                `💸 **Multa de Seguridad (${(crimesConfig.hackear.finePercent * 100).toFixed(0)}%):** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.\n` +
+                `💸 **Multa de Seguridad (${(crimesConfig.hackear.finePercent * 100).toFixed(0)}% de tu balance total):** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.` +
+                debtLine + `\n` +
                 `🏛️ *La multa ha sido confiscada por las autoridades federales para reabastecer el Tesoro Público.*`
               )
             )
@@ -361,17 +368,23 @@ async function runSpecificCrime(interaction, choice) {
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     } else {
       const stats = await userService.getUser(userId);
-      const balance = stats ? stats.balance : 0;
+      const walletBalance = stats ? stats.balance : 0;
+      const bankBalance3 = await userService.getBankBalance(userId);
+      const totalBalance = walletBalance + bankBalance3;
 
-      const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(balance * crimesConfig.fraude.finePercent));
-      const newBalance = balance - fine;
+      const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(totalBalance * crimesConfig.fraude.finePercent));
+      const newWalletBalance = walletBalance - fine; // Puede ser negativo (deuda)
 
-      await supabase.from("user_stats").update({ balance: newBalance }).eq("discord_id", userId);
+      await supabase.from("user_stats").update({ balance: newWalletBalance }).eq("discord_id", userId);
       await userService.addBalance("server_bank", fine, false);
 
       await logTransaction({ discordId: userId, type: "fraude_failed", amount: -fine, itemName: "Estafa fallida al Casino (Multa al Banco)" });
       await logTransaction({ discordId: "server_bank", type: "bank_fine", amount: fine, itemName: `Multa cobrada de <@${userId}> por estafa fallida de casino` });
       await logGameOutcome(interaction, "Crimen (Estafa)", fine, 0, false).catch(console.error);
+
+      const debtLine = newWalletBalance < 0
+        ? `\n⚠️ **Deuda activa:** Tu cartera quedó en ${COIN}**${newWalletBalance.toLocaleString("es-DO")}**. La deuda se cubrirá automáticamente con tus próximas ganancias.`
+        : "";
 
       const container = new ContainerBuilder()
         .setAccentColor(10038562) // Rojo fallo tenue
@@ -382,7 +395,8 @@ async function runSpecificCrime(interaction, choice) {
             .addTextDisplayComponents(t =>
               t.setContent(
                 `El equipo de seguridad de la bóveda del Casino descubrió tu esquema de desvío de fichas y alertó a la policía.\n\n` +
-                `💸 **Multa Aplicada (${(crimesConfig.fraude.finePercent * 100).toFixed(0)}%):** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.\n` +
+                `💸 **Multa Aplicada (${(crimesConfig.fraude.finePercent * 100).toFixed(0)}% de tu balance total):** -${COIN}**${fine.toLocaleString("es-DO")}** monedas.` +
+                debtLine + `\n` +
                 `🏛️ *La fianza y la multa han sido confiscadas a favor del Banco Central.*`
               )
             )

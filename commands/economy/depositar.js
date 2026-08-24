@@ -7,7 +7,7 @@ const COIN = config.emojis.coin;
 module.exports = {
   data: new SlashCommandBuilder()
       .setName("depositar")
-      .setDescription("Deposita monedas de tu cartera en el banco (máx. 2,000,000)")
+      .setDescription("Deposita monedas de tu cartera en el banco (máx. 6,000,000)")
       .addStringOption(o =>
           o.setName("cantidad")
               .setDescription("Cantidad de monedas a depositar (número o 'todo')")

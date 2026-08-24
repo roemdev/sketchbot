@@ -52,12 +52,14 @@ module.exports = {
   async execute(interaction) {
     const targetUser = interaction.options.getUser("usuario") || interaction.user;
 
+    await interaction.deferReply();
+
     const dbUser = await userService.createUser(targetUser.id, targetUser.username);
     const bankBalance = await userService.getBankBalance(targetUser.id);
 
     const container = buildBalanceContainer(targetUser, dbUser, bankBalance);
 
-    return interaction.reply({
+    return interaction.editReply({
       components: [container],
       flags: MessageFlags.IsComponentsV2
     });
@@ -75,6 +77,8 @@ module.exports = {
       return interaction.reply({ content: "Este no es tu balance.", flags: MessageFlags.Ephemeral });
     }
 
+    await interaction.deferUpdate();
+
     const dbUser = await userService.getUser(userId);
     const bankBalance = await userService.getBankBalance(userId);
     const maxBankLimit = config.bank.maxLimit;
@@ -86,12 +90,12 @@ module.exports = {
       }
 
       if (amount <= 0) {
-        return interaction.reply({ content: "No tienes monedas en tu cartera para depositar.", flags: MessageFlags.Ephemeral });
+        return interaction.followUp({ content: "No tienes monedas en tu cartera para depositar.", flags: MessageFlags.Ephemeral });
       }
 
       const maxDepositable = maxBankLimit - bankBalance;
       if (maxDepositable <= 0) {
-        return interaction.reply({ content: "Tu banco ya está en el límite máximo de 2,000,000 monedas.", flags: MessageFlags.Ephemeral });
+        return interaction.followUp({ content: `Tu banco ya está en el límite máximo de ${maxBankLimit.toLocaleString("es-DO")} monedas.`, flags: MessageFlags.Ephemeral });
       }
 
       amount = Math.min(amount, maxDepositable);
@@ -103,7 +107,7 @@ module.exports = {
       const freshUser = await userService.getUser(userId);
       const container = buildBalanceContainer(interaction.user, freshUser, newBankBalance);
 
-      return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
 
     if (action === "withdraw10") {
@@ -113,7 +117,7 @@ module.exports = {
       }
 
       if (amount <= 0) {
-        return interaction.reply({ content: "No tienes monedas en el banco para retirar.", flags: MessageFlags.Ephemeral });
+        return interaction.followUp({ content: "No tienes monedas en el banco para retirar.", flags: MessageFlags.Ephemeral });
       }
 
       await userService.addBalance(userId, amount, false);
@@ -123,7 +127,7 @@ module.exports = {
       const freshUser = await userService.getUser(userId);
       const container = buildBalanceContainer(interaction.user, freshUser, newBankBalance);
 
-      return interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 });
+      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
 
     return false;
