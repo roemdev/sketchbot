@@ -71,7 +71,7 @@ function buildMainPanel(packPrice, dailyLimit) {
     .setAccentColor(5793266)
     .addTextDisplayComponents(t =>
       t.setContent(
-        "# 📦 Sistema de Sobres de Arkania\n" +
+        "# 🎴 Cartas Coleccionables de Arkania\n" +
         "Colecciona cartas de personajes de anime y llena tu álbum con todas las rarezas.\n\n" +
         "📆 **:** Reclamar el sobre diario gratuito.\n" +
         "🛒 **:** Comprar sobres con monedas.\n" +
