@@ -76,9 +76,9 @@ module.exports = {
                           } else {
                               const owner = channel.members.first();
                               client.tempVCs.set(id, { ownerId: owner.id });
-                              
                               // Lo guardamos en Supabase para que no siga huérfano
-                              await supabase.from("temp_channels").insert({ channel_id: id, owner_id: owner.id }).catch(() => {});
+                              const { error: insertErr } = await supabase.from("temp_channels").insert({ channel_id: id, owner_id: owner.id });
+                              if (insertErr) console.error("Error guardando canal temporal en DB:", insertErr);
                               restaurados++;
                           }
                       }

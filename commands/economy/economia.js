@@ -553,6 +553,7 @@ module.exports = {
           "📆 **:** Reclamar el subsidio diario.\n" +
           "📜 **:** Ver/aceptar la tarea diaria rotativa.\n" +
           "🛠️ **:** Comenzar una jornada laboral interactiva.\n" +
+          "💰 **:** Ver tu balance de monedas.\n" +
           "🥷 **:** Hackear el Banco Central.\n\n" +
           "-# Nota: Las partidas desde aquí se juegan de forma privada (efímeras) para mantener limpio el canal."
         )
@@ -561,7 +562,8 @@ module.exports = {
         row.setComponents(
           new ButtonBuilder().setCustomId("economia_tareas_diario").setEmoji("📆").setStyle(ButtonStyle.Secondary).setLabel("Subsidio"),
           new ButtonBuilder().setCustomId("economia_tareas_rotativa").setEmoji("📜").setStyle(ButtonStyle.Secondary).setLabel("Misión"),
-          new ButtonBuilder().setCustomId("economia_tareas_trabajo").setEmoji("🛠️").setStyle(ButtonStyle.Secondary).setLabel("Tarea")
+          new ButtonBuilder().setCustomId("economia_tareas_trabajo").setEmoji("🛠️").setStyle(ButtonStyle.Secondary).setLabel("Tarea"),
+          new ButtonBuilder().setCustomId("economia_tareas_balance").setEmoji("💰").setStyle(ButtonStyle.Secondary).setLabel("Balance")
         )
       )
       .addActionRowComponents(row =>
@@ -1092,6 +1094,27 @@ module.exports = {
     if (action === "tareas_crimen") {
       await initSpecificCrime(interaction, "hackear");
       return true;
+    }
+
+    if (action === "tareas_balance") {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      const user = await userService.getUser(userId) || await userService.createUser(userId, interaction.user.username);
+      const pocket = user.balance || 0;
+      const bank = await userService.getBankBalance(userId) || 0;
+      const total = pocket + bank;
+
+      const container = new ContainerBuilder()
+        .setAccentColor(2303786) // Tech Blue
+        .addTextDisplayComponents(t =>
+          t.setContent(
+            `### 💰 Estado de Cuenta de ${interaction.user.username}\n\n` +
+            `> 👛 **Cartera:** ${COIN}**${pocket.toLocaleString("es-DO")}**\n` +
+            `> 🏦 **Banco:** ${COIN}**${bank.toLocaleString("es-DO")}**\n\n` +
+            `> 📊 **Total Neto:** ${COIN}**${total.toLocaleString("es-DO")}**`
+          )
+        );
+
+      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
 
     // --- ACCIONES DE CASINO ---
