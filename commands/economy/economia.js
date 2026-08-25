@@ -538,8 +538,8 @@ module.exports = {
       )
       .addActionRowComponents(row =>
         row.setComponents(
-          new ButtonBuilder().setCustomId("economia_roles_retirarse").setEmoji("🚪").setStyle(ButtonStyle.Danger).setLabel("Retirarse"),
-          new ButtonBuilder().setCustomId("economia_roles_info").setEmoji("ℹ️").setStyle(ButtonStyle.Primary)
+          new ButtonBuilder().setCustomId("economia_roles_info").setEmoji("ℹ️").setStyle(ButtonStyle.Primary),
+          new ButtonBuilder().setCustomId("economia_roles_retirarse").setEmoji("🚪").setStyle(ButtonStyle.Danger).setLabel("Retirarse")
         )
       )
       // Separador
