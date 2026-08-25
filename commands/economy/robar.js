@@ -55,7 +55,7 @@ module.exports = {
       });
     }
 
-    await userService.createUser(userId, interaction.user.username);
+    const user = await userService.createUser(userId, interaction.user.username);
 
     // Verificar que la víctima existe en el sistema
     const targetUser = await userService.getUser(targetId);
@@ -76,17 +76,34 @@ module.exports = {
       });
     }
 
+    let cooldown = crimesCooldown;
+    let chanceMod = 0;
+    let stealMod = 1.0;
+    let fineMod = 1.0;
+
+    if (user && user.profession === "criminal") {
+      cooldown = Math.floor(cooldown / 2);
+      chanceMod = 0.15;
+      stealMod = 0.90;
+      fineMod = 1.05;
+    }
+
     // Establecer cooldown antes de ejecutar (aunque falle)
-    await cooldownService.setCooldown(userId, "crimen", crimesCooldown);
+    await cooldownService.setCooldown(userId, "crimen", cooldown);
 
     const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
-    const success = Math.random() < robarConfig.chance;
+    const successChance = robarConfig.chance + chanceMod;
+    const success = Math.random() < successChance;
 
     if (success) {
       // Robo exitoso: se roba % del balance total de la víctima, se descuenta de su cartera
-      const stolen = Math.max(1, Math.floor(targetTotalBalance * robarConfig.percentStolen));
+      const stolen = Math.max(1, Math.floor(targetTotalBalance * robarConfig.percentStolen * stealMod));
       // Si la víctima no tiene suficiente en cartera, se lleva todo lo que tiene
       const actualStolen = Math.min(stolen, targetWallet);
+
+      if (user && user.profession === "criminal") {
+        await userService.addProfessionXp(userId, 30);
+      }
 
       await supabase.from("user_stats").update({ balance: targetWallet - actualStolen }).eq("discord_id", targetId);
       await userService.addBalance(userId, actualStolen, false);
@@ -114,12 +131,12 @@ module.exports = {
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     } else {
       // Robo fallido: multa basada en balance total del ladrón, cartera puede ir negativa
-      const thiefUser = await userService.getUser(userId);
-      const thiefWallet = thiefUser ? thiefUser.balance : 0;
+      const thiefWallet = user ? user.balance : 0;
       const thiefBankBal = await userService.getBankBalance(userId);
       const thiefTotal = thiefWallet + thiefBankBal;
 
-      const fine = Math.max(robarConfig.fineMin, Math.round(thiefTotal * robarConfig.finePercent));
+      const finePercent = robarConfig.finePercent * fineMod;
+      const fine = Math.max(robarConfig.fineMin, Math.round(thiefTotal * finePercent));
       const newThiefWallet = thiefWallet - fine; // Puede ser negativo (deuda)
 
       await supabase.from("user_stats").update({ balance: newThiefWallet }).eq("discord_id", userId);

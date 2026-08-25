@@ -22,7 +22,7 @@ function getCombination(n, k) {
     return Math.round(result);
 }
 
-function getMultiplier(mines, gemsFound) {
+function getMultiplier(mines, gemsFound, rtp = config.games.minas.rtp) {
     const totalCells = 9;
     const totalGems = totalCells - mines;
     if (gemsFound <= 0) return 1.0;
@@ -34,7 +34,6 @@ function getMultiplier(mines, gemsFound) {
     if (waysGems === 0) return 0;
     
     const fairMultiplier = waysTotal / waysGems;
-    const rtp = config.games.minas.rtp;
     return parseFloat((fairMultiplier * rtp).toFixed(2));
 }
 
@@ -67,8 +66,8 @@ function buildMinasPanel(userId, session, isGameOver = false, perfectWin = false
         container.setAccentColor(7419530); // DarkPurple
     }
 
-    const currentMultiplier = getMultiplier(session.minesCount, session.gemsFound);
-    const nextMultiplier = getMultiplier(session.minesCount, session.gemsFound + 1);
+    const currentMultiplier = getMultiplier(session.minesCount, session.gemsFound, session.rtp);
+    const nextMultiplier = getMultiplier(session.minesCount, session.gemsFound + 1, session.rtp);
     
     const currentPayout = Math.floor(session.bet * currentMultiplier);
     
@@ -91,10 +90,10 @@ function buildMinasPanel(userId, session, isGameOver = false, perfectWin = false
         } else {
             description += `💥 **¡PUM!** Pisaste una mina. Perdiste tu apuesta de **${COIN}${session.bet.toLocaleString()}**.`;
         }
-    } else {
-        description += `Multiplicador actual: **${currentMultiplier}x** (${COIN}${currentPayout.toLocaleString()})\n` +
-                          `Siguiente gema: **${nextMultiplier}x**\n\n` +
-                          `Haz clic en una casilla para revelarla. Debes encontrar al menos 2 gemas para poder retirarte.`;
+    }
+    
+    if (session.cashbackText) {
+        description += session.cashbackText;
     }
 
     container.addTextDisplayComponents(t => t.setContent(description));
@@ -166,7 +165,7 @@ function resetSessionTimeout(userId, interaction) {
         const s = sessions.get(userId);
         if (s) {
             // Auto cashout en la última cantidad ganada en caso de expirar
-            const multiplier = getMultiplier(s.minesCount, s.gemsFound);
+            const multiplier = getMultiplier(s.minesCount, s.gemsFound, s.rtp);
             const payout = Math.floor(s.bet * multiplier);
             
             let tax = 0;
@@ -228,7 +227,7 @@ async function initGame(interaction, bet, minesCount, isEphemeral) {
     // Diferir respuesta al principio para evitar el límite de los 3 segundos
     await interaction.deferReply({ flags: isEphemeral ? MessageFlags.Ephemeral : undefined });
 
-    await userService.createUser(userId, interaction.user.username);
+    const user = await userService.createUser(userId, interaction.user.username);
 
     // Controlar si ya tiene una sesión abierta
     if (sessions.has(userId)) {
@@ -261,10 +260,17 @@ async function initGame(interaction, bet, minesCount, isEphemeral) {
     });
 
     // Generar estado de juego
+    let sessionRtp = config.games.minas.rtp;
+    if (user && user.profession === "gambler") {
+        sessionRtp += 0.05; // 5% mejor RTP
+        await userService.addProfessionXp(userId, Math.max(1, Math.floor(bet / 10000)));
+    }
+
     const session = {
         userId,
         bet,
         minesCount,
+        rtp: sessionRtp,
         board: generateBoard(minesCount),
         revealed: Array(9).fill(false),
         gemsFound: 0,
@@ -404,6 +410,13 @@ module.exports = {
                         });
                     }
                     
+                    const cashback = await userService.handleGamblerCashback(userId, session.bet);
+                    if (cashback > 0) {
+                        await transactionService.logTransaction({ discordId: userId, type: "cashback", amount: cashback, itemName: "Cashback Ludópata 5%" });
+                        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -cashback, itemName: `Cashback a <@${userId}>` });
+                        session.cashbackText = `\n*(Cashback 5%: Recuperaste ${COIN}${cashback.toLocaleString()})*`;
+                    }
+                    
                     const loseContainer = buildMinasPanel(userId, session, true, false);
                     await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
                     
@@ -419,7 +432,7 @@ module.exports = {
                         if (session.timeout) clearTimeout(session.timeout);
                         sessions.delete(userId);
                         
-                        const multiplier = getMultiplier(session.minesCount, session.gemsFound);
+                        const multiplier = getMultiplier(session.minesCount, session.gemsFound, session.rtp);
                         const payout = Math.floor(session.bet * multiplier);
                         
                         let tax = 0;
@@ -472,7 +485,7 @@ module.exports = {
                 if (session.timeout) clearTimeout(session.timeout);
                 sessions.delete(userId);
                 
-                const multiplier = getMultiplier(session.minesCount, session.gemsFound);
+                const multiplier = getMultiplier(session.minesCount, session.gemsFound, session.rtp);
                 const payout = Math.floor(session.bet * multiplier);
                 
                 let tax = 0;

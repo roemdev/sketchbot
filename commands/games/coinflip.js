@@ -18,12 +18,16 @@ async function initGame(interaction, bet, choice, choiceLabel, isEphemeral) {
     // Diferir respuesta al principio para evitar el límite de los 3 segundos
     await interaction.deferReply({ flags: isEphemeral ? MessageFlags.Ephemeral : undefined });
 
-    await userService.createUser(userId, interaction.user.username);
+    const user = await userService.createUser(userId, interaction.user.username);
 
     try {
       await userService.addBalance(userId, -bet, false);
       await userService.addBalance("server_casino", bet, false);
       await transactionService.logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: bet, itemName: `Apuesta Cara/Cruz de <@${userId}>` });
+      
+      if (user && user.profession === "gambler") {
+        await userService.addProfessionXp(userId, Math.max(1, Math.floor(bet / 10000)));
+      }
     } catch {
       if (!isEphemeral) {
         interaction.client.cooldowns.get("cara-cruz")?.delete(userId);
@@ -89,8 +93,16 @@ async function initGame(interaction, bet, choice, choiceLabel, isEphemeral) {
         await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco` });
       }
 
+      const cashback = await userService.handleGamblerCashback(userId, bet);
+      let cashbackText = "";
+      if (cashback > 0) {
+        await transactionService.logTransaction({ discordId: userId, type: "cashback", amount: cashback, itemName: "Cashback Ludópata 5%" });
+        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -cashback, itemName: `Cashback a <@${userId}>` });
+        cashbackText = `\n*(Cashback 5%: Recuperaste ${COIN}${cashback.toLocaleString()})*`;
+      }
+
       await interaction.editReply({
-        content: `Apostaste ${COIN}${bet.toLocaleString()} a **${choiceLabel}**... salió **${resultLabel}**. Perdiste. Duele.`
+        content: `Apostaste ${COIN}${bet.toLocaleString()} a **${choiceLabel}**... salió **${resultLabel}**. Perdiste. Duele.` + cashbackText
       });
 
       await logGameOutcome(interaction, "Cara o Cruz", bet, bet, false);

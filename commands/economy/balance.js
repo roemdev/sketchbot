@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags, ContainerBuilder, ButtonBuilder, Butt
 const userService = require("../../services/userService");
 const config = require("../../utils/config");
 
-function buildBalanceContainer(targetUser, dbUser, bankBalance) {
+function buildBalanceContainer(targetUser, dbUser, bankBalance, maxBankLimit) {
   const avatarUrl = targetUser.displayAvatarURL({ extension: "png", size: 128 });
 
   return new ContainerBuilder()
@@ -17,7 +17,7 @@ function buildBalanceContainer(targetUser, dbUser, bankBalance) {
             `Cartera\n` +
             `**${dbUser.balance.toLocaleString("es-DO")}**\n` +
             `Banco\n` +
-            `**${bankBalance.toLocaleString("es-DO")}** / **${config.bank.maxLimit.toLocaleString("es-DO")}**`
+            `**${bankBalance.toLocaleString("es-DO")}** / **${maxBankLimit.toLocaleString("es-DO")}**`
           )
         )
         .setThumbnailAccessory(thumb => thumb.setURL(avatarUrl))
@@ -56,8 +56,13 @@ module.exports = {
 
     const dbUser = await userService.createUser(targetUser.id, targetUser.username);
     const bankBalance = await userService.getBankBalance(targetUser.id);
+    
+    let maxBankLimit = config.bank.maxLimit;
+    if (dbUser && dbUser.profession === "magnate") {
+      maxBankLimit = 10000000;
+    }
 
-    const container = buildBalanceContainer(targetUser, dbUser, bankBalance);
+    const container = buildBalanceContainer(targetUser, dbUser, bankBalance, maxBankLimit);
 
     return interaction.editReply({
       components: [container],
@@ -81,7 +86,13 @@ module.exports = {
 
     const dbUser = await userService.getUser(userId);
     const bankBalance = await userService.getBankBalance(userId);
-    const maxBankLimit = config.bank.maxLimit;
+    
+    let maxBankLimit = config.bank.maxLimit;
+    let depositTaxRate = 0;
+    if (dbUser && dbUser.profession === "magnate") {
+      maxBankLimit = 10000000;
+      depositTaxRate = 0.02; // 2% impuesto para el magnate
+    }
 
     if (action === "deposit10") {
       let amount = Math.floor(dbUser.balance * 0.1);
@@ -100,12 +111,19 @@ module.exports = {
 
       amount = Math.min(amount, maxDepositable);
 
+      const taxAmount = Math.floor(amount * depositTaxRate);
+      const finalDeposit = amount - taxAmount;
+
       await userService.addBalance(userId, -amount, false);
-      const newBankBalance = bankBalance + amount;
+      const newBankBalance = bankBalance + finalDeposit;
       await userService.setBankBalance(userId, newBankBalance, interaction.user.username);
+      
+      if (taxAmount > 0) {
+        await userService.addBalance("server_bank", taxAmount, false);
+      }
 
       const freshUser = await userService.getUser(userId);
-      const container = buildBalanceContainer(interaction.user, freshUser, newBankBalance);
+      const container = buildBalanceContainer(interaction.user, freshUser, newBankBalance, maxBankLimit);
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
@@ -125,7 +143,7 @@ module.exports = {
       await userService.setBankBalance(userId, newBankBalance, interaction.user.username);
 
       const freshUser = await userService.getUser(userId);
-      const container = buildBalanceContainer(interaction.user, freshUser, newBankBalance);
+      const container = buildBalanceContainer(interaction.user, freshUser, newBankBalance, maxBankLimit);
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }

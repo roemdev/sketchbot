@@ -39,7 +39,7 @@ async function initGame(interaction, bet, isEphemeral) {
     // Diferir respuesta al principio para evitar el límite de los 3 segundos
     await interaction.deferReply({ flags: isEphemeral ? MessageFlags.Ephemeral : undefined });
 
-    await userService.createUser(userId, interaction.user.username);
+    const user = await userService.createUser(userId, interaction.user.username);
 
     const currentBalance = await userService.getBalance(userId);
     if (currentBalance < bet) {
@@ -57,6 +57,10 @@ async function initGame(interaction, bet, isEphemeral) {
         amount: bet,
         itemName: `Apuesta Torre de Riesgo de <@${userId}>`
     });
+
+    if (user && user.profession === "gambler") {
+        await userService.addProfessionXp(userId, Math.max(1, Math.floor(bet / 10000)));
+    }
 
     const panel = buildTowerPanel(userId, bet, bet);
     await interaction.editReply({ components: [panel], flags: MessageFlags.IsComponentsV2 });
@@ -111,7 +115,11 @@ module.exports = {
         } catch {}
 
         if (action === "risk") {
-            if (Math.random() < 0.80) {
+            const user = await userService.getUser(userId);
+            let winChance = 0.80;
+            if (user && user.profession === "gambler") winChance = 0.85; // 5% mejor chance
+
+            if (Math.random() < winChance) {
                 const next = nextValue(current);
 
                 const winContainer = new ContainerBuilder()
@@ -152,11 +160,19 @@ module.exports = {
                         itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco`
                     });
                 }
+                
+                const cashback = await userService.handleGamblerCashback(userId, bet);
+                let cashbackText = "";
+                if (cashback > 0) {
+                    await transactionService.logTransaction({ discordId: userId, type: "cashback", amount: cashback, itemName: "Cashback Ludópata 5%" });
+                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -cashback, itemName: `Cashback a <@${userId}>` });
+                    cashbackText = `\n*(Cashback 5%: Recuperaste ${COIN}${cashback.toLocaleString()})*`;
+                }
 
                 const loseContainer = new ContainerBuilder()
                     .setAccentColor(10038562) // DarkRed (fail)
                     .addTextDisplayComponents(t =>
-                        t.setContent(`### 💥 La torre colapsó\nUn paso de más. Perdiste **${COIN}${current.toLocaleString()}**.`)
+                        t.setContent(`### 💥 La torre colapsó\nUn paso de más. Perdiste **${COIN}${current.toLocaleString()}**.` + cashbackText)
                     );
 
                 await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });

@@ -26,12 +26,22 @@ const taskCooldown = config.tasks.cooldown;
 
 // Helper para conceder recompensa de trabajo
 async function grantWorkReward(interaction, userId) {
+  const user = await userService.getUser(userId);
   const minBank = config.tasks.minBankEarn;
   const maxBank = config.tasks.maxBankEarn;
   const percentage = config.tasks.commissionPercent;
 
   const bankGenerated = Math.floor(Math.random() * (maxBank - minBank + 1)) + minBank;
-  const earned = Math.floor(bankGenerated * (percentage / 100));
+  
+  let multiplier = 1.0;
+  if (user && user.profession === "magnate") multiplier = 1.15;
+  if (user && user.profession === "gambler") multiplier = 0.90;
+
+  const earned = Math.floor(bankGenerated * (percentage / 100) * multiplier);
+
+  if (user && user.profession === "magnate") {
+    await userService.addProfessionXp(userId, 15);
+  }
 
   await userService.addBalance(userId, earned, false);
   await userService.addBalance("server_bank", bankGenerated, false);
@@ -243,12 +253,25 @@ async function initWorkTask(interaction) {
 // Ejecución de crímenes específicos
 async function runSpecificCrime(interaction, choice) {
   const userId = interaction.user.id;
+  const user = await userService.getUser(userId);
   const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
   const bankBalance = await userService.getBalance("server_bank");
   const casinoBalance = await userService.getBalance("server_casino");
 
+  let cooldown = crimesConfig.cooldown;
+  let chanceMod = 0;
+  let stealMod = 1.0;
+  let fineMod = 1.0;
+
+  if (user && user.profession === "criminal") {
+    cooldown = Math.floor(cooldown / 2);
+    chanceMod = 0.15;
+    stealMod = 0.90;
+    fineMod = 1.05;
+  }
+
   // Establecer cooldown global de crímenes
-  await cooldownService.setCooldown(userId, "crimen", crimesConfig.cooldown);
+  await cooldownService.setCooldown(userId, "crimen", cooldown);
 
   if (choice === "hackear") {
     // HACKEO AL BANCO CENTRAL
@@ -259,10 +282,14 @@ async function runSpecificCrime(interaction, choice) {
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
 
-    const success = Math.random() < crimesConfig.hackear.chance;
+    const successChance = crimesConfig.hackear.chance + chanceMod;
+    const success = Math.random() < successChance;
 
     if (success) {
-      const finalReward = Math.max(1, Math.floor(bankBalance * crimesConfig.hackear.percentStolen));
+      const finalReward = Math.max(1, Math.floor(bankBalance * crimesConfig.hackear.percentStolen * stealMod));
+      if (user && user.profession === "criminal") {
+        await userService.addProfessionXp(userId, 30);
+      }
 
       await userService.addBalance("server_bank", -finalReward, false);
       await userService.addBalance(userId, finalReward, false);
@@ -294,7 +321,8 @@ async function runSpecificCrime(interaction, choice) {
       const bankBalance2 = await userService.getBankBalance(userId);
       const totalBalance = walletBalance + bankBalance2;
 
-      const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(totalBalance * crimesConfig.hackear.finePercent));
+      const finePercent = crimesConfig.hackear.finePercent * fineMod;
+      const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(totalBalance * finePercent));
       const newWalletBalance = walletBalance - fine; // Puede ser negativo (deuda)
 
       await supabase.from("user_stats").update({ balance: newWalletBalance }).eq("discord_id", userId);
@@ -338,10 +366,14 @@ async function runSpecificCrime(interaction, choice) {
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
 
-    const success = Math.random() < crimesConfig.fraude.chance;
+    const successChance = crimesConfig.fraude.chance + chanceMod;
+    const success = Math.random() < successChance;
 
     if (success) {
-      const stolenFromCasino = Math.max(1, Math.floor(casinoBalance * crimesConfig.fraude.percentStolen));
+      const stolenFromCasino = Math.max(1, Math.floor(casinoBalance * crimesConfig.fraude.percentStolen * stealMod));
+      if (user && user.profession === "criminal") {
+        await userService.addProfessionXp(userId, 30);
+      }
 
       await userService.addBalance("server_casino", -stolenFromCasino, false);
       await userService.addBalance(userId, stolenFromCasino, false);
@@ -372,7 +404,8 @@ async function runSpecificCrime(interaction, choice) {
       const bankBalance3 = await userService.getBankBalance(userId);
       const totalBalance = walletBalance + bankBalance3;
 
-      const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(totalBalance * crimesConfig.fraude.finePercent));
+      const finePercent = crimesConfig.fraude.finePercent * fineMod;
+      const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(totalBalance * finePercent));
       const newWalletBalance = walletBalance - fine; // Puede ser negativo (deuda)
 
       await supabase.from("user_stats").update({ balance: newWalletBalance }).eq("discord_id", userId);
@@ -940,8 +973,19 @@ module.exports = {
       }
 
       const maxRewardRow = rows.reduce((max, row) => row.ammount > max.ammount ? row : max, rows[0]);
-      const amount = maxRewardRow.ammount;
+      let amount = maxRewardRow.ammount;
       const roleId = maxRewardRow.role_id;
+
+      const user = await userService.getUser(userId);
+      let multiplier = 1.0;
+      if (user && user.profession === "magnate") multiplier = 1.15;
+      if (user && user.profession === "gambler") multiplier = 0.90;
+      
+      amount = Math.floor(amount * multiplier);
+      
+      if (user && user.profession === "magnate") {
+        await userService.addProfessionXp(userId, 20);
+      }
 
       try {
         const bankBalance = await userService.getBalance("server_bank");

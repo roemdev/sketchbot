@@ -22,7 +22,14 @@ module.exports = {
 
     const dbUser = await userService.createUser(userId, interaction.user.username);
     const bankBalance = await userService.getBankBalance(userId);
-    const maxBankLimit = config.bank.maxLimit;
+    
+    let maxBankLimit = config.bank.maxLimit;
+    let depositTaxRate = 0;
+    if (dbUser && dbUser.profession === "magnate") {
+      maxBankLimit = 10000000;
+      depositTaxRate = 0.02; // 2% tax
+    }
+
     const maxDepositable = maxBankLimit - bankBalance;
 
     if (maxDepositable <= 0) {
@@ -57,9 +64,16 @@ module.exports = {
     }
 
     // Procesar depósito
+    const taxAmount = Math.floor(amount * depositTaxRate);
+    const finalDeposit = amount - taxAmount;
+
     await userService.addBalance(userId, -amount, false);
-    const newBankBalance = bankBalance + amount;
+    const newBankBalance = bankBalance + finalDeposit;
     await userService.setBankBalance(userId, newBankBalance, interaction.user.username);
+    
+    if (taxAmount > 0) {
+      await userService.addBalance("server_bank", taxAmount, false);
+    }
 
     const avatarUrl = interaction.user.displayAvatarURL({ extension: "png", size: 128 });
     const total = (dbUser.balance - amount) + newBankBalance;

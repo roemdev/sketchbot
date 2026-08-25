@@ -259,5 +259,52 @@ module.exports = {
       affectedPlayers: updates.length,
       totalDeducted
     };
+  },
+
+  changeProfession: async (discordId, profession) => {
+    let user = await module.exports.getUser(discordId);
+    if (!user) {
+      user = await module.exports.createUser(discordId, "Usuario");
+    }
+    const { error } = await supabase
+        .from("user_stats")
+        .update({ profession, profession_xp: 0 })
+        .eq("discord_id", discordId);
+    if (error) throw error;
+    return await module.exports.getUser(discordId);
+  },
+
+  addProfessionXp: async (discordId, amount) => {
+    let user = await module.exports.getUser(discordId);
+    if (!user || !user.profession) return null;
+
+    const newXp = (user.profession_xp || 0) + amount;
+    const { error } = await supabase
+        .from("user_stats")
+        .update({ profession_xp: newXp })
+        .eq("discord_id", discordId);
+    if (error) throw error;
+    return newXp;
+  },
+
+  getProfessionRank: (xp) => {
+    if (xp >= 50000) return 5;
+    if (xp >= 20000) return 4;
+    if (xp >= 5000) return 3;
+    if (xp >= 1000) return 2;
+    return 1;
+  },
+
+  handleGamblerCashback: async (userId, betAmount) => {
+    const user = await module.exports.getUser(userId);
+    if (user && user.profession === "gambler") {
+      const cashback = Math.floor(betAmount * 0.05);
+      if (cashback > 0) {
+        await module.exports.addBalance(userId, cashback, false);
+        await module.exports.addBalance("server_casino", -cashback, false);
+        return cashback;
+      }
+    }
+    return 0;
   }
 };

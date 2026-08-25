@@ -4,6 +4,22 @@ const config = require("../../utils/config");
 
 const COIN = config.emojis.coin || "🪙";
 
+const PROFESSIONS = {
+  magnate: { name: "Magnate", emoji: "🕴️" },
+  gambler: { name: "Ludópata", emoji: "🎰" },
+  criminal: { name: "Criminal", emoji: "🥷" }
+};
+const XP_THRESHOLDS = [0, 1000, 5000, 20000, 50000];
+
+function getNextRankXp(currentXp) {
+  for (let i = 1; i < XP_THRESHOLDS.length; i++) {
+    if (currentXp < XP_THRESHOLDS[i]) {
+      return XP_THRESHOLDS[i];
+    }
+  }
+  return "MÁX";
+}
+
 function getProgressBar(current, max, length = 10) {
   const percentage = Math.max(0, Math.min(1, current / max));
   const filledLength = Math.round(percentage * length);
@@ -42,12 +58,32 @@ module.exports = {
       const balanceRank = await userService.getBalanceRank(targetUser.id, dbUser.balance);
       const levelRank = await userService.getLevelRank(targetUser.id, level, xp);
 
+      const professionKey = dbUser.profession;
+      const profData = professionKey ? PROFESSIONS[professionKey] : null;
+      const profXp = dbUser.profession_xp || 0;
+      const profRank = userService.getProfessionRank(profXp);
+      const profNextXp = getNextRankXp(profXp);
+
       // Obtener URL de avatar en alta resolución
       const avatarUrl = targetUser.displayAvatarURL({ extension: "png", size: 512 });
 
       // Formatear el contenido de texto imitando la estructura de la imagen
-      const text = `## Perfil de <@${targetUser.id}>\n\n` +
-                   `${COIN} Balance | Rank: #${balanceRank}:\n` +
+      let text = `## Perfil de <@${targetUser.id}>\n\n`;
+
+      if (profData) {
+        text += `🎭 Profesión: **${profData.emoji} ${profData.name}** | Maestría: **Rango ${profRank}**\n`;
+        if (profNextXp !== "MÁX") {
+          text += `> Progreso: **${profXp.toLocaleString("es-DO")} / ${profNextXp.toLocaleString("es-DO")}** XP\n`;
+          text += `> ${getProgressBar(profXp, profNextXp)}\n\n`;
+        } else {
+          text += `> Progreso: **Maestría Total** (${profXp.toLocaleString("es-DO")} XP)\n`;
+          text += `> ${getProgressBar(1, 1)}\n\n`;
+        }
+      } else {
+        text += `🎭 Profesión: **Ninguna** (Usa \`/profesion\` para elegir una)\n\n`;
+      }
+
+      text += `${COIN} Balance | Rank: #${balanceRank}:\n` +
                    `> Cartera: **${dbUser.balance.toLocaleString("es-DO")}**\n` +
                    `> Banco: **${bankBalance.toLocaleString("es-DO")}**\n\n` +
                    `🌠 Experiencia | Rank: #${levelRank}:\n` +

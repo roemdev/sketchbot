@@ -101,6 +101,10 @@ module.exports = {
     try {
       if (command) await command.execute(interaction);
     } catch (error) {
+      if (error.code === 10062) {
+        console.warn(`[WARN] Interacción de /${interaction.commandName} expiró antes de poder responder (posible lag).`);
+        return;
+      }
       console.error(error);
       const errorMessage = "Algo salió mal ejecutando ese comando. Intenta de nuevo.";
       if (interaction.replied || interaction.deferred) {
