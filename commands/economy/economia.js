@@ -1327,8 +1327,8 @@ module.exports = {
           }
           await userService.addBalance(userId, -1000000, false);
           await userService.addBalance("server_bank", 1000000, false);
-          await transactionService.logTransaction({ discordId: userId, type: "fee", amount: -1000000, itemName: "Cambio de rol" });
-          await transactionService.logTransaction({ discordId: "server_bank", type: "bank_deposit", amount: 1000000, itemName: `Tarifa de rol de <@${userId}>` });
+          await logTransaction({ discordId: userId, type: "fee", amount: -1000000, itemName: "Cambio de rol" });
+          await logTransaction({ discordId: "server_bank", type: "bank_deposit", amount: 1000000, itemName: `Tarifa de rol de <@${userId}>` });
         }
 
         const newRole = choice === "retirarse" ? null : choice;
