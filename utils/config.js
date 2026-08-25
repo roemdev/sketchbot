@@ -33,5 +33,6 @@ module.exports = {
   voice: set.voice || {},
   games: eco.games || {},
   colors: set.colors || [],
-  cardsMinigame: eco.cardsMinigame || {}
+  cardsMinigame: eco.cardsMinigame || {},
+  roles: eco.roles || {}
 };

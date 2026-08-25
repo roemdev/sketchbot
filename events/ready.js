@@ -33,23 +33,21 @@ module.exports = {
 
       if (selectError) throw selectError;
 
+      // 1. Restaurar desde Supabase
       if (rows && rows.length > 0) {
         for (const row of rows) {
           const channel = client.channels.cache.get(row.channel_id) || await client.channels.fetch(row.channel_id).catch(() => null);
 
           if (!channel) {
-            // El canal ya no existe en Discord, lo borramos de la BD
             await supabase.from("temp_channels").delete().eq("channel_id", row.channel_id);
             continue;
           }
 
           if (channel.members.size === 0) {
-            // El canal existe pero está vacío, lo eliminamos de Discord y de la BD
             await channel.delete().catch(console.error);
             await supabase.from("temp_channels").delete().eq("channel_id", row.channel_id);
             eliminados++;
           } else {
-            // El canal tiene gente, lo restauramos a la memoria
             client.tempVCs.set(row.channel_id, {
               ownerId: row.owner_id
             });
@@ -58,8 +56,43 @@ module.exports = {
         }
       }
 
+      // 2. Escanear canales huérfanos directamente en los servidores
+      const config = require("../utils/config");
+      const joinChannelId = config.voice.vcJoinChannel;
+      
+      for (const guild of client.guilds.cache.values()) {
+          const joinChannel = guild.channels.cache.get(joinChannelId) || await guild.channels.fetch(joinChannelId).catch(() => null);
+          if (joinChannel && joinChannel.parentId) {
+              const category = guild.channels.cache.get(joinChannel.parentId) || await guild.channels.fetch(joinChannel.parentId).catch(() => null);
+              if (category) {
+                  // Obtener canales de voz en esa categoría que no sean el canal de unirse
+                  const voiceChannels = category.children.cache.filter(c => c.isVoiceBased() && c.id !== joinChannelId);
+                  for (const [id, channel] of voiceChannels) {
+                      // Si no fue procesado por Supabase
+                      if (!client.tempVCs.has(id)) {
+                          if (channel.members.size === 0) {
+                              await channel.delete().catch(console.error);
+                              eliminados++;
+                          } else {
+                              const owner = channel.members.first();
+                              client.tempVCs.set(id, { ownerId: owner.id });
+                              
+                              // Lo guardamos en Supabase para que no siga huérfano
+                              await supabase.from("temp_channels").insert({ channel_id: id, owner_id: owner.id }).catch(() => {});
+                              restaurados++;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
       if (restaurados > 0 || eliminados > 0) {
         tempVCsStatus = chalk.green(`Restored: ${restaurados} | Cleaned: ${eliminados}`);
+      }
+      // Actualizar el estado visual si hay canales activos pero no se restauraron ni eliminaron esta vez
+      else if (client.tempVCs.size > 0) {
+        tempVCsStatus = chalk.green(`${client.tempVCs.size} active`);
       }
 
     } catch (error) {

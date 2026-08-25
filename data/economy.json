@@ -65,5 +65,26 @@
       "tier3": 0.04,
       "legendary": 0.01
     }
+  },
+  "roles": {
+    "magnate": {
+      "name": "Magnate",
+      "emoji": "🕴️",
+      "roleId": "1541619622275457076"
+    },
+    "gambler": {
+      "name": "Ludópata",
+      "emoji": "🎰",
+      "roleId": "1541619671332028517"
+    },
+    "criminal": {
+      "name": "Criminal",
+      "emoji": "🥷",
+      "roleId": "1541619722867703909"
+    },
+    "retirarse": {
+      "name": "Ciudadano Común",
+      "emoji": "🚶"
+    }
   }
 }

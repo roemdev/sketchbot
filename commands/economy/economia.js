@@ -32,7 +32,7 @@ async function grantWorkReward(interaction, userId) {
   const percentage = config.tasks.commissionPercent;
 
   const bankGenerated = Math.floor(Math.random() * (maxBank - minBank + 1)) + minBank;
-  
+
   let multiplier = 1.0;
   if (user && user.profession === "magnate") multiplier = 1.15;
   if (user && user.profession === "gambler") multiplier = 0.90;
@@ -289,7 +289,7 @@ async function runSpecificCrime(interaction, choice) {
 
       await userService.addBalance("server_bank", -finalReward, false);
       await userService.addBalance(userId, finalReward, false);
-      
+
       await logTransaction({ discordId: userId, type: "hack_success", amount: finalReward, itemName: "Hackeo exitoso a la red del Banco Central" });
       await logTransaction({ discordId: "server_bank", type: "bank_robbed", amount: -finalReward, itemName: `<@${userId}> hackeó el Banco Central` });
       await logGameOutcome(interaction, "Crimen (Hackeo)", 0, finalReward, true).catch(console.error);
@@ -506,7 +506,7 @@ module.exports = {
 
     let channels = guild.channels.cache;
     if (!channels || channels.size === 0) {
-      await guild.channels.fetch().catch(() => {});
+      await guild.channels.fetch().catch(() => { });
       channels = guild.channels.cache;
     }
 
@@ -516,10 +516,38 @@ module.exports = {
 
     const panel = new ContainerBuilder()
       .setAccentColor(2303786) // Tech Blue / Cyan
-      // Sección 1: Tareas
+      // Sección 1: Profesiones
       .addTextDisplayComponents(t =>
         t.setContent(
-          "# 🛠️ Centro de Trabajo de Arkania\n" +
+          "## 👔 Roles y Profesiones\n" +
+          "Elige un camino para obtener bonificaciones o consecuencias.\n" +
+          "*Si no eliges ningún rol, serás un ciudadano común sin ventajas ni penalizaciones.*\n\n" +
+          "ℹ️ **:** Información detallada sobre cada rol.\n" +
+          "🕴️ **:** Seleccionar el rol de Magnate.\n" +
+          "🎰 **:** Seleccionar el rol de Ludópata.\n" +
+          "🥷 **:** Seleccionar el rol de Criminal.\n" +
+          "🚪 **:** Retirarse (Quitarse los roles)."
+        )
+      )
+      .addActionRowComponents(row =>
+        row.setComponents(
+          new ButtonBuilder().setCustomId("economia_roles_magnate").setEmoji("🕴️").setStyle(ButtonStyle.Secondary).setLabel("Magnate"),
+          new ButtonBuilder().setCustomId("economia_roles_gambler").setEmoji("🎰").setStyle(ButtonStyle.Secondary).setLabel("Ludópata"),
+          new ButtonBuilder().setCustomId("economia_roles_criminal").setEmoji("🥷").setStyle(ButtonStyle.Secondary).setLabel("Criminal")
+        )
+      )
+      .addActionRowComponents(row =>
+        row.setComponents(
+          new ButtonBuilder().setCustomId("economia_roles_retirarse").setEmoji("🚪").setStyle(ButtonStyle.Danger).setLabel("Retirarse"),
+          new ButtonBuilder().setCustomId("economia_roles_info").setEmoji("ℹ️").setStyle(ButtonStyle.Primary)
+        )
+      )
+      // Separador
+      .addSeparatorComponents(s => s)
+      // Sección 2: Tareas
+      .addTextDisplayComponents(t =>
+        t.setContent(
+          "## 🛠️ Centro de Trabajo de Arkania\n" +
           "Realiza tus deberes diarios y cumple con tus jornadas laborales para ganar monedas.\n\n" +
           "ℹ️ **:** Guía e información sobre las tareas.\n" +
           "📆 **:** Reclamar el subsidio diario.\n" +
@@ -544,10 +572,10 @@ module.exports = {
       )
       // Separador
       .addSeparatorComponents(s => s)
-      // Sección 2: Casino
+      // Sección 3: Casino
       .addTextDisplayComponents(t =>
         t.setContent(
-          "# 🎰 Casino de Arkania\n" +
+          "## 🎰 Casino de Arkania\n" +
           "Apuesta tus monedas y multiplica tu riqueza en nuestros juegos interactivos.\n\n" +
           "ℹ️ **:** Guía e información sobre los juegos.\n" +
           "🪙 **:** Jugar a Cara o Cruz.\n" +
@@ -578,7 +606,7 @@ module.exports = {
 
   async buttonHandler(interaction) {
     if (!interaction.isButton()) return false;
-    
+
     const userId = interaction.user.id;
     const customId = interaction.customId;
 
@@ -586,7 +614,7 @@ module.exports = {
     if (customId === "economia_accept_rotativa") {
       try {
         await interaction.deferUpdate();
-      } catch {}
+      } catch { }
 
       const completedCd = await cooldownService.checkCooldown(userId, "daily_task");
       if (completedCd) {
@@ -631,7 +659,7 @@ module.exports = {
 
       try {
         await interaction.deferUpdate();
-      } catch {}
+      } catch { }
 
       const now = Math.floor(Date.now() / 1000);
       if (now > deadline) {
@@ -973,9 +1001,9 @@ module.exports = {
       let multiplier = 1.0;
       if (user && user.profession === "magnate") multiplier = 1.15;
       if (user && user.profession === "gambler") multiplier = 0.90;
-      
+
       amount = Math.floor(amount * multiplier);
-      
+
       if (user && user.profession === "magnate") {
       }
 
@@ -1194,6 +1222,154 @@ module.exports = {
     if (action === "casino_crimen") {
       await initSpecificCrime(interaction, "fraude");
       return true;
+    }
+
+    // --- ACCIONES DE ROLES ---
+    if (action.startsWith("roles_")) {
+      const subAction = action.replace("roles_", "");
+
+      if (subAction === "info") {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.editReply({
+          content:
+            "### ℹ️ Guía de Roles y Profesiones\n\n" +
+            "🕴️ **Magnate**\n" +
+            "> Experto en finanzas. Obtiene bonificaciones en sus trabajos y puede almacenar más dinero, a costa de pagar impuestos.\n" +
+            "> * **Beneficios:** +15% monedas en `/trabajo` y `/diario`, banco de 10M.\n" +
+            "> * **Consecuencia:** 2% de impuesto al depositar.\n\n" +
+            "🎰 **Ludópata**\n" +
+            "> Adictos al riesgo. Cuentan con pase libre en los casinos.\n" +
+            "> * **Beneficios:** 0% impuestos al ganar o perder en juegos de casino.\n" +
+            "> * **Consecuencia:** -10% monedas en el `/trabajo`.\n\n" +
+            "🥷 **Criminal**\n" +
+            "> Maestros del robo. Ejecutan crímenes con mayor frecuencia y éxito.\n" +
+            "> * **Beneficios:** +15% éxito en crímenes, cooldown reducido a la mitad.\n" +
+            "> * **Consecuencia:** -10% botín robado y +5% multa si son atrapados.\n\n" +
+            "🚪 **Retirarse**\n" +
+            "> Renuncia a todos los beneficios y penalizaciones para volver a ser un ciudadano común."
+        });
+        return true;
+      }
+
+      if (subAction === "cancel") {
+        try {
+          await interaction.message.delete();
+        } catch (e) { }
+        return true;
+      }
+
+      const roleDefinitions = config.roles || {
+        magnate: { name: "Magnate", emoji: "🕴️" },
+        gambler: { name: "Ludópata", emoji: "🎰" },
+        criminal: { name: "Criminal", emoji: "🥷" },
+        retirarse: { name: "Ciudadano Común", emoji: "🚶" }
+      };
+
+      // Función auxiliar para actualizar los roles de Discord
+      const updateDiscordRoles = async (member, newRoleKey) => {
+        if (!member) return;
+        try {
+          // Remover roles antiguos
+          const rolesToRemove = [];
+          for (const key in roleDefinitions) {
+            if (key !== "retirarse" && roleDefinitions[key].roleId && member.roles.cache.has(roleDefinitions[key].roleId)) {
+              rolesToRemove.push(roleDefinitions[key].roleId);
+            }
+          }
+          if (rolesToRemove.length > 0) {
+            await member.roles.remove(rolesToRemove);
+          }
+
+          // Agregar el nuevo rol si lo tiene
+          if (newRoleKey && newRoleKey !== "retirarse" && roleDefinitions[newRoleKey] && roleDefinitions[newRoleKey].roleId) {
+            await member.roles.add(roleDefinitions[newRoleKey].roleId);
+          }
+        } catch (err) {
+          console.error("Error al actualizar roles de Discord:", err);
+        }
+      };
+
+      if (subAction.startsWith("confirm_")) {
+        const choice = subAction.replace("confirm_", "");
+        const profDef = roleDefinitions[choice];
+        if (!profDef) return false;
+
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        const user = await userService.getUser(userId);
+        if (!user) return interaction.editReply({ content: "Error al cargar tu perfil." });
+
+        if (user.profession !== null) {
+          if (user.balance < 1000000) {
+            return interaction.editReply({ content: `❌ **Fondos Insuficientes:** Cambiar de rol cuesta **${COIN}1,000,000**, pero solo tienes **${COIN}${user.balance.toLocaleString()}** en tu cartera.` });
+          }
+          await userService.addBalance(userId, -1000000, false);
+          await userService.addBalance("server_bank", 1000000, false);
+          await transactionService.logTransaction({ discordId: userId, type: "fee", amount: -1000000, itemName: "Cambio de rol" });
+          await transactionService.logTransaction({ discordId: "server_bank", type: "bank_deposit", amount: 1000000, itemName: `Tarifa de rol de <@${userId}>` });
+        }
+
+        const newRole = choice === "retirarse" ? null : choice;
+        await userService.changeProfession(userId, newRole);
+        await updateDiscordRoles(interaction.member, choice);
+
+        const container = new ContainerBuilder()
+          .setAccentColor(2067276)
+          .addTextDisplayComponents(t =>
+            t.setContent(
+              `### 🎉 ¡Nuevo Rol Adquirido!\n` +
+              `Ahora eres un **${profDef.emoji} ${profDef.name}**.\n\n` +
+              (newRole ? `Disfruta de tus nuevos beneficios y/o penalizaciones.` : `Te has retirado y vuelves a ser un ciudadano común, sin bonificaciones ni penalizaciones.`)
+            )
+          );
+
+        await interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        try {
+          await interaction.message.delete();
+        } catch (e) { }
+        return true;
+      }
+
+      // Handle direct role selection
+      const profDef = roleDefinitions[subAction];
+      if (profDef) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        const user = await userService.getUser(userId);
+        if (!user) return interaction.editReply({ content: "Error al cargar tu perfil." });
+
+        const currentProfession = user.profession || "retirarse";
+        if (currentProfession === subAction) {
+          return interaction.editReply({ content: `Ya tienes el rol de **${profDef.emoji} ${profDef.name}**.` });
+        }
+
+        if (user.profession === null) {
+          // It's free the first time, skip confirmation
+          const newRole = subAction === "retirarse" ? null : subAction;
+          await userService.changeProfession(userId, newRole);
+          await updateDiscordRoles(interaction.member, subAction);
+
+          const container = new ContainerBuilder()
+            .setAccentColor(2067276)
+            .addTextDisplayComponents(t =>
+              t.setContent(
+                `### 🎉 ¡Primer Rol Adquirido!\n` +
+                `Ahora eres un **${profDef.emoji} ${profDef.name}**.\n\n` +
+                (newRole ? `Disfruta de tus nuevos beneficios y/o penalizaciones.` : `Te has retirado de cualquier camino y eres un ciudadano común.`)
+              )
+            );
+          return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+        } else {
+          // User already has a profession, ask for confirmation
+          const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId(`economia_roles_confirm_${subAction}`).setLabel("Confirmar (Cuesta 1M)").setStyle(ButtonStyle.Success).setEmoji("✅"),
+            new ButtonBuilder().setCustomId("economia_roles_cancel").setLabel("Cancelar").setStyle(ButtonStyle.Danger).setEmoji("❌")
+          );
+
+          return interaction.editReply({
+            content: `### ⚠️ Confirmar Cambio de Rol\n¿Estás seguro de que deseas cambiar tu rol a **${profDef.emoji} ${profDef.name}**?\n\n*Esta acción deducirá **${COIN}1,000,000** de tu cartera.*`,
+            components: [row]
+          });
+        }
+      }
     }
 
     return false;
