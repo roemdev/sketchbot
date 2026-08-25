@@ -59,7 +59,6 @@ async function initGame(interaction, bet, isEphemeral) {
     });
 
     if (user && user.profession === "gambler") {
-        await userService.addProfessionXp(userId, Math.max(1, Math.floor(bet / 10000)));
     }
 
     const panel = buildTowerPanel(userId, bet, bet);
@@ -143,7 +142,8 @@ module.exports = {
             } else {
                 await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
-                const casinoTax = Math.floor(bet * config.games.loseTaxRate);
+                const taxRate = user && user.profession === "gambler" ? 0 : config.games.loseTaxRate;
+                const casinoTax = Math.floor(bet * taxRate);
                 if (casinoTax > 0) {
                     await userService.addBalance("server_casino", -casinoTax, false);
                     await userService.addBalance("server_bank", casinoTax, false);
@@ -160,19 +160,11 @@ module.exports = {
                         itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco`
                     });
                 }
-                
-                const cashback = await userService.handleGamblerCashback(userId, bet);
-                let cashbackText = "";
-                if (cashback > 0) {
-                    await transactionService.logTransaction({ discordId: userId, type: "cashback", amount: cashback, itemName: "Cashback Ludópata 5%" });
-                    await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -cashback, itemName: `Cashback a <@${userId}>` });
-                    cashbackText = `\n*(Cashback 5%: Recuperaste ${COIN}${cashback.toLocaleString()})*`;
-                }
 
                 const loseContainer = new ContainerBuilder()
                     .setAccentColor(10038562) // DarkRed (fail)
                     .addTextDisplayComponents(t =>
-                        t.setContent(`### 💥 La torre colapsó\nUn paso de más. Perdiste **${COIN}${current.toLocaleString()}**.` + cashbackText)
+                        t.setContent(`### 💥 La torre colapsó\nUn paso de más. Perdiste **${COIN}${current.toLocaleString()}**.`)
                     );
 
                 await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
@@ -183,10 +175,12 @@ module.exports = {
         }
 
         if (action === "cashout") {
+            const user = await userService.getUser(userId);
             let tax = 0;
             let finalPayout = current;
             if (current > bet) {
-                tax = Math.floor((current - bet) * config.games.winTaxRate);
+                const taxRate = user && user.profession === "gambler" ? 0 : config.games.winTaxRate;
+                tax = Math.floor((current - bet) * taxRate);
                 finalPayout = current - tax;
             }
 

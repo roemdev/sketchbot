@@ -79,12 +79,12 @@ function buildMinasPanel(userId, session, isGameOver = false, perfectWin = false
     if (isGameOver) {
         if (perfectWin) {
             const profit = currentPayout - session.bet;
-            const finalTax = tax > 0 ? tax : Math.floor(profit * config.games.winTaxRate);
+            const finalTax = tax;
             const reward = currentPayout - finalTax;
             description += `🏆 **¡PERFECTO!** Encontraste todas las gemas libres. Te llevas **${COIN}${reward.toLocaleString()}** *(Impuesto del banco (${(config.games.winTaxRate * 100).toFixed(0)}%): -${COIN}${finalTax.toLocaleString()})*`;
         } else if (session.gemsFound > 0) {
             const profit = currentPayout - session.bet;
-            const finalTax = tax > 0 ? tax : Math.floor(profit * config.games.winTaxRate);
+            const finalTax = tax;
             const reward = currentPayout - finalTax;
             description += `💰 **¡Te retiraste!** Ganaste **${COIN}${reward.toLocaleString()}** con un multiplicador de **${currentMultiplier}x** *(Impuesto de banco: -${COIN}${finalTax.toLocaleString()})*`;
         } else {
@@ -92,9 +92,7 @@ function buildMinasPanel(userId, session, isGameOver = false, perfectWin = false
         }
     }
     
-    if (session.cashbackText) {
-        description += session.cashbackText;
-    }
+    
 
     container.addTextDisplayComponents(t => t.setContent(description));
     container.addSeparatorComponents(s => s);
@@ -171,7 +169,7 @@ function resetSessionTimeout(userId, interaction) {
             let tax = 0;
             let finalPayout = payout;
             if (payout > s.bet) {
-                tax = Math.floor((payout - s.bet) * config.games.winTaxRate);
+                tax = Math.floor((payout - s.bet) * (user && user.profession === "gambler" ? 0 : config.games.winTaxRate));
                 finalPayout = payout - tax;
             }
             
@@ -263,7 +261,6 @@ async function initGame(interaction, bet, minesCount, isEphemeral) {
     let sessionRtp = config.games.minas.rtp;
     if (user && user.profession === "gambler") {
         sessionRtp += 0.05; // 5% mejor RTP
-        await userService.addProfessionXp(userId, Math.max(1, Math.floor(bet / 10000)));
     }
 
     const session = {
@@ -392,7 +389,7 @@ module.exports = {
                     
                     await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
                     
-                    const casinoTax = Math.floor(session.bet * config.games.loseTaxRate);
+                    const casinoTax = Math.floor(session.bet * (user && user.profession === "gambler" ? 0 : config.games.loseTaxRate));
                     if (casinoTax > 0) {
                         await userService.addBalance("server_casino", -casinoTax, false);
                         await userService.addBalance("server_bank", casinoTax, false);
@@ -410,12 +407,7 @@ module.exports = {
                         });
                     }
                     
-                    const cashback = await userService.handleGamblerCashback(userId, session.bet);
-                    if (cashback > 0) {
-                        await transactionService.logTransaction({ discordId: userId, type: "cashback", amount: cashback, itemName: "Cashback Ludópata 5%" });
-                        await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -cashback, itemName: `Cashback a <@${userId}>` });
-                        session.cashbackText = `\n*(Cashback 5%: Recuperaste ${COIN}${cashback.toLocaleString()})*`;
-                    }
+                    
                     
                     const loseContainer = buildMinasPanel(userId, session, true, false);
                     await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
@@ -438,7 +430,7 @@ module.exports = {
                         let tax = 0;
                         let finalPayout = payout;
                          if (payout > session.bet) {
-                            tax = Math.floor((payout - session.bet) * config.games.winTaxRate);
+                            tax = Math.floor((payout - session.bet) * (user && user.profession === "gambler" ? 0 : config.games.winTaxRate));
                             finalPayout = payout - tax;
                         }
                         
@@ -491,7 +483,7 @@ module.exports = {
                 let tax = 0;
                 let finalPayout = payout;
                  if (payout > session.bet) {
-                     tax = Math.floor((payout - session.bet) * config.games.winTaxRate);
+                     tax = Math.floor((payout - session.bet) * (user && user.profession === "gambler" ? 0 : config.games.winTaxRate));
                      finalPayout = payout - tax;
                  }
                 

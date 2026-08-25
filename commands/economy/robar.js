@@ -85,7 +85,7 @@ module.exports = {
       cooldown = Math.floor(cooldown / 2);
       chanceMod = 0.15;
       stealMod = 0.90;
-      fineMod = 1.05;
+      fineMod = 1.25;
     }
 
     // Establecer cooldown antes de ejecutar (aunque falle)
@@ -101,9 +101,6 @@ module.exports = {
       // Si la víctima no tiene suficiente en cartera, se lleva todo lo que tiene
       const actualStolen = Math.min(stolen, targetWallet);
 
-      if (user && user.profession === "criminal") {
-        await userService.addProfessionXp(userId, 30);
-      }
 
       await supabase.from("user_stats").update({ balance: targetWallet - actualStolen }).eq("discord_id", targetId);
       await userService.addBalance(userId, actualStolen, false);

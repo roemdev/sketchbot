@@ -40,7 +40,6 @@ async function grantWorkReward(interaction, userId) {
   const earned = Math.floor(bankGenerated * (percentage / 100) * multiplier);
 
   if (user && user.profession === "magnate") {
-    await userService.addProfessionXp(userId, 15);
   }
 
   await userService.addBalance(userId, earned, false);
@@ -267,7 +266,7 @@ async function runSpecificCrime(interaction, choice) {
     cooldown = Math.floor(cooldown / 2);
     chanceMod = 0.15;
     stealMod = 0.90;
-    fineMod = 1.05;
+    fineMod = 1.25;
   }
 
   // Establecer cooldown global de crímenes
@@ -287,9 +286,6 @@ async function runSpecificCrime(interaction, choice) {
 
     if (success) {
       const finalReward = Math.max(1, Math.floor(bankBalance * crimesConfig.hackear.percentStolen * stealMod));
-      if (user && user.profession === "criminal") {
-        await userService.addProfessionXp(userId, 30);
-      }
 
       await userService.addBalance("server_bank", -finalReward, false);
       await userService.addBalance(userId, finalReward, false);
@@ -371,9 +367,6 @@ async function runSpecificCrime(interaction, choice) {
 
     if (success) {
       const stolenFromCasino = Math.max(1, Math.floor(casinoBalance * crimesConfig.fraude.percentStolen * stealMod));
-      if (user && user.profession === "criminal") {
-        await userService.addProfessionXp(userId, 30);
-      }
 
       await userService.addBalance("server_casino", -stolenFromCasino, false);
       await userService.addBalance(userId, stolenFromCasino, false);
@@ -984,7 +977,6 @@ module.exports = {
       amount = Math.floor(amount * multiplier);
       
       if (user && user.profession === "magnate") {
-        await userService.addProfessionXp(userId, 20);
       }
 
       try {
