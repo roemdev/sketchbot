@@ -106,22 +106,12 @@ module.exports = {
         const secondsUntilMidnight = Math.ceil((midnight - now) / 1000);
         await cooldownService.setCooldown(userId, "daily_task", secondsUntilMidnight);
 
-        // Log en Discord (auto-elimina en 30s)
         const fakeInteraction = {
+          client: message.client,
           channel: message.channel,
           user: message.author
         };
         await logGameOutcome(fakeInteraction, "Tarea Diaria", 0, active.reward, true).catch(console.error);
-
-        // Enviar aviso directo en el canal de que completó su tarea
-        try {
-          const sentAlert = await message.channel.send(`🎉 <@${userId}> **ha completado su Tarea Diaria de hoy:** *${active.description}* y ha ganado **${COIN}${active.reward.toLocaleString("es-DO")}**!`);
-          setTimeout(async () => {
-            await sentAlert.delete().catch(() => {});
-          }, 30000);
-        } catch (err) {
-          console.error("Error al enviar alerta de tarea diaria completada:", err);
-        }
       }
     }
   }
