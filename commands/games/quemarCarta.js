@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ContainerBuilder } = require("discord.js");
+const { SlashCommandBuilder, ContainerBuilder, MessageFlags } = require("discord.js");
 const cardService = require("../../services/cardService");
 const userService = require("../../services/userService");
 const cardsData = require("../../data/cards.json");
@@ -99,7 +99,7 @@ module.exports = {
             )
           );
 
-        return interaction.editReply({ components: [container] });
+        return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
       }
 
       // 2. Burn specific card
@@ -121,7 +121,7 @@ module.exports = {
           )
         );
 
-      return interaction.editReply({ components: [container] });
+      return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     } catch (err) {
       return interaction.editReply({ content: `❌ **Error al quemar cartas:** ${err.message}` });
     }

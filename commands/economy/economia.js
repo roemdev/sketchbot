@@ -488,8 +488,8 @@ async function initSpecificCrime(interaction, choice) {
       .setStyle(ButtonStyle.Success);
   }
 
-  const row = new ActionRowBuilder().addComponents(confirmButton);
-  return interaction.editReply({ components: [container, row], flags: MessageFlags.IsComponentsV2 });
+  container.addActionRowComponents(r => r.addComponents(confirmButton));
+  return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
 }
 
 module.exports = {

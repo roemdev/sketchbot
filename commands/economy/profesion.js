@@ -74,20 +74,20 @@ module.exports = {
 
     const container = new ContainerBuilder()
       .setAccentColor(2303786)
-      .addTextDisplayComponents(t => t.setContent(title + desc));
-
-    const row = new ActionRowBuilder();
-    for (const [key, prof] of Object.entries(PROFESSIONS)) {
-        row.addComponents(
+      .addTextDisplayComponents(t => t.setContent(title + desc))
+      .addActionRowComponents(row => {
+        for (const [key, prof] of Object.entries(PROFESSIONS)) {
+          row.addComponents(
             new ButtonBuilder()
-                .setCustomId(`profesion_${key}`)
-                .setLabel(prof.name)
-                .setEmoji(prof.emoji)
-                .setStyle(prof.style)
-        );
-    }
+              .setCustomId(`profesion_${key}`)
+              .setLabel(prof.name)
+              .setEmoji(prof.emoji)
+              .setStyle(prof.style)
+          );
+        }
+      });
 
-    await interaction.editReply({ components: [container, row], flags: MessageFlags.IsComponentsV2 });
+    await interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
   },
 
   async buttonHandler(interaction) {
