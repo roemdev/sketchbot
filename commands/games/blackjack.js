@@ -289,11 +289,6 @@ async function initGame(interaction, bet, isEphemeral) {
     await userService.addBalance("server_casino", bet, false);
     await transactionService.logTransaction({ discordId: "server_casino", type: "bank_deposit", amount: bet, itemName: `Apuesta Blackjack de <@${userId}>` });
 
-    const user = await userService.getUser(userId);
-    if (user && user.profession === "gambler") {
-        await userService.addProfessionXp(userId, Math.max(1, Math.floor(bet / 10000)));
-    }
-
     const deck = createDeck();
     const playerHand = [deck.pop(), deck.pop()];
     const dealerHand = [deck.pop(), deck.pop()];
@@ -332,7 +327,9 @@ async function initGame(interaction, bet, isEphemeral) {
             await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -finalPayout, itemName: `Empate Blackjack devuelto a <@${userId}>` });
         } else {
             const profit = payout - bet;
-            const tax = Math.floor(profit * config.games.winTaxRate);
+            const user = await userService.getUser(userId);
+            const taxRate = user && user.profession === "gambler" ? 0 : config.games.winTaxRate;
+            const tax = Math.floor(profit * taxRate);
             finalPayout = payout - tax;
             
             await userService.addBalance(userId, finalPayout, false);
