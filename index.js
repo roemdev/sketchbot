@@ -6,6 +6,7 @@ const { token } = require('./config.json');
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,      // Permite recibir entradas y salidas de miembros
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,    // Permite recibir eventos de mensajes
     GatewayIntentBits.MessageContent    // Permite leer qué dice el mensaje

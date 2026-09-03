@@ -16,22 +16,22 @@ const TIER_NAMES = {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("quemar-carta")
-    .setDescription("Quema/vende cartas de tu colección a cambio de monedas.")
+    .setDescription("Recicla cartas de tu colección a cambio de monedas.")
     .addStringOption(o =>
       o.setName("carta")
-        .setDescription("La carta específica que deseas quemar")
+        .setDescription("La carta específica que deseas reciclar")
         .setRequired(false)
         .setAutocomplete(true)
     )
     .addIntegerOption(o =>
       o.setName("cantidad")
-        .setDescription("Cantidad de copias a quemar (por defecto 1)")
+        .setDescription("Cantidad de copias a reciclar (por defecto 1)")
         .setRequired(false)
         .setMinValue(1)
     )
     .addBooleanOption(o =>
       o.setName("duplicados")
-        .setDescription("Si es true, quema TODAS tus cartas repetidas dejando 1 copia de cada una")
+        .setDescription("Si es true, recicla TODAS tus cartas repetidas conservando 1 copia de cada una")
         .setRequired(false)
     ),
 
@@ -51,7 +51,7 @@ module.exports = {
 
       const choices = filtered.slice(0, 25).map(card => {
         const tierStr = TIER_NAMES[card.tier] || "⚪ Común";
-        const label = `${card.emoji} ${card.name} (${card.anime}) [${tierStr}] - x${card.quantity}`;
+        const label = `${card.emoji} ${card.name} (${card.anime}) [${tierStr}] — x${card.quantity} disp.`;
         return {
           name: label.length > 100 ? label.slice(0, 97) + "..." : label,
           value: card.cardKey
@@ -81,21 +81,21 @@ module.exports = {
         const result = await cardService.burnAllDuplicates(userId);
 
         const container = new ContainerBuilder()
-          .setAccentColor(15105570) // Orange/Flame
+          .setAccentColor(2067276) // DarkGreen (Éxito / Payout)
           .addTextDisplayComponents(t =>
             t.setContent(
-              `## 🔥 Quema Masiva de Cartas Duplicadas\n\n` +
-              `Jugador: <@${userId}>\n\n` +
+              `## 🔥 Reciclaje Masivo de Duplicados\n` +
+              `Coleccionista: <@${userId}>\n\n` +
               `───────────────\n\n` +
-              `**Resumen de cartas recicladas:**\n` +
+              `### 📂 Resumen de Cartas Procesadas\n` +
               `⚪ **Comunes:** \`${result.breakdown.tier1}\` copias\n` +
               `🔵 **Raras:** \`${result.breakdown.tier2}\` copias\n` +
               `🟣 **Épicas:** \`${result.breakdown.tier3}\` copias\n` +
               `🟡 **Legendarias:** \`${result.breakdown.tier4}\` copias\n\n` +
               `Total reciclado: **${result.totalBurned} cartas**\n\n` +
               `───────────────\n\n` +
-              `💰 **Recompensa acreditada:** **${COIN}${result.totalCoins.toLocaleString("es-DO")}**\n\n` +
-              `✨ *Todas las cartas conservan al menos 1 copia en tu colección.*`
+              `💰 **Recompensa Acreditada:** **${COIN}${result.totalCoins.toLocaleString("es-DO")}**\n\n` +
+              `-# 💡 *Nota: Se ha conservado al menos 1 copia de cada carta en tu colección.*`
             )
           );
 
@@ -104,26 +104,28 @@ module.exports = {
 
       // 2. Burn specific card
       const result = await cardService.burnCard(userId, cartaKey, count);
-
+      const cardDetail = cardsData[cartaKey];
+      const animeStr = cardDetail?.anime ? ` *(${cardDetail.anime})*` : "";
       const tierStr = TIER_NAMES[result.tier] || "⚪ Común";
 
       const container = new ContainerBuilder()
-        .setAccentColor(15105570) // Orange/Flame
+        .setAccentColor(2067276) // DarkGreen (Éxito / Payout)
         .addTextDisplayComponents(t =>
           t.setContent(
-            `## 🔥 Quema de Carta Realizada\n\n` +
-            `Jugador: <@${userId}>\n\n` +
-            `**Carta quemada:** ${result.emoji} **${result.name}** (${tierStr})\n` +
-            `**Cantidad quemada:** \`x${result.count}\` copias\n` +
+            `## 🔥 Reciclaje de Carta Realizado\n` +
+            `Coleccionista: <@${userId}>\n\n` +
+            `───────────────\n\n` +
+            `**Carta reciclada:** ${result.emoji} **${result.name}**${animeStr} — ${tierStr}\n` +
+            `**Cantidad procesada:** \`x${result.count}\` copias\n` +
             `**Valor unitario:** ${COIN}${result.unitValue.toLocaleString("es-DO")}\n\n` +
             `───────────────\n\n` +
-            `💰 **Recompensa total:** **${COIN}${result.totalReward.toLocaleString("es-DO")}**`
+            `💰 **Recompensa Acreditada:** **${COIN}${result.totalReward.toLocaleString("es-DO")}**`
           )
         );
 
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     } catch (err) {
-      return interaction.editReply({ content: `❌ **Error al quemar cartas:** ${err.message}` });
+      return interaction.editReply({ content: `❌ **Error al reciclar cartas:** ${err.message}` });
     }
   }
 };

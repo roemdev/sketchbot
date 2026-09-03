@@ -1020,6 +1020,8 @@ module.exports = {
         await userService.addBalance("server_bank", -amount, false);
         await logTransaction({ discordId: "server_bank", type: "bank_withdrawal", amount: -amount, itemName: `Pago de diario a <@${userId}>` });
         await userService.addBalance(userId, amount, false);
+        const publicLogService = require("../../services/publicLogService");
+        publicLogService.logWorkReward(interaction.client, { userId, amount, sourceName: "Subsidio Diario" }).catch(() => {});
       } catch (updateError) {
         console.error(updateError);
         return interaction.editReply({

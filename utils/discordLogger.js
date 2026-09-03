@@ -41,6 +41,20 @@ async function logGameOutcome(interaction, gameName, bet, netProfit, won) {
       }
     }, 30000);
 
+    // --- ENVIAR NOTIFICACIÓN AL CANAL DE LOGS PÚBLICO ---
+    const publicLogService = require("../services/publicLogService");
+    if (interaction.client && user) {
+      if (won) {
+        if (gameName === "Trabajo" || gameName === "Tarea Diaria" || gameName === "Subsidio Diario") {
+          publicLogService.logWorkReward(interaction.client, { userId: user.id, amount: netProfit, sourceName: gameName }).catch(() => {});
+        } else if (netProfit > 0) {
+          publicLogService.logCoinWin(interaction.client, { userId: user.id, amount: netProfit, gameName }).catch(() => {});
+        }
+      } else if (!won && bet > 0) {
+        publicLogService.logCoinLoss(interaction.client, { userId: user.id, amount: bet, gameName }).catch(() => {});
+      }
+    }
+
   } catch (error) {
     console.error("[discordLogger] Error al enviar el log del resultado del juego a Discord:", error);
   }

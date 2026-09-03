@@ -14,5 +14,6 @@
   "voice": {
     "vcJoinChannel": "1312872660715175956",
     "vcNameTemplate": "{username}"
-  }
+  },
+  "publicLogChannel": "1545056871151566899"
 }

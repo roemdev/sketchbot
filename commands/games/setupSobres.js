@@ -347,6 +347,14 @@ module.exports = {
 
       try {
         const drawn = await cardService.openPack(userId, username);
+        const publicLogService = require("../../services/publicLogService");
+        for (const card of drawn) {
+          if (card.tier === 3) {
+            publicLogService.logEpicCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+          } else if (card.tier === 4) {
+            publicLogService.logLegendaryCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+          }
+        }
         const serialized = drawn.map(c => serializeCard(c.key, c.isNew)).join("-");
         const container = buildRevealPanel(userId, serialized, 0);
         const firstCardKey = deserializeCard(serialized.split("-")[0]);
@@ -495,6 +503,14 @@ module.exports = {
 
       try {
         const drawn = await cardService.openPack(userId, username);
+        const publicLogService = require("../../services/publicLogService");
+        for (const card of drawn) {
+          if (card.tier === 3) {
+            publicLogService.logEpicCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+          } else if (card.tier === 4) {
+            publicLogService.logLegendaryCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+          }
+        }
         const serialized = drawn.map(c => serializeCard(c.key, c.isNew)).join("-");
         const container = buildRevealPanel(userId, serialized, 0);
         const firstCardKey = deserializeCard(serialized.split("-")[0]);
