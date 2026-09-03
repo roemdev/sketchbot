@@ -28,6 +28,18 @@ module.exports = {
       return;
     }
 
+    if (interaction.isAutocomplete()) {
+      const command = interaction.client.commands.get(interaction.commandName);
+      if (command && typeof command.autocomplete === "function") {
+        try {
+          await command.autocomplete(interaction);
+        } catch (error) {
+          console.error(`Error ejecutando autocomplete para ${interaction.commandName}:`, error);
+        }
+      }
+      return;
+    }
+
     let command = null;
 
     if (interaction.isChatInputCommand()) {

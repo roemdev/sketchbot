@@ -316,6 +316,117 @@ async function getUserCollection(discordId) {
   };
 }
 
+// Get list of cards owned by a user with quantity > 0
+async function getUserOwnedCards(discordId) {
+  const { data: userCards, error } = await supabase
+    .from("user_cards")
+    .select("card_key, quantity")
+    .eq("discord_id", discordId)
+    .gt("quantity", 0);
+
+  if (error) throw error;
+  
+  return (userCards || []).map(row => {
+    const cardInfo = cardsData[row.card_key] || {};
+    return {
+      cardKey: row.card_key,
+      quantity: row.quantity,
+      name: cardInfo.name || row.card_key,
+      emoji: cardInfo.emoji || "🎴",
+      tier: cardInfo.tier || 1,
+      anime: cardInfo.anime || "Desconocido"
+    };
+  });
+}
+
+// Check if a user owns at least 1 copy of a card
+async function hasCard(discordId, cardKey) {
+  const { data, error } = await supabase
+    .from("user_cards")
+    .select("quantity")
+    .eq("discord_id", discordId)
+    .eq("card_key", cardKey)
+    .single();
+
+  if (error && error.code !== "PGRST116") throw error;
+  return data && data.quantity > 0;
+}
+
+// Safely remove 1 card copy from a user
+async function removeCardFromCollection(discordId, cardKey) {
+  const { data, error } = await supabase
+    .from("user_cards")
+    .select("id, quantity")
+    .eq("discord_id", discordId)
+    .eq("card_key", cardKey)
+    .single();
+
+  if (error) throw error;
+  if (!data || data.quantity < 1) {
+    throw new Error(`El usuario no posee suficientes copias de la carta ${cardKey}.`);
+  }
+
+  const newQty = data.quantity - 1;
+  if (newQty > 0) {
+    const { error: updateError } = await supabase
+      .from("user_cards")
+      .update({ quantity: newQty })
+      .eq("id", data.id);
+    if (updateError) throw updateError;
+  } else {
+    const { error: deleteError } = await supabase
+      .from("user_cards")
+      .delete()
+      .eq("id", data.id);
+    if (deleteError) throw deleteError;
+  }
+}
+
+// Swap cards between two users atomically
+async function swapCards(userAId, cardAKey, userBId, cardBKey) {
+  const hasA = await hasCard(userAId, cardAKey);
+  if (!hasA) {
+    const nameA = cardsData[cardAKey]?.name || cardAKey;
+    throw new Error(`<@${userAId}> ya no posee la carta **${nameA}**.`);
+  }
+
+  const hasB = await hasCard(userBId, cardBKey);
+  if (!hasB) {
+    const nameB = cardsData[cardBKey]?.name || cardBKey;
+    throw new Error(`<@${userBId}> ya no posee la carta **${nameB}**.`);
+  }
+
+  // 1. Remove cardA from user A and add to user B
+  await removeCardFromCollection(userAId, cardAKey);
+  await addCardToCollection(userBId, cardAKey);
+
+  // 2. Remove cardB from user B and add to user A
+  await removeCardFromCollection(userBId, cardBKey);
+  await addCardToCollection(userAId, cardBKey);
+
+  // 3. Log transactions
+  const cardAName = cardsData[cardAKey]?.name || cardAKey;
+  const cardBName = cardsData[cardBKey]?.name || cardBKey;
+
+  await logTransaction({
+    discordId: userAId,
+    type: "trade_cards",
+    itemName: `Intercambio: Entregó ${cardAName} por ${cardBName}`,
+    amount: 1,
+    totalPrice: 0
+  }).catch(console.error);
+
+  await logTransaction({
+    discordId: userBId,
+    type: "trade_cards",
+    itemName: `Intercambio: Entregó ${cardBName} por ${cardAName}`,
+    amount: 1,
+    totalPrice: 0
+  }).catch(console.error);
+
+  return true;
+}
+
 module.exports = {
   getCardsByTier,
   drawCard,
@@ -325,5 +436,8 @@ module.exports = {
   claimDailyPack,
   buyPacks,
   openPack,
-  getUserCollection
+  getUserCollection,
+  getUserOwnedCards,
+  hasCard,
+  swapCards
 };
