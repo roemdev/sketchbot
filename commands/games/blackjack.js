@@ -184,6 +184,10 @@ function resetSessionTimeout(userId, interaction) {
     if (!session) return;
     if (session.timeout) clearTimeout(session.timeout);
     
+    if (interaction) {
+        session.interaction = interaction;
+    }
+
     session.timeout = setTimeout(async () => {
         const s = sessions.get(userId);
         if (s) {
@@ -407,19 +411,21 @@ module.exports = {
             return interaction.reply({ content: "Esta partida ya ha terminado o expiró.", flags: MessageFlags.Ephemeral });
         }
 
-        // Lock de procesamiento antipánico
+        // Lock de procesamiento antipánico: ignorar clics concurrentes SIN deferir para evitar interacciones huérfanas en la UI de Discord
         if (session.processing) {
-            try {
-                await interaction.deferUpdate();
-            } catch {}
             return true;
         }
         session.processing = true;
 
-        // Diferir la actualización inmediatamente para evitar el límite de los 3 segundos
         try {
             await interaction.deferUpdate();
-        } catch {}
+        } catch (e) {
+            session.processing = false;
+            return true;
+        }
+
+        // Actualizar referencia de interacción para asegurar tokens válidos en caso de timeout
+        session.interaction = interaction;
 
         try {
             if (action === "hit") {
@@ -432,7 +438,8 @@ module.exports = {
 
                     await transactionService.logTransaction({ discordId: userId, type: "game", amount: 0 });
 
-                    const casinoTax = Math.floor(session.bet * config.games.loseTaxRate);
+                    const user = await userService.getUser(userId);
+                    const casinoTax = Math.floor(session.bet * (user && user.profession === "gambler" ? 0 : config.games.loseTaxRate));
                     if (casinoTax > 0) {
                         await userService.addBalance("server_casino", -casinoTax, false);
                         await userService.addBalance("server_bank", casinoTax, false);
@@ -447,7 +454,6 @@ module.exports = {
                     return true;
                 } else {
                     resetSessionTimeout(userId, interaction);
-                    session.processing = false;
 
                     const playContainer = buildBlackjackPanel(userId, session);
                     await interaction.editReply({ components: [playContainer], flags: MessageFlags.IsComponentsV2 });
@@ -458,7 +464,6 @@ module.exports = {
             if (action === "double") {
                 const currentBalance = await userService.getBalance(userId);
                 if (currentBalance < session.bet) {
-                    session.processing = false;
                     await interaction.followUp({ content: "No tienes suficientes monedas para doblar tu apuesta.", flags: MessageFlags.Ephemeral });
                     return true;
                 }
@@ -487,7 +492,7 @@ module.exports = {
                         await transactionService.logTransaction({ discordId: "server_casino", type: "bank_withdrawal", amount: -casinoTax, itemName: `Impuesto del ${(config.games.loseTaxRate * 100).toFixed(0)}% pagado al Banco` });
                     }
 
-                    const loseContainer = buildBlackjackPanel(userId, session, true, "lose", (user && user.profession === "gambler" ? 0 : config.games.winTaxRate));
+                    const loseContainer = buildBlackjackPanel(userId, session, true, "lose");
                     await interaction.editReply({ components: [loseContainer], flags: MessageFlags.IsComponentsV2 });
                     
                     await logGameOutcome(interaction, "Blackjack", session.bet, session.bet, false);
@@ -511,7 +516,9 @@ module.exports = {
                     outcome = "win";
                     payout = session.bet * 2;
                     const profit = payout - session.bet;
-                    const tax = Math.floor(profit * config.games.winTaxRate);
+                    const user = await userService.getUser(userId);
+                    const taxRate = user && user.profession === "gambler" ? 0 : config.games.winTaxRate;
+                    const tax = Math.floor(profit * taxRate);
                     finalPayout = payout - tax;
                     
                     await userService.addBalance(userId, finalPayout, false);
@@ -545,8 +552,7 @@ module.exports = {
 
                 await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
 
-                const user = await userService.getUser(userId);
-                const finishContainer = buildBlackjackPanel(userId, session, true, outcome, (user && user.profession === "gambler" ? 0 : config.games.winTaxRate));
+                const finishContainer = buildBlackjackPanel(userId, session, true, outcome);
                 await interaction.editReply({ components: [finishContainer], flags: MessageFlags.IsComponentsV2 });
                 
                 if (outcome !== "push") {
@@ -611,8 +617,7 @@ module.exports = {
 
                 await transactionService.logTransaction({ discordId: userId, type: "game", amount: finalPayout });
 
-                const user = await userService.getUser(userId);
-                const finishContainer = buildBlackjackPanel(userId, session, true, outcome, (user && user.profession === "gambler" ? 0 : config.games.winTaxRate));
+                const finishContainer = buildBlackjackPanel(userId, session, true, outcome);
                 await interaction.editReply({ components: [finishContainer], flags: MessageFlags.IsComponentsV2 });
                 
                 if (outcome !== "push") {
@@ -620,14 +625,16 @@ module.exports = {
                 }
                 return true;
             }
-
         } catch (error) {
             console.error("Error en blackjack buttonHandler:", error);
-            session.processing = false;
+            if (session.timeout) clearTimeout(session.timeout);
+            sessions.delete(userId);
             try {
                 await interaction.followUp({ content: "Ocurrió un error procesando tu movimiento.", flags: MessageFlags.Ephemeral });
             } catch {}
             return true;
+        } finally {
+            session.processing = false;
         }
         
         return false;
