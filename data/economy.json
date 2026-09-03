@@ -64,6 +64,12 @@
       "tier2": 0.13,
       "tier3": 0.04,
       "legendary": 0.01
+    },
+    "burnValues": {
+      "tier1": 2500,
+      "tier2": 7500,
+      "tier3": 25000,
+      "tier4": 100000
     }
   },
   "roles": {

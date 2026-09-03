@@ -427,6 +427,138 @@ async function swapCards(userAId, cardAKey, userBId, cardBKey) {
   return true;
 }
 
+function getBurnValueForTier(tier) {
+  const defaults = { tier1: 2500, tier2: 7500, tier3: 25000, tier4: 100000 };
+  const burnValues = config.cardsMinigame?.burnValues || defaults;
+  if (tier === 1) return burnValues.tier1 || 2500;
+  if (tier === 2) return burnValues.tier2 || 7500;
+  if (tier === 3) return burnValues.tier3 || 25000;
+  return burnValues.tier4 || 100000;
+}
+
+// Burn a specific quantity of a specific card for coins
+async function burnCard(discordId, cardKey, count = 1) {
+  if (count <= 0) throw new Error("La cantidad a quemar debe ser mayor a 0.");
+
+  const cardInfo = cardsData[cardKey];
+  if (!cardInfo) throw new Error(`La carta ${cardKey} no existe.`);
+
+  const { data, error } = await supabase
+    .from("user_cards")
+    .select("id, quantity")
+    .eq("discord_id", discordId)
+    .eq("card_key", cardKey)
+    .single();
+
+  if (error && error.code === "PGRST116") {
+    throw new Error(`No posees la carta **${cardInfo.name}**.`);
+  } else if (error) {
+    throw error;
+  }
+
+  if (!data || data.quantity < count) {
+    throw new Error(`No posees suficientes copias de **${cardInfo.name}**. Tienes ${data?.quantity || 0} y quieres quemar ${count}.`);
+  }
+
+  const newQty = data.quantity - count;
+  if (newQty > 0) {
+    const { error: updateError } = await supabase
+      .from("user_cards")
+      .update({ quantity: newQty })
+      .eq("id", data.id);
+    if (updateError) throw updateError;
+  } else {
+    const { error: deleteError } = await supabase
+      .from("user_cards")
+      .delete()
+      .eq("id", data.id);
+    if (deleteError) throw deleteError;
+  }
+
+  const unitValue = getBurnValueForTier(cardInfo.tier);
+  const totalReward = unitValue * count;
+
+  // Add balance to user, deduct from bank
+  await userService.addBalance(discordId, totalReward, false);
+  await userService.addBalance("server_bank", -totalReward, false);
+
+  await logTransaction({
+    discordId,
+    type: "burn_cards",
+    itemName: `Quema de ${count}x ${cardInfo.name}`,
+    amount: count,
+    totalPrice: totalReward
+  }).catch(console.error);
+
+  return {
+    count,
+    cardKey,
+    name: cardInfo.name,
+    emoji: cardInfo.emoji,
+    tier: cardInfo.tier,
+    unitValue,
+    totalReward
+  };
+}
+
+// Mass burn all duplicate copies (quantity > 1) keeping 1 copy of each card
+async function burnAllDuplicates(discordId) {
+  const { data: userCards, error } = await supabase
+    .from("user_cards")
+    .select("id, card_key, quantity")
+    .eq("discord_id", discordId)
+    .gt("quantity", 1);
+
+  if (error) throw error;
+  if (!userCards || userCards.length === 0) {
+    throw new Error("No tienes cartas duplicadas para quemar en este momento.");
+  }
+
+  let totalCoins = 0;
+  let totalBurned = 0;
+  const breakdown = { tier1: 0, tier2: 0, tier3: 0, tier4: 0 };
+
+  for (const row of userCards) {
+    const cardInfo = cardsData[row.card_key] || { tier: 1 };
+    const burnQty = row.quantity - 1;
+    const unitValue = getBurnValueForTier(cardInfo.tier);
+    const reward = unitValue * burnQty;
+
+    // Update row to quantity = 1
+    const { error: updateError } = await supabase
+      .from("user_cards")
+      .update({ quantity: 1 })
+      .eq("id", row.id);
+
+    if (updateError) throw updateError;
+
+    totalCoins += reward;
+    totalBurned += burnQty;
+    if (cardInfo.tier === 1) breakdown.tier1 += burnQty;
+    else if (cardInfo.tier === 2) breakdown.tier2 += burnQty;
+    else if (cardInfo.tier === 3) breakdown.tier3 += burnQty;
+    else breakdown.tier4 += burnQty;
+  }
+
+  // Credit reward to user
+  await userService.addBalance(discordId, totalCoins, false);
+  await userService.addBalance("server_bank", -totalCoins, false);
+
+  await logTransaction({
+    discordId,
+    type: "burn_cards_mass",
+    itemName: `Quema masiva de ${totalBurned} cartas duplicadas`,
+    amount: totalBurned,
+    totalPrice: totalCoins
+  }).catch(console.error);
+
+  return {
+    totalBurned,
+    totalCoins,
+    breakdown
+  };
+}
+
 module.exports = {
   getCardsByTier,
   drawCard,
@@ -439,5 +571,7 @@ module.exports = {
   getUserCollection,
   getUserOwnedCards,
   hasCard,
-  swapCards
+  swapCards,
+  burnCard,
+  burnAllDuplicates
 };
