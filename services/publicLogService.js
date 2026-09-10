@@ -18,24 +18,30 @@ async function getLogChannel(client) {
 
 // 1. Entrada de usuario (Color neutro NotQuiteBlack: 2303786) - 1 línea
 async function logMemberJoin(member) {
-  const channel = await getLogChannel(member.client);
+  if (!member) return;
+  const client = member.client || member.guild?.client;
+  const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const userId = member.user?.id || member.id;
   const container = new ContainerBuilder()
     .setAccentColor(2303786)
-    .addTextDisplayComponents(t => t.setContent(`📥 **<@${member.id}>** se ha unido a la comunidad.`));
+    .addTextDisplayComponents(t => t.setContent(`📥 **<@${userId}>** se ha unido a la comunidad.`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }
 
 // 2. Salida de usuario (Color neutro NotQuiteBlack: 2303786) - 1 línea
 async function logMemberLeave(member) {
-  const channel = await getLogChannel(member.client);
+  if (!member) return;
+  const client = member.client || member.guild?.client;
+  const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const userId = member.user?.id || member.id;
   const container = new ContainerBuilder()
     .setAccentColor(2303786)
-    .addTextDisplayComponents(t => t.setContent(`📤 **<@${member.id}>** ha dejado el servidor.`));
+    .addTextDisplayComponents(t => t.setContent(`📤 **<@${userId}>** ha dejado el servidor.`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }
@@ -45,9 +51,10 @@ async function logCoinWin(client, { userId, amount, gameName }) {
   const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const formattedAmount = Number(amount || 0).toLocaleString("es-DO");
   const container = new ContainerBuilder()
     .setAccentColor(2067276)
-    .addTextDisplayComponents(t => t.setContent(`💰 **<@${userId}>** ganó **${COIN}${amount.toLocaleString("es-DO")}** en **${gameName}**.`));
+    .addTextDisplayComponents(t => t.setContent(`💰 **<@${userId}>** ganó **${COIN}${formattedAmount}** en **${gameName || "Juego"}**.`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }
@@ -57,9 +64,10 @@ async function logCoinLoss(client, { userId, amount, gameName }) {
   const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const formattedAmount = Number(amount || 0).toLocaleString("es-DO");
   const container = new ContainerBuilder()
     .setAccentColor(10038562)
-    .addTextDisplayComponents(t => t.setContent(`💥 **<@${userId}>** perdió **${COIN}${amount.toLocaleString("es-DO")}** en **${gameName}**.`));
+    .addTextDisplayComponents(t => t.setContent(`💥 **<@${userId}>** perdió **${COIN}${formattedAmount}** en **${gameName || "Juego"}**.`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }
@@ -69,9 +77,10 @@ async function logWorkReward(client, { userId, amount, sourceName }) {
   const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const formattedAmount = Number(amount || 0).toLocaleString("es-DO");
   const container = new ContainerBuilder()
     .setAccentColor(2067276)
-    .addTextDisplayComponents(t => t.setContent(`🪙 **<@${userId}>** recibió **${COIN}${amount.toLocaleString("es-DO")}** por **${sourceName}**.`));
+    .addTextDisplayComponents(t => t.setContent(`🪙 **<@${userId}>** recibió **${COIN}${formattedAmount}** por **${sourceName || "Trabajo"}**.`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }
@@ -81,9 +90,13 @@ async function logEpicCardPull(client, { userId, cardName, anime, emoji }) {
   const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const safeCardName = cardName || "Carta Desconocida";
+  const safeAnime = anime || "Anime";
+  const safeEmoji = emoji || "🟣";
+
   const container = new ContainerBuilder()
     .setAccentColor(7419530)
-    .addTextDisplayComponents(t => t.setContent(`🟣 **<@${userId}>** obtuvo la carta Épica ${emoji || "🟣"} **${cardName}** *(${anime || "Anime"})*.`));
+    .addTextDisplayComponents(t => t.setContent(`🟣 **<@${userId}>** obtuvo la carta Épica ${safeEmoji} **${safeCardName}** *(${safeAnime})*.`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }
@@ -93,9 +106,13 @@ async function logLegendaryCardPull(client, { userId, cardName, anime, emoji }) 
   const channel = await getLogChannel(client);
   if (!channel) return;
 
+  const safeCardName = cardName || "Carta Desconocida";
+  const safeAnime = anime || "Anime";
+  const safeEmoji = emoji || "🟡";
+
   const container = new ContainerBuilder()
     .setAccentColor(15844367)
-    .addTextDisplayComponents(t => t.setContent(`🟡 **<@${userId}>** ¡ha conseguido la carta Legendaria ${emoji || "🟡"} **${cardName}** *(${anime || "Anime"})*!`));
+    .addTextDisplayComponents(t => t.setContent(`🟡 **<@${userId}>** ¡ha conseguido la carta Legendaria ${safeEmoji} **${safeCardName}** *(${safeAnime})*!`));
 
   await channel.send({ components: [container], flags: MessageFlags.IsComponentsV2, ...SILENT_MENTIONS }).catch(console.error);
 }

@@ -349,10 +349,14 @@ module.exports = {
         const drawn = await cardService.openPack(userId, username);
         const publicLogService = require("../../services/publicLogService");
         for (const card of drawn) {
+          const cardDetail = cardsData[card.key] || card;
+          const cardName = card.name || cardDetail.name;
+          const anime = card.anime || cardDetail.anime;
+          const emoji = card.emoji || cardDetail.emoji;
           if (card.tier === 3) {
-            publicLogService.logEpicCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+            publicLogService.logEpicCardPull(interaction.client, { userId, cardName, anime, emoji }).catch(console.error);
           } else if (card.tier === 4) {
-            publicLogService.logLegendaryCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+            publicLogService.logLegendaryCardPull(interaction.client, { userId, cardName, anime, emoji }).catch(console.error);
           }
         }
         const serialized = drawn.map(c => serializeCard(c.key, c.isNew)).join("-");
@@ -505,10 +509,14 @@ module.exports = {
         const drawn = await cardService.openPack(userId, username);
         const publicLogService = require("../../services/publicLogService");
         for (const card of drawn) {
+          const cardDetail = cardsData[card.key] || card;
+          const cardName = card.name || cardDetail.name;
+          const anime = card.anime || cardDetail.anime;
+          const emoji = card.emoji || cardDetail.emoji;
           if (card.tier === 3) {
-            publicLogService.logEpicCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+            publicLogService.logEpicCardPull(interaction.client, { userId, cardName, anime, emoji }).catch(console.error);
           } else if (card.tier === 4) {
-            publicLogService.logLegendaryCardPull(interaction.client, { userId, cardName: card.name, anime: card.anime, emoji: card.emoji }).catch(console.error);
+            publicLogService.logLegendaryCardPull(interaction.client, { userId, cardName, anime, emoji }).catch(console.error);
           }
         }
         const serialized = drawn.map(c => serializeCard(c.key, c.isNew)).join("-");

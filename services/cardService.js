@@ -255,6 +255,11 @@ async function openPack(discordId, username) {
   }
   
   for (const card of drawn) {
+    const cardInfo = cardsData[card.key] || {};
+    card.name = cardInfo.name;
+    card.anime = cardInfo.anime;
+    card.emoji = cardInfo.emoji;
+    card.imageUrl = cardInfo.imageUrl;
     const isNew = await addCardToCollection(discordId, card.key);
     card.isNew = isNew;
   }
