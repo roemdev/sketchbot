@@ -72,7 +72,7 @@ export default function VaultMonitor({ stats }: VaultMonitorProps) {
             <ul className={styles.detailList}>
               <li className={styles.detailItem}>
                 <span className={styles.bulletPink}></span>
-                <span><strong>Entradas:</strong> Fichas apostadas en juegos de Blackjack, Minas, Torre y Smash Bros.</span>
+                <span><strong>Entradas:</strong> Fichas apostadas en juegos de Blackjack, Minas, Torre y Coinflip.</span>
               </li>
               <li className={styles.detailItem}>
                 <span className={styles.bulletPink}></span>

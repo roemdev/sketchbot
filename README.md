@@ -37,7 +37,7 @@ El banco central actúa como la reserva fiscal del servidor y el sustento de la 
 
 ### 2. El Casino del Servidor (`/casino`)
 El casino opera de forma independiente y posee su propia bóveda financiera:
-*   **Juegos Incorporados:** Al apostar en `/blackjack`, `/minas`, `/torre`, `/cara-cruz` o `/smash`, la apuesta del jugador se deposita físicamente en el casino.
+*   **Juegos Incorporados:** Al apostar en `/blackjack`, `/minas`, `/torre` o `/cara-cruz`, la apuesta del jugador se deposita físicamente en el casino.
 *   **Tasa Impositiva sobre Pérdidas:** Cuando un jugador pierde, el casino retiene el 100% de la apuesta, pero tributa un **20% de impuesto de pérdida** (dinámico desde `economy.json`) que se descuenta del casino y se transfiere al banco central.
 *   **Tasa Impositiva sobre Ganancias:** Cuando un jugador gana, el premio neto se le paga desde la bóveda del casino y se aplica un **10% de impuesto a las ganancias** (dinámico desde `economy.json`) sobre el profit neto, debitado del casino y transferido al banco.
 *   **Intrusión delictiva:** El casino puede ser hackeado mediante la opción de **Hackeo** en `/crimen`. Si no cuenta con fondos suficientes para el botín, se activa el sistema de bancarrota interactivo.
@@ -62,7 +62,6 @@ El casino opera de forma independiente y posee su propia bóveda financiera:
 *   `/minas` [apuesta] [minas] - Encuentra gemas en un tablero de 3x3 evitando las bombas ocultas. Permite retiro manual, victoria perfecta y expiración por inactividad.
 *   `/torre` [apuesta] - Escala una torre donde cada nivel multiplica tu ganancia actual, con riesgo de colapso total.
 *   `/cara-cruz` [apuesta] [elección] - Clásico cara o cruz para duplicar tu dinero.
-*   `/smash` - Sistema de apuestas multijugador hosteadas para partidas de Super Smash Bros.
 
 ### 🌟 Niveles y XP por Voz
 *   **Ganancia en Canales de Voz (`voiceXpService.js`):** El bot otorga XP aleatoria cada minuto a los usuarios activos en los canales de voz.

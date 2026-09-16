@@ -108,12 +108,7 @@ export const BOT_COMMANDS: BotCommand[] = [
     usage: "/cara-cruz <apuesta> <lado>",
     cooldown: "10 seg",
   },
-  {
-    name: "/smash",
-    description: "Crea y participa en salas de apuestas en tiempo real para partidas competitivas de Smash Bros.",
-    category: "games",
-    usage: "/smash crear <apuesta> <luchador>",
-  },
+
 
   // LEVELS
   {

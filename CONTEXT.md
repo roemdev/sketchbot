@@ -20,7 +20,7 @@ Toda la economía del servidor se basa en la transferencia física de monedas en
 *   **Propósito:** Actúa como el tesoro público del servidor y financia las recompensas de la comunidad.
 *   **Fuentes de Ingresos (Sinks):**
     *   **Trabajo (`/trabajo`):** Cada trabajo inyecta monedas (entre `100,000` y `240,000` según `economy.json`) al banco.
-    *   **Impuesto a las Ganancias (10%):** En `/blackjack`, `/minas`, `/torre`, `/cara-cruz` y `/smash`, el 10% (dinámico desde `economy.json`) de la ganancia neta del ganador se extrae de la bóveda del casino y se deposita en el banco.
+    *   **Impuesto a las Ganancias (10%):** En `/blackjack`, `/minas`, `/torre` y `/cara-cruz`, el 10% (dinámico desde `economy.json`) de la ganancia neta del ganador se extrae de la bóveda del casino y se deposita en el banco.
     *   **Impuesto del Casino (20%):** El casino paga al banco el 20% (dinámico desde `economy.json`) de cada apuesta perdida por los jugadores.
     *   **Multas por Delincuencia:** Las multas cobradas de `/crimen` fallidos (Robos, Fraude o Hackeo) se depositan en el banco.
 *   **Egresos (Sources):**
@@ -30,7 +30,7 @@ Toda la economía del servidor se basa en la transferencia física de monedas en
 ### 2. El Casino del Servidor (`server_casino`)
 *   **Propósito:** Funciona como la casa de juego independiente y custodia todos los pozos de apuestas.
 *   **Fuentes de Ingresos (Sinks):**
-    *   **Apuestas Iniciales:** El 100% de la apuesta de `/blackjack`, `/minas`, `/torre`, `/cara-cruz` y `/smash` se extrae del jugador y se ingresa en el casino.
+    *   **Apuestas Iniciales:** El 100% de la apuesta de `/blackjack`, `/minas`, `/torre` y `/cara-cruz` se extrae del jugador y se ingresa en el casino.
 *   **Egresos (Sources):**
     *   **Pago de Premios:** El 100% del premio bruto ganado se debita del casino (el jugador recibe el premio neto y el impuesto del 10% va al banco).
     *   **Impuesto de Pérdidas:** Al perder el jugador, el casino le paga al banco el 20% de la apuesta retenida.
@@ -66,8 +66,7 @@ sketchbot/
 │   │   ├── blackjack.js   # Blackjack interactivo 21 contra el dealer
 │   │   ├── coinflip.js    # Coinflip / cara-cruz de apuestas
 │   │   ├── minas.js       # Campo de minas interactivo 3x3
-│   │   ├── riskTower.js   # Torre de riesgo interactiva
-│   │   └── smash.js       # Apuestas multijugador hosteadas para Smash Bros
+│   │   └── riskTower.js   # Torre de riesgo interactiva
 │   ├── levels/
 │   │   ├── manageXp.js    # Control administrativo de XP y niveles de usuarios
 │   │   ├── nivel.js       # Visualización del nivel propio o de otro usuario
@@ -80,17 +79,15 @@ sketchbot/
 │       ├── setupColors.js # Configuración de roles de colores autogestionados (renombrado a CamelCase)
 │       └── setupVoice.js  # Configuración del canal de creación de voz temporal
 ├── data/                  # Base de datos de configuración local
-│   ├── cards.json         # Emojis dinámicos de naipes de poker
+│   ├── cards.json         # Coleccionable de cartas TCG Anime Storm
 │   ├── economy.json       # Centralizado: Parámetros de enfriamientos, tasas de apuestas y economía
 │   ├── levels.json        # Centralizado: Rangos de XP, intervalos de voz y emojis de niveles
-│   ├── settings.json      # Centralizado: Colores semánticos de embeds, canales temp y roles de colores
-│   └── smash.json         # Base de datos de luchadores de Smash Bros con emojis
+│   └── settings.json      # Centralizado: Colores semánticos de embeds, canales temp y roles de colores
 ├── services/              # Lógica de negocio y conectores de base de datos
 │   ├── dbService.js       # Conexión nativa a Supabase
 │   ├── userService.js     # Creación, balance, XP y niveles de usuarios
 │   ├── transactionService.js # Historial de transacciones de Supabase
 │   ├── cooldownService.js # Enfriamientos en base de datos
-│   ├── memoryCooldownService.js # Enfriamientos interactivos en memoria
 │   ├── minecraftService.js # Conector RCON de Minecraft
 │   ├── roleRewardService.js # Sincronización automática de roles de nivel
 │   ├── storeService.js    # Lógica de compras en la tienda
@@ -113,7 +110,7 @@ Es imperativo preservar estrictamente los colores semánticos definidos para man
 *   **General-informativo y demás (NotQuiteBlack):** `2303786` (hex: `#23272A` / `0x23272A`). Utilizado para balances, clasificaciones, menús, configuraciones y empates/timeouts neutros.
 *   **Fail / Derrota / Bust (DarkRed):** `10038562` (hex: `#992D22` / `0x992D22`). Utilizado para derrotas de juegos, colapsos, fallos y multas de crímenes.
 *   **Éxito / Victoria / Payouts (DarkGreen):** `2067276` (hex: `#1F8B4C` / `0x1F8B4C`). Utilizado para reclamaciones diarias, subidas de nivel, victorias y cobros exitosos.
-*   **Apuestas activas / Juegos (DarkPurple):** `7419530` (hex: `#71368A` / `0x71368A`). Utilizado para el estado activo de juegos en curso (torre, minas, blackjack, smash) y el balance del casino.
+*   **Apuestas activas / Juegos (DarkPurple):** `7419530` (hex: `#71368A` / `0x71368A`). Utilizado para el estado activo de juegos en curso (torre, minas, blackjack, coinflip) y el balance del casino.
 
 Los errores no llevan contenedor, sino texto plano y se responden en efímero.
 
