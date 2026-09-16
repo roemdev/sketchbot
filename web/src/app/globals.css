@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Fonts */
+  --font-sans: var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-tech: var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ARKANIA Clean Modern Palette */
+  --bg-base: #07090e;
+  --bg-surface: #0d1117;
+  --bg-card: rgba(18, 24, 32, 0.6);
+  --bg-card-hover: rgba(26, 34, 46, 0.8);
+  --bg-panel: #111722;
+
+  /* Primary Accent: Toxic Bio-Green */
+  --color-primary: #00ff66;
+  --color-primary-dark: #00cc52;
+  --color-primary-glow: rgba(0, 255, 102, 0.25);
+  --color-chem: #00ff66;
+
+  /* Accents */
+  --color-cyan: #38bdf8;
+  --color-purple: #a855f7;
+  --color-gold: #fbbf24;
+  --color-emerald: #10b981;
+
+  /* Minimalist Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-green: rgba(0, 255, 102, 0.3);
+
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Shadows */
+  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-box: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+  position: relative;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 255, 102, 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 85% 35%, rgba(56, 189, 248, 0.04) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Clean Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Plus Jakarta Sans', var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+button, input, select, textarea {
+  font-family: 'Plus Jakarta Sans', var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Clean Button System */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Plus Jakarta Sans', var(--font-sans), sans-serif !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 11px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.btn-gaming-primary {
+  background: var(--color-primary);
+  color: #050806;
+  font-weight: 700;
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.35);
+}
+
+.btn-gaming-primary:hover {
+  background: #26ff7d;
+  box-shadow: 0 0 28px rgba(0, 255, 102, 0.55);
+  transform: translateY(-1px);
+}
+
+.btn-gaming-gold {
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--color-gold);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.btn-gaming-gold:hover {
+  background: rgba(251, 191, 36, 0.22);
+  border-color: var(--color-gold);
+  transform: translateY(-1px);
+}
+
+.btn-gaming-outline {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+}
+
+.btn-gaming-outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-family: 'Plus Jakarta Sans', var(--font-sans), sans-serif !important;
+  font-size: 2.1rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-align: center;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.section-title span {
+  color: var(--color-primary);
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  font-weight: 400;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 42px auto;
+  line-height: 1.65;
+}
+
+/* Status Indicator Dot */
+.status-dot-emerald {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.7rem;
+  }
+  .container {
+    padding: 0 16px;
+  }
+}

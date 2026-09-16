@@ -1,0 +1,70 @@
+[
+  {
+    "id": "minecraft",
+    "name": "Minecraft",
+    "genre": "Supervivencia & Aventura",
+    "ip": "us-abe-premium-01.arkaniahost.xyz:25565",
+    "port": "25565",
+    "version": "Java 1.20+ / Compatible",
+    "status": "online",
+    "image": "/assets/games/minecraft.jpg",
+    "badge": "Host Premium • RCON Conectado",
+    "description": "Supervivencia comunitaria con economía conectada al bot, protección de parcelas y mundo libre.",
+    "highlights": [
+      "Vanilla+ con dificultad difícil",
+      "Tienda integrada con comandos de Discord",
+      "Protección de construcciones y cofres"
+    ]
+  },
+  {
+    "id": "palworld",
+    "name": "Palworld",
+    "genre": "Survival Crafting & Criaturas",
+    "ip": "us-abe-premium-01.arkaniahost.xyz:8211",
+    "port": "8211",
+    "version": "Última Versión Oficial",
+    "status": "online",
+    "image": "/assets/games/palworld.jpg",
+    "badge": "Host Premium • 32 Slots",
+    "description": "Exploración de las islas Palpagos, captura en equipo, bases automatizadas y cacería de jefes.",
+    "highlights": [
+      "Servidor dedicado fluido 24/7",
+      "Tasas ajustadas: Exp x1.5 e Incubación x2",
+      "Compañeros de clan y bases protegidas"
+    ]
+  },
+  {
+    "id": "enshrouded",
+    "name": "Enshrouded",
+    "genre": "Action RPG & Construcción",
+    "ip": "us-abe-premium-01.arkaniahost.xyz:25574",
+    "port": "25574",
+    "version": "Última Versión Oficial",
+    "status": "online",
+    "image": "/assets/games/enshrouded.jpg",
+    "badge": "Host Premium • Cooperativo",
+    "description": "Mundo de fantasía y niebla. Adéntrate en el Manto, forja equipo y levanta fortalezas con el clan.",
+    "highlights": [
+      "Cooperativo persistente hasta 16 miembros",
+      "Construcción de bases voxel sin límites",
+      "Raids a templos y mazmorras en grupo"
+    ]
+  },
+  {
+    "id": "project-zomboid",
+    "name": "Project Zomboid",
+    "genre": "Survival Zombie Hardcore",
+    "ip": "us-abe-01.arkaniahost.xyz:16261",
+    "port": "16261",
+    "version": "Build 41 Multi",
+    "status": "online",
+    "image": "/assets/games/zomboid.jpg",
+    "badge": "Dedicado • Knox Country",
+    "description": "Supervivencia realista postapocalíptica. Fortificación de casas, convoyes de autos y zombis letales.",
+    "highlights": [
+      "Knox Country con zombis rápidos de noche",
+      "Loot x1.2 y refugios comunitarios",
+      "Mecánicas médicas y vehículos compartidos"
+    ]
+  }
+]
