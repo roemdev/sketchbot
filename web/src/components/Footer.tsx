@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import LiveVisitors from "./LiveVisitors";
 import styles from "./Footer.module.css";
 
 export default function Footer() {
@@ -59,6 +60,8 @@ export default function Footer() {
             </ul>
           </div>
         </div>
+
+        <LiveVisitors />
 
         <div className={styles.bottomBar}>
           <div>© {new Date().getFullYear()} ARKANIA DISCORD COMMUNITY • Impulsado por SketchBot</div>
