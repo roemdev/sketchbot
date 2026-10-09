@@ -57,7 +57,7 @@ async function scanVoiceChannels(client) {
             await transactionService.logTransaction({ discordId: "server_bank", type: "bank_withdrawal", amount: -coinReward, itemName: `Premio de nivel (Voz) a <@${member.id}>` });
             await userService.addBalance(member.id, coinReward, false);
 
-            // 6. Sincronizar roles de nivel según la tabla de supabase (sin acumulación)
+            // 6. Sincronizar roles de nivel según la tabla de la base de datos (sin acumulación)
             let roleAwardedText = "";
             try {
               const syncResult = await roleRewardService.syncMemberRoles(member, xpInfo.level);

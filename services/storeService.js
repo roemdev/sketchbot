@@ -1,35 +1,19 @@
-const supabase = require("./dbService");
+const db = require("./dbService");
+const userService = require("./userService");
 const { sendCommand } = require("./minecraftService");
 const { isValidMinecraftNick } = require("../utils/validation");
 
 async function getItem(itemId) {
-  const { data, error } = await supabase
-      .from("store")
-      .select("*")
-      .eq("id", itemId)
-      .eq("status", "available")
-      .single();
-  if (error) return null;
-  return data;
+  const row = db.get(`SELECT * FROM store WHERE id = ? AND status = 'available'`, itemId);
+  return row ?? null;
 }
 
 async function getItems(status = "available") {
-  const { data, error } = await supabase
-      .from("store")
-      .select("*")
-      .eq("status", status);
-  if (error) throw error;
-  return data ?? [];
+  const rows = db.query(`SELECT * FROM store WHERE status = ?`, status);
+  return rows ?? [];
 }
 
 async function buyItem(discordId, itemIdOrItem, mcNick = null) {
-  const { data: users, error: userError } = await supabase
-      .from("user_stats")
-      .select("*")
-      .eq("discord_id", discordId)
-      .single();
-  if (userError || !users) throw new Error("Usuario no encontrado");
-
   let item;
   if (typeof itemIdOrItem === "object" && itemIdOrItem !== null) {
     item = itemIdOrItem;
@@ -39,48 +23,60 @@ async function buyItem(discordId, itemIdOrItem, mcNick = null) {
     if (!item) throw new Error("Item no disponible");
   }
 
-  if (users.balance < item.price) throw new Error("No tienes suficientes créditos");
+  const updatedUser = db.transaction(() => {
+    const user = db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId);
+    if (!user) throw new Error("Usuario no encontrado");
 
-  const { data: success, error: rpcError } = await supabase.rpc("decrement_balance", {
-    p_discord_id: discordId,
-    p_amount: item.price,
-  });
-  if (rpcError) throw rpcError;
-  if (success === false) throw new Error("No tienes suficientes créditos");
+    if (user.balance < item.price) throw new Error("No tienes suficientes créditos");
 
-  // Transferencia de suma cero: depositar monedas de la compra en el banco central
-  const { error: bankError } = await supabase.rpc("increment_balance", {
-    p_discord_id: "server_bank",
-    p_amount: item.price,
+    db.run(`UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?`, item.price, discordId);
+
+    // Suma cero: depositar en el banco central
+    db.run(
+      `INSERT INTO user_stats (discord_id, username, balance) VALUES ('server_bank', 'Banco del Servidor', ?)
+       ON CONFLICT(discord_id) DO UPDATE SET balance = balance + ?`,
+      item.price,
+      item.price
+    );
+
+    return db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId);
   });
-  if (bankError) console.error("[STORE] Fallo al depositar compra en el banco central:", bankError);
 
   if (item.minecraft_item && mcNick) {
     if (!isValidMinecraftNick(mcNick)) throw new Error("El nickname de Minecraft proporcionado no es válido.");
     await sendCommand(`give ${mcNick} ${item.minecraft_item}`);
   }
 
-  return { user: users, item, totalPrice: item.price };
+  return { user: updatedUser, item, totalPrice: item.price };
 }
 
 async function addItem({ name, description, price, iconId, minecraftItem }) {
-  const { error } = await supabase
-      .from("store")
-      .insert({ name, description, price, icon_id: iconId, minecraft_item: minecraftItem, status: "available" });
-  if (error) throw error;
+  db.run(
+    `INSERT INTO store (name, description, price, icon_id, minecraft_item, status)
+     VALUES (?, ?, ?, ?, ?, 'available')`,
+    name,
+    description,
+    price,
+    iconId,
+    minecraftItem
+  );
 }
 
 async function updateItem(id, { name, description, price, iconId, minecraftItem }) {
-  const { error } = await supabase
-      .from("store")
-      .update({ name, description, price, icon_id: iconId, minecraft_item: minecraftItem })
-      .eq("id", id);
-  if (error) throw error;
+  db.run(
+    `UPDATE store SET name = ?, description = ?, price = ?, icon_id = ?, minecraft_item = ?
+     WHERE id = ?`,
+    name,
+    description,
+    price,
+    iconId,
+    minecraftItem,
+    id
+  );
 }
 
 async function deleteItem(id) {
-  const { error } = await supabase.from("store").delete().eq("id", id);
-  if (error) throw error;
+  db.run(`DELETE FROM store WHERE id = ?`, id);
 }
 
 module.exports = { getItem, getItems, buyItem, addItem, updateItem, deleteItem };

@@ -10,12 +10,10 @@ module.exports = {
       .setDescription("Muestra la lista de recompensas diarias activas por rol."),
 
   async execute(interaction) {
-    const { data: rows, error } = await db
-        .from("role_rewards")
-        .select("role_id, ammount")
-        .order("ammount", { ascending: true });
-
-    if (error) {
+    let rows;
+    try {
+      rows = db.query("SELECT role_id, ammount FROM role_rewards ORDER BY ammount ASC");
+    } catch (error) {
       console.error(error);
       return interaction.reply({
         content: "Error obteniendo la lista de recompensas.",

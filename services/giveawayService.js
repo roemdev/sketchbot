@@ -1,9 +1,18 @@
-const supabase = require("./dbService");
+const crypto = require("node:crypto");
+const db = require("./dbService");
 const userService = require("./userService");
 const transactionService = require("./transactionService");
 
 // Map to keep track of active setTimeout instances
 const activeTimeouts = new Map();
+
+function formatGiveawayRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    participants: typeof row.participants === "string" ? JSON.parse(row.participants || "[]") : row.participants || []
+  };
+}
 
 async function createGiveaway({
   messageId,
@@ -16,37 +25,29 @@ async function createGiveaway({
   entryFee = 0,
   minLevel = 0
 }) {
-  const { data, error } = await supabase
-    .from("giveaways")
-    .insert({
-      message_id: messageId,
-      channel_id: channelId,
-      guild_id: guildId,
-      prize,
-      winner_count: winnerCount,
-      ends_at: endsAt,
-      status: "active",
-      hosted_by: hostedBy,
-      entry_fee: entryFee,
-      min_level: minLevel,
-      participants: []
-    })
-    .select()
-    .single();
+  const id = crypto.randomUUID();
+  db.run(
+    `INSERT INTO giveaways (id, message_id, channel_id, guild_id, prize, winner_count, ends_at, status, hosted_by, participants, entry_fee, min_level, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, '[]', ?, ?, ?)`,
+    id,
+    messageId,
+    channelId,
+    guildId,
+    prize,
+    winnerCount,
+    endsAt,
+    hostedBy,
+    entryFee,
+    minLevel,
+    new Date().toISOString()
+  );
 
-  if (error) throw error;
-  return data;
+  return await getGiveaway(messageId);
 }
 
 async function getGiveaway(messageId) {
-  const { data, error } = await supabase
-    .from("giveaways")
-    .select("*")
-    .eq("message_id", messageId)
-    .single();
-
-  if (error) return null;
-  return data;
+  const row = db.get(`SELECT * FROM giveaways WHERE message_id = ?`, messageId);
+  return formatGiveawayRow(row);
 }
 
 async function addParticipant(messageId, userId, username) {
@@ -97,19 +98,18 @@ async function addParticipant(messageId, userId, username) {
 
   // Add user to participants list
   const updatedParticipants = [...giveaway.participants, userId];
-  const { error: updateError } = await supabase
-    .from("giveaways")
-    .update({ participants: updatedParticipants })
-    .eq("message_id", messageId);
+  db.run(
+    `UPDATE giveaways SET participants = ? WHERE message_id = ?`,
+    JSON.stringify(updatedParticipants),
+    messageId
+  );
 
-  if (updateError) throw updateError;
   return { entryFee: giveaway.entry_fee, totalParticipants: updatedParticipants.length };
 }
 
 // Function to handle automated prize delivery
 async function deliverPrize(winnerId, prizeText) {
   // 1. Check if the prize is cards packs (sobres)
-  // Match patterns like "3 sobres de cartas", "1 sobre", "2 sobres"
   const packMatch = prizeText.match(/^(\d+)\s+sobre(s)?/i);
   if (packMatch) {
     const count = parseInt(packMatch[1], 10);
@@ -119,7 +119,6 @@ async function deliverPrize(winnerId, prizeText) {
   }
 
   // 2. Check if the prize is coins
-  // Match patterns like "500000 monedas", "500k monedas", "100,000 monedas", "1,000,000"
   const cleanPrizeText = prizeText.replace(/,/g, "").replace(/\./g, "");
   const coinsMatch = cleanPrizeText.match(/^(\d+)(k)?\s+(moneda(s)?|crédito(s)?|credito(s)?)/i) || 
                      cleanPrizeText.match(/^\+(\d+)(k)?\s*(moneda(s)?|crédito(s)?)/i);
@@ -175,12 +174,7 @@ async function endGiveaway(messageId) {
   }
 
   // Mark ended in db
-  const { error } = await supabase
-    .from("giveaways")
-    .update({ status: "ended" })
-    .eq("message_id", messageId);
-
-  if (error) throw error;
+  db.run(`UPDATE giveaways SET status = 'ended' WHERE message_id = ?`, messageId);
 
   // Deliver prizes
   const deliveryReports = [];
@@ -230,15 +224,7 @@ async function rerollGiveaway(messageId) {
 
 // Resumes all pending active giveaways (to be called on bot startup)
 async function resumeActiveGiveaways(client, endGiveawayCallback) {
-  const { data: activeGiveaways, error } = await supabase
-    .from("giveaways")
-    .select("*")
-    .eq("status", "active");
-
-  if (error) {
-    console.error("[SORTEOS] Error cargando sorteos activos:", error);
-    return 0;
-  }
+  const activeGiveaways = db.query(`SELECT * FROM giveaways WHERE status = 'active'`).map(formatGiveawayRow);
 
   const now = Date.now();
 
@@ -247,11 +233,9 @@ async function resumeActiveGiveaways(client, endGiveawayCallback) {
     const remainingTime = endsTime - now;
 
     if (remainingTime <= 0) {
-      // Ends immediately
       console.log(`[SORTEOS] Sorteo ${gw.message_id} ya expiró. Finalizando de inmediato.`);
       endGiveawayCallback(client, gw.message_id).catch(console.error);
     } else {
-      // Schedule end
       const timer = setTimeout(() => {
         endGiveawayCallback(client, gw.message_id).catch(console.error);
       }, remainingTime);
@@ -270,13 +254,13 @@ async function resolveGiveaway(client, messageId) {
   const channel = client.channels.cache.get(giveaway.channel_id) || 
                   await client.channels.fetch(giveaway.channel_id).catch(() => null);
   if (!channel) {
-    await supabase.from("giveaways").update({ status: "ended" }).eq("message_id", messageId);
+    db.run(`UPDATE giveaways SET status = 'ended' WHERE message_id = ?`, messageId);
     return;
   }
 
   const message = await channel.messages.fetch(messageId).catch(() => null);
   if (!message) {
-    await supabase.from("giveaways").update({ status: "ended" }).eq("message_id", messageId);
+    db.run(`UPDATE giveaways SET status = 'ended' WHERE message_id = ?`, messageId);
     return;
   }
 
@@ -308,11 +292,9 @@ async function resolveGiveaway(client, messageId) {
 
   await message.edit({ components: [container], content: null }).catch(console.error);
 
-  // Send congratulatory message in channel with automated delivery details if applicable
   if (result.winners.length > 0) {
     let msg = `🎉 ¡Felicidades ${result.winners.map(w => `<@${w}>`).join(", ")}! Has ganado **${result.prize}**.\n`;
     
-    // Append details of automated prize delivery reports
     const details = result.deliveryReports
       .map(r => `<@${r.winnerId}>: ${r.detail}`)
       .join("\n");

@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🎨 Sketchbot</h1>
-  <p>Un bot de Discord premium multifuncional desarrollado en Node.js, impulsado por Supabase, con inteligencia artificial integrada y un ecosistema macroeconómico cerrado único.</p>
+  <p>Un bot de Discord premium multifuncional desarrollado en Node.js, impulsado por SQLite (WAL), con inteligencia artificial integrada y un ecosistema macroeconómico cerrado único.</p>
 </div>
 
 **Sketchbot** es una sofisticada plataforma para comunidades de Discord. Cuenta con un sistema de economía cerrado, minijuegos interactivos de azar, niveles y XP por voz, una tienda integrada por RCON con servidores de Minecraft, y un módulo de inteligencia artificial local.
@@ -79,7 +79,6 @@ El casino opera de forma independiente y posee su propia bóveda financiera:
 
 ### Requisitos Previos
 *   [Node.js](https://nodejs.org/) (v22 o superior).
-*   Una instancia de [Supabase](https://supabase.com/).
 *   Un servidor de Discord y credenciales de desarrollador.
 
 ### 1. Variables de Configuración
@@ -89,9 +88,8 @@ Crea un archivo llamado `config.json` en el directorio raíz del proyecto:
   "token": "DISCORD_BOT_TOKEN",
   "clientId": "DISCORD_APPLICATION_CLIENT_ID",
   "guildId": "DISCORD_GUILD_ID",
-  "supabase": {
-    "url": "https://TU_PROYECTO.supabase.co",
-    "serviceRoleKey": "TU_SERVICE_ROLE_KEY"
+  "database": {
+    "filename": "./data/database.sqlite"
   },
   "rcon": {
     "host": "IP_MINECRAFT_SERVER",
@@ -100,8 +98,8 @@ Crea un archivo llamado `config.json` en el directorio raíz del proyecto:
   }
 }
 ```
-> [!IMPORTANT]
-> Debes usar la clave `serviceRoleKey` de Supabase para evitar errores de políticas RLS (Row-Level Security) en los procesos de escritura macroeconómica del bot.
+> [!NOTE]
+> La base de datos SQLite se crea automáticamente en `./data/database.sqlite` en el primer arranque si no existe.
 
 ### 2. Despliegue de Comandos Slash
 Antes de arrancar el bot, debes registrar los comandos slash en la API de Discord:

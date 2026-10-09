@@ -1,4 +1,4 @@
-const supabase = require("./dbService");
+const db = require("./dbService");
 const chalk = require("chalk");
 
 class RoleRewardService {
@@ -7,16 +7,15 @@ class RoleRewardService {
    * @returns {Promise<Array<{role_id: string, ammount: number, level: number}>>}
    */
   async getSortedRoleRewards() {
-    const { data, error } = await supabase
-      .from("role_rewards")
-      .select("role_id, ammount, level")
-      .order("level", { ascending: true });
-    
-    if (error) {
+    try {
+      const rows = db.query(
+        `SELECT role_id, ammount, level FROM role_rewards ORDER BY level ASC`
+      );
+      return rows || [];
+    } catch (error) {
       console.error(chalk.red("[ROLE-REWARD] Error fetching role rewards:"), error);
       throw error;
     }
-    return data || [];
   }
 
   /**
@@ -88,13 +87,7 @@ class RoleRewardService {
     const allRewardRoleIds = roleRewards.map(r => r.role_id);
 
     // Fetch all users from database
-    const { data: users, error } = await supabase
-      .from("user_stats")
-      .select("discord_id, level");
-    
-    if (error) {
-      throw error;
-    }
+    const users = db.query(`SELECT discord_id, level FROM user_stats`);
 
     let processed = 0;
     let updated = 0;
@@ -106,7 +99,6 @@ class RoleRewardService {
       // Skip bank accounts and special non-user records
       if (!memberId || memberId.includes("_") || isNaN(memberId)) continue;
 
-      // Fetch the member individually. This works without the privileged GuildMembers intent!
       const member = await guild.members.fetch(memberId).catch(() => null);
       if (!member || member.user.bot) continue;
 

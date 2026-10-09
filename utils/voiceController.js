@@ -1,5 +1,5 @@
 const { MessageFlags } = require("discord.js");
-const supabase = require("../services/dbService"); // Ahora utilizamos el cliente de Supabase
+const db = require("../services/dbService");
 
 async function handleInteraction(interaction) {
     const member = interaction.member;
@@ -9,13 +9,10 @@ async function handleInteraction(interaction) {
         return interaction.reply({ content: "Tienes que estar en un canal de voz para usar esto.", flags: MessageFlags.Ephemeral });
     }
 
-    // Migración a Supabase: Consultar el canal temporal
-    const { data: rows, error: selectError } = await supabase
-        .from("temp_channels")
-        .select("*")
-        .eq("channel_id", voiceChannel.id);
-
-    if (selectError) {
+    let rows;
+    try {
+        rows = db.query("SELECT * FROM temp_channels WHERE channel_id = ?", voiceChannel.id);
+    } catch (selectError) {
         console.error("Error consultando temp_channels:", selectError);
         return interaction.reply({ content: "Ocurrió un error interno al verificar el canal.", flags: MessageFlags.Ephemeral });
     }
@@ -35,14 +32,10 @@ async function handleInteraction(interaction) {
             return interaction.reply({ content: "El dueño actual sigue conectado. No puedes reclamar el canal todavía.", flags: MessageFlags.Ephemeral });
         }
 
-        // Migración a Supabase: Actualizar el dueño del canal
-        const { error: updateError } = await supabase
-            .from("temp_channels")
-            .update({ owner_id: member.id })
-            .eq("channel_id", voiceChannel.id);
-
-        if (updateError) {
-            console.error("Error actualizando el dueño del canal en Supabase:", updateError);
+        try {
+            db.run("UPDATE temp_channels SET owner_id = ? WHERE channel_id = ?", member.id, voiceChannel.id);
+        } catch (updateError) {
+            console.error("Error actualizando el dueño del canal en SQLite:", updateError);
             return interaction.reply({ content: "Ocurrió un error al intentar reclamar el canal.", flags: MessageFlags.Ephemeral });
         }
 

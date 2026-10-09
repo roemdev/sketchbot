@@ -43,14 +43,15 @@ module.exports = {
           ownerId: newState.member.id
         });
 
-        const { error } = await db
-            .from("temp_channels")
-            .insert({
-              channel_id: tempChannel.id,
-              owner_id: newState.member.id
-            });
-
-        if (error) console.error(error);
+        try {
+          db.run(
+            `INSERT INTO temp_channels (channel_id, owner_id) VALUES (?, ?)`,
+            tempChannel.id,
+            newState.member.id
+          );
+        } catch (dbErr) {
+          console.error("Error guardando canal temporal en SQLite:", dbErr);
+        }
       } catch (error) {
         console.error("Error al crear o mover al canal temporal:", error);
       }
@@ -62,12 +63,11 @@ module.exports = {
       if (!channel) {
         client.tempVCs.delete(oldState.channelId);
 
-        const { error } = await db
-            .from("temp_channels")
-            .delete()
-            .eq("channel_id", oldState.channelId);
-
-        if (error) console.error(error);
+        try {
+          db.run(`DELETE FROM temp_channels WHERE channel_id = ?`, oldState.channelId);
+        } catch (dbErr) {
+          console.error("Error eliminando canal temporal de SQLite:", dbErr);
+        }
         return;
       }
 
@@ -79,12 +79,11 @@ module.exports = {
         } finally {
           client.tempVCs.delete(oldState.channelId);
 
-          const { error } = await db
-              .from("temp_channels")
-              .delete()
-              .eq("channel_id", oldState.channelId);
-
-          if (error) console.error(error);
+          try {
+            db.run(`DELETE FROM temp_channels WHERE channel_id = ?`, oldState.channelId);
+          } catch (dbErr) {
+            console.error("Error eliminando canal temporal de SQLite:", dbErr);
+          }
         }
       }
     }

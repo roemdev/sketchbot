@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "build": "pnpm --filter web build"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +22,6 @@
   "dependencies": {
     "@discordjs/voice": "^0.19.2",
     "@napi-rs/canvas": "^1.0.8",
-    "@supabase/supabase-js": "^2.113.0",
     "axios": "^1.20.0",
     "chalk": "^4.1.2",
     "discord.js": "^14.27.0",

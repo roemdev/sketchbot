@@ -6,7 +6,7 @@ Este documento está diseñado para ser entregado a los asistentes de desarrollo
 
 ## 📋 Resumen del Proyecto
 
-**SketchBot** es un bot de Discord premium desarrollado sobre **Discord.js v14**, integrado con **Supabase** (PostgreSQL) y con soporte para **RCON de Minecraft** e **Inteligencia Artificial local (Ollama)**. 
+**SketchBot** es un bot de Discord premium desarrollado sobre **Discord.js v14**, integrado con **SQLite** (WAL mode) y con soporte para **RCON de Minecraft** e **Inteligencia Artificial local (Ollama)**. 
 
 Su característica distintiva es un **ecosistema macroeconómico de circuito cerrado** (de suma cero), donde las monedas no se crean de la nada en los juegos, sino que fluyen a través de arcas públicas y privadas bien balanceadas.
 
@@ -84,9 +84,9 @@ sketchbot/
 │   ├── levels.json        # Centralizado: Rangos de XP, intervalos de voz y emojis de niveles
 │   └── settings.json      # Centralizado: Colores semánticos de embeds, canales temp y roles de colores
 ├── services/              # Lógica de negocio y conectores de base de datos
-│   ├── dbService.js       # Conexión nativa a Supabase
+│   ├── dbService.js       # Conexión nativa a SQLite (WAL)
 │   ├── userService.js     # Creación, balance, XP y niveles de usuarios
-│   ├── transactionService.js # Historial de transacciones de Supabase
+│   ├── transactionService.js # Historial de transacciones de SQLite
 │   ├── cooldownService.js # Enfriamientos en base de datos
 │   ├── minecraftService.js # Conector RCON de Minecraft
 │   ├── roleRewardService.js # Sincronización automática de roles de nivel
@@ -96,7 +96,7 @@ sketchbot/
 │   ├── validation.js      # Validaciones y sanidad de inputs
 │   ├── voiceController.js # Controlador e interacciones de voz temporal
 │   └── config.js          # Agrupador y mezclador estructurado de configuraciones
-├── config.json            # Credenciales de Discord, Supabase y Minecraft
+├── config.json            # Credenciales de Discord, base de datos local y Minecraft
 ├── index.js               # Punto de entrada principal del bot
 └── deploy-commands.js     # Registrador de comandos slash con Discord API
 ```
@@ -119,7 +119,7 @@ Los errores no llevan contenedor, sino texto plano y se responden en efímero.
 ## ⚙️ Reglas de Desarrollo y Buenas Prácticas
 
 1.  **Suma Cero Absoluto:** Nunca uses `userService.addBalance` de forma aislada para dar recompensas de juego o niveles. Toda moneda que gane un jugador debe debitarse del Casino o del Banco Central, y toda moneda que pierda debe depositarse en las arcas correctas.
-2.  **Seguridad Supabase:** Modifica siempre la base de datos utilizando la llave `serviceRoleKey` en `config.json` para evitar infracciones de RLS (Row-Level Security) en los procesos administrativos del bot.
+2.  **Persistencia SQLite:** La base de datos opera localmente sobre `data/database.sqlite` con modo WAL activado. Toda manipulación financiera debe realizarse a través de `userService` o transacciones atómicas de SQLite (`db.transaction`).
 3.  **Banners 16:9:** Los banners del banco y el casino deben cargarse desde `assets/banco.png` y `assets/casino.png` respectivamente. Deben ser imágenes con relación de aspecto panorámica **16:9** para evitar estiramientos no deseados en la interfaz de Discord.
 4.  **Registro de Comandos:** Siempre que añadas o modifiques las firmas en `data` de algún comando, ejecuta `node deploy-commands.js` en la consola para reflejarlo en Discord API.
 5.  **Sin Fallbacks en Código:** No utilices valores por defecto en variables de configuración (por ejemplo, `config.tasks.minBankEarn || 100000`). Todas las propiedades de configuración deben cargarse estrictamente desde sus archivos JSON centralizados (`economy.json`, `levels.json`, `settings.json`) para que el bot falle de forma inmediata y controlada si la configuración es incorrecta.

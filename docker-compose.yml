@@ -6,3 +6,5 @@ services:
     # Pasamos el timezone para que las recompensas diarias funcionen bien
     environment:
       - TZ=America/Santo_Domingo
+    volumes:
+      - ./data:/usr/src/app/data

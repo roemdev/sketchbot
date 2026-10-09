@@ -11,14 +11,12 @@ const {
   ActionRowBuilder,
 } = require("discord.js");
 
-const db = require("../../services/dbService");
 const config = require("../../utils/config");
 const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
 const { logTransaction } = require("../../services/transactionService");
 const { logGameOutcome } = require("../../utils/discordLogger");
 const taskTracker = require("../../services/taskTracker");
-const supabase = require("../../services/dbService");
 
 const COIN = config.emojis.coin;
 const crimesConfig = config.crimes;
@@ -321,7 +319,7 @@ async function runSpecificCrime(interaction, choice) {
       const fine = Math.max(crimesConfig.hackear.fineMin, Math.round(totalBalance * finePercent));
       const newWalletBalance = walletBalance - fine; // Puede ser negativo (deuda)
 
-      await supabase.from("user_stats").update({ balance: newWalletBalance }).eq("discord_id", userId);
+      await userService.setBalance(userId, newWalletBalance, false);
       await userService.addBalance("server_bank", fine, false);
 
       await logTransaction({ discordId: userId, type: "hack_failed", amount: -fine, itemName: "Hackeo fallido al Banco Central (Multa al Banco)" });
@@ -401,7 +399,7 @@ async function runSpecificCrime(interaction, choice) {
       const fine = Math.max(crimesConfig.fraude.fineMin, Math.round(totalBalance * finePercent));
       const newWalletBalance = walletBalance - fine; // Puede ser negativo (deuda)
 
-      await supabase.from("user_stats").update({ balance: newWalletBalance }).eq("discord_id", userId);
+      await userService.setBalance(userId, newWalletBalance, false);
       await userService.addBalance("server_bank", fine, false);
 
       await logTransaction({ discordId: userId, type: "fraude_failed", amount: -fine, itemName: "Estafa fallida al Casino (Multa al Banco)" });

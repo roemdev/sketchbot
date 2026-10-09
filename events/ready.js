@@ -1,6 +1,6 @@
 const { Events, ActivityType } = require('discord.js');
 const chalk = require('chalk');
-const supabase = require("../services/dbService"); // Importamos la conexión de Supabase
+const db = require("../services/dbService");
 const voiceXpService = require("../services/voiceXpService");
 const giveawayService = require("../services/giveawayService");
 
@@ -13,7 +13,7 @@ module.exports = {
       status: 'online',
     });
 
-    let dbStatus = chalk.green('CONNECTED');
+    let dbStatus = chalk.green('CONNECTED (SQLite)');
     let tempVCsStatus = chalk.gray('None active/empty');
     let voiceXpStatus = chalk.green('ACTIVE');
 
@@ -26,26 +26,21 @@ module.exports = {
     let restaurados = 0;
 
     try {
-      // Migración a Supabase: Obtener todos los canales temporales
-      const { data: rows, error: selectError } = await supabase
-          .from("temp_channels")
-          .select("*");
+      // 1. Restaurar desde SQLite
+      const rows = db.query("SELECT * FROM temp_channels");
 
-      if (selectError) throw selectError;
-
-      // 1. Restaurar desde Supabase
       if (rows && rows.length > 0) {
         for (const row of rows) {
           const channel = client.channels.cache.get(row.channel_id) || await client.channels.fetch(row.channel_id).catch(() => null);
 
           if (!channel) {
-            await supabase.from("temp_channels").delete().eq("channel_id", row.channel_id);
+            db.run("DELETE FROM temp_channels WHERE channel_id = ?", row.channel_id);
             continue;
           }
 
           if (channel.members.size === 0) {
             await channel.delete().catch(console.error);
-            await supabase.from("temp_channels").delete().eq("channel_id", row.channel_id);
+            db.run("DELETE FROM temp_channels WHERE channel_id = ?", row.channel_id);
             eliminados++;
           } else {
             client.tempVCs.set(row.channel_id, {
@@ -68,7 +63,6 @@ module.exports = {
                   // Obtener canales de voz en esa categoría que no sean el canal de unirse
                   const voiceChannels = category.children.cache.filter(c => c.isVoiceBased() && c.id !== joinChannelId);
                   for (const [id, channel] of voiceChannels) {
-                      // Si no fue procesado por Supabase
                       if (!client.tempVCs.has(id)) {
                           if (channel.members.size === 0) {
                               await channel.delete().catch(console.error);
@@ -76,9 +70,11 @@ module.exports = {
                           } else {
                               const owner = channel.members.first();
                               client.tempVCs.set(id, { ownerId: owner.id });
-                              // Lo guardamos en Supabase para que no siga huérfano
-                              const { error: insertErr } = await supabase.from("temp_channels").insert({ channel_id: id, owner_id: owner.id });
-                              if (insertErr) console.error("Error guardando canal temporal en DB:", insertErr);
+                              try {
+                                db.run("INSERT INTO temp_channels (channel_id, owner_id) VALUES (?, ?)", id, owner.id);
+                              } catch (insertErr) {
+                                console.error("Error guardando canal temporal en DB:", insertErr);
+                              }
                               restaurados++;
                           }
                       }
@@ -90,7 +86,6 @@ module.exports = {
       if (restaurados > 0 || eliminados > 0) {
         tempVCsStatus = chalk.green(`Restored: ${restaurados} | Cleaned: ${eliminados}`);
       }
-      // Actualizar el estado visual si hay canales activos pero no se restauraron ni eliminaron esta vez
       else if (client.tempVCs.size > 0) {
         tempVCsStatus = chalk.green(`${client.tempVCs.size} active`);
       }
@@ -98,7 +93,7 @@ module.exports = {
     } catch (error) {
       dbStatus = chalk.red('ERROR');
       tempVCsStatus = chalk.red('FAILED');
-      console.error(chalk.red("Error al limpiar los canales temporales en el arranque (Supabase):"), error);
+      console.error(chalk.red("Error al limpiar los canales temporales en el arranque (SQLite):"), error);
     }
 
     // --- INICIALIZAR SISTEMA DE EXPERIENCIA POR VOZ ---

@@ -29,9 +29,18 @@ module.exports = {
       const level = interaction.options.getInteger("nivel");
 
       try {
-        await db
-            .from("role_rewards")
-            .upsert({ role_id: role.id, ammount: amount, level: level }, { onConflict: "role_id" });
+        db.run(
+          `INSERT INTO role_rewards (role_id, ammount, level, updated_at)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(role_id) DO UPDATE SET
+             ammount = excluded.ammount,
+             level = excluded.level,
+             updated_at = excluded.updated_at`,
+          role.id,
+          amount,
+          level,
+          new Date().toISOString()
+        );
 
         return interaction.reply({
           content: `Listo. **${role.name}** ahora otorga **${COIN}${amount.toLocaleString()}** diarias a partir de nivel **${level}**.`,
@@ -48,10 +57,7 @@ module.exports = {
 
     if (subcommand === "remove") {
       try {
-        await db
-            .from("role_rewards")
-            .delete()
-            .eq("role_id", role.id);
+        db.run(`DELETE FROM role_rewards WHERE role_id = ?`, role.id);
 
         return interaction.reply({
           content: `**${role.name}** ya no otorga monedas diarias.`,

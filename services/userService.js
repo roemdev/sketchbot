@@ -1,34 +1,30 @@
-const supabase = require("./dbService");
+const db = require("./dbService");
 
 module.exports = {
   createUser: async (discordId, username) => {
-    const { error } = await supabase
-        .from("user_stats")
-        .upsert({ discord_id: discordId, username }, { onConflict: "discord_id", ignoreDuplicates: true });
-    if (error) throw error;
+    db.run(
+      `INSERT INTO user_stats (discord_id, username) VALUES (?, ?) ON CONFLICT(discord_id) DO NOTHING`,
+      discordId,
+      username
+    );
     return await module.exports.getUser(discordId);
   },
 
   getUser: async (discordId) => {
-    const { data, error } = await supabase
-        .from("user_stats")
-        .select("*")
-        .eq("discord_id", discordId)
-        .single();
-    if (error && error.code !== "PGRST116") throw error; // PGRST116 = not found
+    let row = db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId);
 
-    if (!data && (discordId === "server_bank" || discordId === "server_casino")) {
+    if (!row && (discordId === "server_bank" || discordId === "server_casino")) {
       const username = discordId === "server_bank" ? "Banco del Servidor" : "Casino del Servidor";
-      const { data: insertedData, error: insertError } = await supabase
-          .from("user_stats")
-          .upsert({ discord_id: discordId, username }, { onConflict: "discord_id" })
-          .select()
-          .single();
-      if (insertError) throw insertError;
-      return insertedData;
+      db.run(
+        `INSERT INTO user_stats (discord_id, username, balance) VALUES (?, ?, 0)
+         ON CONFLICT(discord_id) DO NOTHING`,
+        discordId,
+        username
+      );
+      row = db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId);
     }
 
-    return data ?? null;
+    return row ?? null;
   },
 
   getBalance: async (discordId) => {
@@ -40,37 +36,78 @@ module.exports = {
     if (amount < 0) {
       return await module.exports.removeBalance(discordId, Math.abs(amount), returnUser);
     }
-    if (discordId === "server_bank" || discordId === "server_casino") {
-      await module.exports.getUser(discordId);
-    }
-    const { error } = await supabase.rpc("increment_balance", {
-      p_discord_id: discordId,
-      p_amount: amount,
+
+    return db.transaction(() => {
+      if (discordId === "server_bank" || discordId === "server_casino") {
+        const username = discordId === "server_bank" ? "Banco del Servidor" : "Casino del Servidor";
+        db.run(
+          `INSERT INTO user_stats (discord_id, username, balance) VALUES (?, ?, 0)
+           ON CONFLICT(discord_id) DO NOTHING`,
+          discordId,
+          username
+        );
+      } else {
+        db.run(
+          `INSERT INTO user_stats (discord_id, username, balance) VALUES (?, 'Usuario', 0)
+           ON CONFLICT(discord_id) DO NOTHING`,
+          discordId
+        );
+      }
+
+      db.run(
+        `UPDATE user_stats SET balance = balance + ? WHERE discord_id = ?`,
+        amount,
+        discordId
+      );
+
+      return returnUser ? db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId) : null;
     });
-    if (error) throw error;
-    return returnUser ? await module.exports.getUser(discordId) : null;
   },
 
   removeBalance: async (discordId, amount, returnUser = true) => {
-    if (discordId === "server_bank" || discordId === "server_casino") {
-      await module.exports.getUser(discordId);
-    }
-    const { data, error } = await supabase.rpc("decrement_balance", {
-      p_discord_id: discordId,
-      p_amount: amount,
+    return db.transaction(() => {
+      let user = db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId);
+      if (!user && (discordId === "server_bank" || discordId === "server_casino")) {
+        const username = discordId === "server_bank" ? "Banco del Servidor" : "Casino del Servidor";
+        db.run(
+          `INSERT INTO user_stats (discord_id, username, balance) VALUES (?, ?, 0)
+           ON CONFLICT(discord_id) DO NOTHING`,
+          discordId,
+          username
+        );
+        user = db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId);
+      }
+
+      if (!user || user.balance < amount) {
+        throw new Error("Insufficient balance");
+      }
+
+      db.run(
+        `UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?`,
+        amount,
+        discordId
+      );
+
+      return returnUser ? db.get(`SELECT * FROM user_stats WHERE discord_id = ?`, discordId) : null;
     });
-    if (error) throw error;
-    // La función RPC devuelve false si no había saldo suficiente
-    if (data === false) throw new Error("Insufficient balance");
+  },
+
+  setBalance: async (discordId, amount, returnUser = true) => {
+    db.run(
+      `INSERT INTO user_stats (discord_id, username, balance) VALUES (?, 'Usuario', ?)
+       ON CONFLICT(discord_id) DO UPDATE SET balance = excluded.balance`,
+      discordId,
+      amount
+    );
     return returnUser ? await module.exports.getUser(discordId) : null;
   },
 
   updateUsername: async (discordId, newUsername) => {
-    const { error } = await supabase
-        .from("user_stats")
-        .update({ username: newUsername })
-        .eq("discord_id", discordId);
-    if (error) throw error;
+    db.run(
+      `UPDATE user_stats SET username = ? WHERE discord_id = ?`,
+      newUsername,
+      discordId
+    );
     return await module.exports.getUser(discordId);
   },
 
@@ -99,30 +136,25 @@ module.exports = {
     if (!bankRecord) {
       await module.exports.createUser(bankId, `${username}_bank`);
     }
-    const { error } = await supabase
-      .from("user_stats")
-      .update({ balance: amount })
-      .eq("discord_id", bankId);
-    if (error) throw error;
+    db.run(`UPDATE user_stats SET balance = ? WHERE discord_id = ?`, amount, bankId);
   },
 
   getTopUsers: async (limit = 10, sortBy = "balance", offset = 0) => {
-    let query = supabase
-        .from("user_stats")
-        .select("discord_id, username, balance, level, xp")
-        .not("discord_id", "ilike", "%_bank")
-        .not("discord_id", "eq", "server_casino")
-        .range(offset, offset + limit - 1);
+    let sql = `
+      SELECT discord_id, username, balance, level, xp
+      FROM user_stats
+      WHERE discord_id NOT LIKE '%_bank'
+        AND discord_id != 'server_casino'
+    `;
 
     if (sortBy === "level") {
-      query = query.order("level", { ascending: false }).order("xp", { ascending: false });
+      sql += ` ORDER BY level DESC, xp DESC LIMIT ? OFFSET ?`;
     } else {
-      query = query.order("balance", { ascending: false });
+      sql += ` ORDER BY balance DESC LIMIT ? OFFSET ?`;
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return data ?? [];
+    const rows = db.query(sql, limit, offset);
+    return rows ?? [];
   },
 
   addXp: async (discordId, amount, username = "Usuario de Voz") => {
@@ -143,12 +175,13 @@ module.exports = {
       levelsGained++;
     }
 
-    const { error } = await supabase
-        .from("user_stats")
-        .update({ xp: currentXp, level: currentLevel })
-        .eq("discord_id", discordId);
+    db.run(
+      `UPDATE user_stats SET xp = ?, level = ? WHERE discord_id = ?`,
+      currentXp,
+      currentLevel,
+      discordId
+    );
 
-    if (error) throw error;
     return { xp: currentXp, level: currentLevel, leveledUp, levelsGained };
   },
 
@@ -157,11 +190,12 @@ module.exports = {
     if (!user) {
       user = await module.exports.createUser(discordId, username);
     }
-    const { error } = await supabase
-        .from("user_stats")
-        .update({ xp, level })
-        .eq("discord_id", discordId);
-    if (error) throw error;
+    db.run(
+      `UPDATE user_stats SET xp = ?, level = ? WHERE discord_id = ?`,
+      xp,
+      level,
+      discordId
+    );
     return { xp, level };
   },
 
@@ -181,84 +215,80 @@ module.exports = {
       currentXp = 0;
     }
 
-    const { error } = await supabase
-        .from("user_stats")
-        .update({ xp: currentXp, level: currentLevel })
-        .eq("discord_id", discordId);
+    db.run(
+      `UPDATE user_stats SET xp = ?, level = ? WHERE discord_id = ?`,
+      currentXp,
+      currentLevel,
+      discordId
+    );
 
-    if (error) throw error;
     return { xp: currentXp, level: currentLevel };
   },
 
   getBalanceRank: async (discordId, balance) => {
-    const { count, error } = await supabase
-      .from("user_stats")
-      .select("discord_id", { count: "exact", head: true })
-      .not("discord_id", "ilike", "%_bank")
-      .not("discord_id", "eq", "server_casino")
-      .gt("balance", balance);
-    if (error) throw error;
-    return (count ?? 0) + 1;
+    const row = db.get(
+      `SELECT COUNT(*) as count FROM user_stats
+       WHERE discord_id NOT LIKE '%_bank'
+         AND discord_id != 'server_casino'
+         AND balance > ?`,
+      balance
+    );
+    return (row?.count ?? 0) + 1;
   },
 
   getLevelRank: async (discordId, level, xp) => {
-    const { count, error } = await supabase
-      .from("user_stats")
-      .select("discord_id", { count: "exact", head: true })
-      .not("discord_id", "ilike", "%_bank")
-      .not("discord_id", "eq", "server_casino")
-      .or(`level.gt.${level},and(level.eq.${level},xp.gt.${xp})`);
-    if (error) throw error;
-    return (count ?? 0) + 1;
+    const row = db.get(
+      `SELECT COUNT(*) as count FROM user_stats
+       WHERE discord_id NOT LIKE '%_bank'
+         AND discord_id != 'server_casino'
+         AND (level > ? OR (level = ? AND xp > ?))`,
+      level,
+      level,
+      xp
+    );
+    return (row?.count ?? 0) + 1;
   },
 
   applyEmergencyTax: async (percentage) => {
-    const { data: users, error: fetchError } = await supabase
-        .from("user_stats")
-        .select("discord_id, username, balance")
-        .not("discord_id", "ilike", "%_bank")
-        .not("discord_id", "eq", "server_casino");
-    if (fetchError) throw fetchError;
+    return db.transaction(() => {
+      const users = db.query(
+        `SELECT discord_id, username, balance FROM user_stats
+         WHERE discord_id NOT LIKE '%_bank'
+           AND discord_id != 'server_casino'`
+      );
 
-    let totalDeducted = 0;
-    const updates = [];
+      let totalDeducted = 0;
+      let affectedPlayers = 0;
 
-    for (const user of users) {
-      if (user.balance > 0) {
-        const deductAmount = Math.floor(user.balance * (percentage / 100));
-        if (deductAmount > 0) {
-          totalDeducted += deductAmount;
-          updates.push({
-            discord_id: user.discord_id,
-            balance: user.balance - deductAmount
-          });
+      const updateStmt = db.getDb().prepare(
+        `UPDATE user_stats SET balance = balance - ? WHERE discord_id = ?`
+      );
+
+      for (const user of users) {
+        if (user.balance > 0) {
+          const deductAmount = Math.floor(user.balance * (percentage / 100));
+          if (deductAmount > 0) {
+            totalDeducted += deductAmount;
+            affectedPlayers++;
+            updateStmt.run(deductAmount, user.discord_id);
+          }
         }
       }
-    }
 
-    if (updates.length > 0) {
-      const { error: updateError } = await supabase
-          .from("user_stats")
-          .upsert(updates);
-      if (updateError) throw updateError;
-    }
+      if (totalDeducted > 0) {
+        db.run(
+          `INSERT INTO user_stats (discord_id, username, balance) VALUES ('server_bank', 'Banco del Servidor', ?)
+           ON CONFLICT(discord_id) DO UPDATE SET balance = balance + ?`,
+          totalDeducted,
+          totalDeducted
+        );
+      }
 
-    if (totalDeducted > 0) {
-      const bankRecord = await module.exports.getUser("server_bank");
-      const currentBankBalance = bankRecord ? bankRecord.balance : 0;
-      const { error: bankError } = await supabase
-          .from("user_stats")
-          .upsert({
-            discord_id: "server_bank",
-            balance: currentBankBalance + totalDeducted
-          });
-      if (bankError) throw bankError;
-    }
-
-    return {
-      affectedPlayers: updates.length,
-      totalDeducted
-    };
+      return {
+        affectedPlayers,
+        totalDeducted,
+      };
+    });
   },
 
   changeProfession: async (discordId, profession) => {
@@ -266,14 +296,11 @@ module.exports = {
     if (!user) {
       user = await module.exports.createUser(discordId, "Usuario");
     }
-    const { error } = await supabase
-        .from("user_stats")
-        .update({ profession, profession_xp: 0 })
-        .eq("discord_id", discordId);
-    if (error) throw error;
+    db.run(
+      `UPDATE user_stats SET profession = ?, profession_xp = 0 WHERE discord_id = ?`,
+      profession,
+      discordId
+    );
     return await module.exports.getUser(discordId);
   },
-
-
-
 };

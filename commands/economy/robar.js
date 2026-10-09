@@ -9,7 +9,6 @@ const cooldownService = require("../../services/cooldownService");
 const { logTransaction } = require("../../services/transactionService");
 const { logGameOutcome } = require("../../utils/discordLogger");
 const config = require("../../utils/config");
-const supabase = require("../../services/dbService");
 
 const COIN = config.emojis.coin;
 const robarConfig = config.crimes.robar;
@@ -102,7 +101,7 @@ module.exports = {
       const actualStolen = Math.min(stolen, targetWallet);
 
 
-      await supabase.from("user_stats").update({ balance: targetWallet - actualStolen }).eq("discord_id", targetId);
+      await userService.setBalance(targetId, targetWallet - actualStolen, false);
       await userService.addBalance(userId, actualStolen, false);
 
       await logTransaction({ discordId: userId, type: "robo_success", amount: actualStolen, itemName: `Robo exitoso a <@${targetId}>` });
@@ -136,7 +135,7 @@ module.exports = {
       const fine = Math.max(robarConfig.fineMin, Math.round(thiefTotal * finePercent));
       const newThiefWallet = thiefWallet - fine; // Puede ser negativo (deuda)
 
-      await supabase.from("user_stats").update({ balance: newThiefWallet }).eq("discord_id", userId);
+      await userService.setBalance(userId, newThiefWallet, false);
       await userService.addBalance("server_bank", fine, false);
 
       await logTransaction({ discordId: userId, type: "robo_failed", amount: -fine, itemName: `Robo fallido a <@${targetId}> (Multa al Banco)` });

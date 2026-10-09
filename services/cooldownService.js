@@ -1,25 +1,24 @@
-const supabase = require("./dbService");
+const db = require("./dbService");
 
 module.exports = {
   checkCooldown: async (discordId, command) => {
-    const { data, error } = await supabase
-        .from("cooldowns")
-        .select("expires_at")
-        .eq("discord_id", discordId)
-        .eq("command", command)
-        .single();
+    const data = db.get(
+      `SELECT expires_at FROM cooldowns WHERE discord_id = ? AND command = ?`,
+      discordId,
+      command
+    );
 
-    if (error || !data) return null;
+    if (!data) return null;
 
     const now = new Date();
     const expires = new Date(data.expires_at);
 
     if (now >= expires) {
-      await supabase
-          .from("cooldowns")
-          .delete()
-          .eq("discord_id", discordId)
-          .eq("command", command);
+      db.run(
+        `DELETE FROM cooldowns WHERE discord_id = ? AND command = ?`,
+        discordId,
+        command
+      );
       return null;
     }
 
@@ -28,24 +27,27 @@ module.exports = {
 
   setCooldown: async (discordId, command, seconds) => {
     const expires = new Date(Date.now() + seconds * 1000).toISOString();
-    const { error } = await supabase
-        .from("cooldowns")
-        .upsert({ discord_id: discordId, command, expires_at: expires },
-            { onConflict: "discord_id,command" });
-    if (error) throw error;
+    db.run(
+      `INSERT INTO cooldowns (discord_id, command, expires_at) VALUES (?, ?, ?)
+       ON CONFLICT(discord_id, command) DO UPDATE SET expires_at = excluded.expires_at`,
+      discordId,
+      command,
+      expires
+    );
   },
 
   resetCooldown: async (discordId, command = null) => {
-    let query = supabase
-        .from("cooldowns")
-        .delete()
-        .eq("discord_id", discordId);
-
     if (command) {
-      query = query.eq("command", command);
+      db.run(
+        `DELETE FROM cooldowns WHERE discord_id = ? AND command = ?`,
+        discordId,
+        command
+      );
+    } else {
+      db.run(
+        `DELETE FROM cooldowns WHERE discord_id = ?`,
+        discordId
+      );
     }
-
-    const { error } = await query;
-    if (error) throw error;
   },
 };
