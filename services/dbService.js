@@ -14,7 +14,7 @@ function getDbPath() {
   try {
     const config = require("../config.json");
     if (config.database?.filename) {
-      return path.resolve(process.cwd(), config.database.filename);
+      return path.resolve(__dirname, "../", config.database.filename);
     }
   } catch {}
   return path.resolve(__dirname, "../data/database.sqlite");

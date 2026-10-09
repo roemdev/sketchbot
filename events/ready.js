@@ -13,7 +13,13 @@ module.exports = {
       status: 'online',
     });
 
-    let dbStatus = chalk.green('CONNECTED (SQLite)');
+    let userStatsCount = 0;
+    try {
+      const countRow = db.get("SELECT count(*) as count FROM user_stats");
+      userStatsCount = countRow?.count ?? 0;
+    } catch {}
+
+    let dbStatus = chalk.green(`CONNECTED (SQLite: ${userStatsCount} users)`);
     let tempVCsStatus = chalk.gray('None active/empty');
     let voiceXpStatus = chalk.green('ACTIVE');
 
