@@ -140,8 +140,8 @@ async function migrate() {
     console.log(`Backup creado en: ${backupPath}`);
   }
 
-  const db = new DatabaseSync(DB_PATH);
-  initSchema(db);
+  const dbService = require("../services/dbService");
+  const db = dbService.getDb();
 
   const tables = [
     "user_stats",
@@ -352,6 +352,11 @@ async function migrate() {
   }
 
   console.log("\n✅ ¡MIGRACIÓN COMPLETADA CON ÉXITO!");
+  return true;
 }
 
-migrate().catch(console.error);
+module.exports = { migrate };
+
+if (require.main === module) {
+  migrate().catch(console.error);
+}
