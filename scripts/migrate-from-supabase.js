@@ -6,8 +6,8 @@ const config = require("../config.json");
 const DB_PATH = path.join(__dirname, "../data/database.sqlite");
 
 async function fetchAllRows(tableName) {
-  const url = config.supabase.url;
-  const key = config.supabase.serviceRoleKey;
+  const url = config.supabase?.url || "https://xvzsmdxfirqescnxyqia.supabase.co";
+  const key = config.supabase?.serviceRoleKey || "sb_publishable_gFFA-mFZuxXaa9WFFKqqqQ_lgeDwbKu";
   let allRows = [];
   let offset = 0;
   const pageSize = 1000;

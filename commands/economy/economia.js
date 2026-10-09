@@ -11,6 +11,7 @@ const {
   ActionRowBuilder,
 } = require("discord.js");
 
+const db = require("../../services/dbService");
 const config = require("../../utils/config");
 const userService = require("../../services/userService");
 const cooldownService = require("../../services/cooldownService");
@@ -982,12 +983,21 @@ module.exports = {
         });
       }
 
-      const { data: rows, error } = await db
-        .from("role_rewards")
-        .select("role_id, ammount")
-        .in("role_id", memberRoles);
+      const placeholders = memberRoles.map(() => "?").join(",");
+      let rows;
+      try {
+        rows = db.query(
+          `SELECT role_id, ammount FROM role_rewards WHERE role_id IN (${placeholders})`,
+          ...memberRoles
+        );
+      } catch (err) {
+        console.error("Error consultando role_rewards en SQLite:", err);
+        return interaction.editReply({
+          content: "Ocurrió un error al consultar las recompensas diarias."
+        });
+      }
 
-      if (error || !rows || rows.length === 0) {
+      if (!rows || rows.length === 0) {
         return interaction.editReply({
           content: "Ninguno de tus roles otorga monedas diarias en el sistema de recompensas."
         });
