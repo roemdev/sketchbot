@@ -13,20 +13,6 @@ module.exports = {
       status: 'online',
     });
 
-    // --- VERIFICACIÓN Y AUTO-MIGRACIÓN DESDE SUPABASE SI LA BD ESTÁ VACÍA O INCOMPLETA ---
-    try {
-      const userCountRow = db.get("SELECT count(*) as count FROM user_stats WHERE discord_id NOT LIKE '%_bank' AND discord_id NOT LIKE 'server_%'");
-      const realUsersCount = userCountRow?.count ?? 0;
-      if (realUsersCount < 5) {
-        console.log(chalk.yellow(`[AUTO-MIGRATE] Detectada base de datos vacía o nueva (${realUsersCount} miembros). Sincronizando datos automáticamente desde Supabase...`));
-        const { migrate } = require("../scripts/migrate-from-supabase");
-        await migrate();
-        console.log(chalk.green("[AUTO-MIGRATE] Sincronización automática de Supabase a SQLite completada."));
-      }
-    } catch (autoMigrateError) {
-      console.error(chalk.red("[AUTO-MIGRATE] Error durante la sincronización automática:"), autoMigrateError);
-    }
-
     let userStatsCount = 0;
     try {
       const countRow = db.get("SELECT count(*) as count FROM user_stats");
