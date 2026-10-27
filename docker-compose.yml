@@ -1,10 +1,40 @@
 services:
   sketchbot:
+    # Para compilar localmente en el VPS usa 'build: .'.
+    # Si usas GitHub Actions + GHCR (auto-update con Watchtower), descomenta 'image':
     build: .
+    # image: ghcr.io/roemdev/sketchbot:latest
     container_name: sketchbot
     restart: unless-stopped
-    # Pasamos el timezone para que las recompensas diarias funcionen bien
     environment:
       - TZ=America/Santo_Domingo
+      - NODE_ENV=production
     volumes:
+      # Configuración y credenciales (solo lectura)
+      - ./config.json:/usr/src/app/config.json:ro
+      # Persistencia de la base de datos SQLite y caché de imágenes generadas
       - ./data:/usr/src/app/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Servicio para auto-actualización automática.
+  # Monitorea la imagen del bot en el registro y la actualiza sin intervención manual.
+  watchtower:
+    image: containrrr/watchtower
+    container_name: sketchbot-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Si tu imagen en GHCR es privada, descomenta la siguiente línea tras hacer 'docker login ghcr.io':
+      # - /root/.docker/config.json:/config.json:ro
+    environment:
+      # Intervalo en segundos para comprobar actualizaciones (300s = 5 minutos)
+      - WATCHTOWER_POLL_INTERVAL=300
+      # Limpia imágenes huérfanas viejas para no saturar el disco del VPS
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=false
+      - WATCHTOWER_REVIVE_STOPPED=false
+    command: --interval 300 --cleanup sketchbot

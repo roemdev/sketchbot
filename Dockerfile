@@ -1,13 +1,18 @@
 FROM node:22-alpine
+
 WORKDIR /usr/src/app
 
-# Instala FFmpeg y también activa/instala pnpm globalmente en el contenedor
-RUN apk add --no-cache ffmpeg && npm install -g pnpm
+# Instalar dependencias del sistema:
+# - ffmpeg: para reproducción de audio / voz
+# - tzdata: requerido en Alpine para que las zonas horarias (TZ) funcionen
+# - fontconfig, ttf-dejavu, font-noto: requeridos para renderizar texto correctamente con @napi-rs/canvas
+RUN apk add --no-cache ffmpeg tzdata fontconfig ttf-dejavu font-noto && \
+    npm install -g pnpm
 
-# Copiamos los archivos de dependencias de pnpm
-COPY package.json pnpm-lock.yaml ./
+# Copiamos manifiestos de dependencias
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* .npmrc* ./
 
-# Instalamos las dependencias ignorando los scripts molestos que bloquean el build
+# Instalamos dependencias del proyecto
 RUN pnpm install --ignore-scripts
 
 # Copiamos el resto del código

@@ -1,0 +1,13 @@
+node_modules
+.git
+.gitignore
+.dockerignore
+.agents
+.gemini
+npm-debug.log*
+pnpm-debug.log*
+data/database.sqlite*
+data/card_images/
+config.json
+.env*
+.next
